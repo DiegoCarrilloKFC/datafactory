@@ -1,0 +1,150 @@
+{
+	"name": "pl_dwh_Info_Suscripcion_Proceso",
+	"properties": {
+		"activities": [
+			{
+				"name": "Carga Info Suscripcion",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Verificar Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Verificar Carga').output.firstRow.PermitirCarga, 'CARGAR')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Carga Info Suscripcion_",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 3,
+								"retryIntervalInSeconds": 300,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": {
+									"value": "@pipeline().parameters.SP",
+									"type": "Expression"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "linked_sharepoint",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+									"BaseDatos": "dw_dwh_suscripcion"
+								}
+							}
+						},
+						{
+							"name": "Finalizar Proceso",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Carga Info Suscripcion_",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderStoredProcedureName": "[admin_btc].[usp_CargaInfoSuscripcion_Control]",
+									"storedProcedureParameters": {
+										"Paso": {
+											"type": "String",
+											"value": "ACTUALIZAR"
+										},
+										"Proceso": {
+											"type": "String",
+											"value": {
+												"value": "@pipeline().parameters.Proceso",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								"dataset": {
+									"referenceName": "ds_dwh_general",
+									"type": "DatasetReference"
+								},
+								"firstRowOnly": true
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Verificar Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_btc].[usp_CargaInfoSuscripcion_Control]",
+						"storedProcedureParameters": {
+							"Paso": {
+								"type": "String",
+								"value": "CARGAR"
+							},
+							"Proceso": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.Proceso",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"Proceso": {
+				"type": "string",
+				"defaultValue": "DIMENSION"
+			},
+			"SP": {
+				"type": "string",
+				"defaultValue": "admin_btc.usp_CargaInfoSuscripcion_Dimension"
+			}
+		},
+		"folder": {
+			"name": "dwh_Intranet"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

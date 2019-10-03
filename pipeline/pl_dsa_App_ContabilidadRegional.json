@@ -1,0 +1,113 @@
+{
+	"name": "pl_dsa_App_ContabilidadRegional",
+	"properties": {
+		"activities": [
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT\n\tFechaCarga=DATEADD(HH,-5,GETDATE()),\n\tFechaDesde=convert(smalldatetime,DATEADD(s,0,DATEADD(mm, DATEDIFF(m,0,DATEADD(HH,-5,GETDATE()))-1,0)),112),\n\tFechaHasta=convert(smalldatetime,EOMONTH(DATEADD(HH,-5,GETDATE()),-1),112)"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Cargar Catalogo",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_App_ContabilidadRegional_Catalogo",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Servidor": {
+							"value": "@pipeline().parameters.Servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@pipeline().parameters.BaseDatos",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Carga Transaccional",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Cargar Catalogo",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_App_ContabilidadRegional_Transaccional",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Servidor": {
+							"value": "@pipeline().parameters.Servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@pipeline().parameters.BaseDatos",
+							"type": "Expression"
+						},
+						"FechaDesde": {
+							"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+							"type": "Expression"
+						},
+						"FechaHasta": {
+							"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"Servidor": {
+				"type": "string",
+				"defaultValue": "SAZSHAREPBDD\\BD_NEGOCIO"
+			},
+			"BaseDatos": {
+				"type": "string",
+				"defaultValue": "SharePoint_ListaExterna"
+			}
+		},
+		"folder": {
+			"name": "dsa_Intranet"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

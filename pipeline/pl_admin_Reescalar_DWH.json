@@ -1,0 +1,105 @@
+{
+	"name": "pl_admin_Reescalar_DWH",
+	"properties": {
+		"activities": [
+			{
+				"name": "Verificar Proceso Cubos",
+				"type": "Until",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Verificar Carga').output.firstRow.Resultado, 'REESCALAR')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Verificar Carga",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Espera",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": "IF EXISTS(SELECT * FROM dwh.admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO_CUBOS_MULTIPAIS' AND Estado = 1)\n\tSELECT 'REESCALAR' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado"
+								},
+								"dataset": {
+									"referenceName": "ds_dwh_general",
+									"type": "DatasetReference"
+								}
+							}
+						},
+						{
+							"name": "Espera",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 300
+							}
+						}
+					],
+					"timeout": "00.12:00:00"
+				}
+			},
+			{
+				"name": "Escalar DWH",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Verificar Proceso Cubos",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "--Escalar Data Warehouse\nALTER DATABASE dwh\nMODIFY (SERVICE_OBJECTIVE = '@{pipeline().parameters.DWU}');\n\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_master",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"DWU": {
+				"type": "string",
+				"defaultValue": "DW100c"
+			}
+		},
+		"folder": {
+			"name": "Admin_dwh"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

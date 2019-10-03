@@ -1,0 +1,75 @@
+{
+	"name": "pl_admin_Escalar_DWH",
+	"properties": {
+		"description": "Ejecuta proceso de escalado del DWH\nSe debe setear el parametro DWU",
+		"activities": [
+			{
+				"name": "Escalar DWH",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "--Escalar Data Warehouse\nALTER DATABASE dwh\nMODIFY (SERVICE_OBJECTIVE = '@{pipeline().parameters.DWU}');\n\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_master",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Verificar Estatus",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Escalar DWH",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "--Verificar estatus de escalado cada 5 segudnos\nWHILE \n(\n    SELECT TOP 1 state_desc\n    FROM sys.dm_operation_status\n    WHERE \n        1=1\n        AND resource_type_desc = 'Database'\n        AND major_resource_id = 'dwh'\n        AND operation = 'ALTER DATABASE'\n    ORDER BY\n        start_time DESC\n) = 'IN_PROGRESS'\nBEGIN\n    RAISERROR('El escalado de la base de datos está en progreso',0,0) WITH NOWAIT;\n    WAITFOR DELAY '00:00:05';\nEND\nWAITFOR DELAY '00:00:30';\nSelect 'Complete' AS Resultado;"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_master",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"DWU": {
+				"type": "string",
+				"defaultValue": "DW100c"
+			}
+		},
+		"folder": {
+			"name": "Admin_dwh"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

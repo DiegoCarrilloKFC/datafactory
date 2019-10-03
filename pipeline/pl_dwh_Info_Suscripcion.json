@@ -1,0 +1,101 @@
+{
+	"name": "pl_dwh_Info_Suscripcion",
+	"properties": {
+		"activities": [
+			{
+				"name": "Carga Dimensiones",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Proceso": "DIMENSION",
+						"SP": "admin_btc.usp_CargaInfoSuscripcion_Dimension"
+					}
+				}
+			},
+			{
+				"name": "Carga Venta Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimensiones",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Proceso": "VENTA_ECU",
+						"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Ecu"
+					}
+				}
+			},
+			{
+				"name": "Carga Venta Chl",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimensiones",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Proceso": "VENTA_CHL",
+						"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Chl"
+					}
+				}
+			},
+			{
+				"name": "Carga Venta Col",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimensiones",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Proceso": "VENTA_COL",
+						"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Col"
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "dwh_Intranet"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

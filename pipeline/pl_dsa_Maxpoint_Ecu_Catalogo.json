@@ -1,0 +1,321 @@
+{
+	"name": "pl_dsa_Maxpoint_Ecu_Catalogo",
+	"properties": {
+		"activities": [
+			{
+				"name": "Recorrer Catalogos",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('cw_items')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copiar Catalogos",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "Source",
+									"value": "@{item().source.tableName}"
+								},
+								{
+									"name": "Destination",
+									"value": "@{item().destination.tableName}"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "SqlSource",
+									"sqlReaderQuery": {
+										"value": "@item().copySource.sqlReaderQuery",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "SqlDWSink",
+									"allowPolyBase": true,
+									"writeBatchSize": 10000,
+									"preCopyScript": {
+										"value": "@item().copySink.preCopyScript",
+										"type": "Expression"
+									},
+									"polyBaseSettings": {
+										"rejectValue": 0,
+										"rejectType": "value",
+										"useTypeDefault": true
+									}
+								},
+								"enableStaging": true,
+								"stagingSettings": {
+									"linkedServiceName": {
+										"referenceName": "linked_storage",
+										"type": "LinkedServiceReference"
+									},
+									"path": "contenedor"
+								},
+								"translator": {
+									"value": "@item().copyActivity.translator",
+									"type": "Expression"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_MaxpointEcu",
+									"type": "DatasetReference",
+									"parameters": {
+										"cw_structure": "@item().source.structure",
+										"cw_tableName": "@item().source.tableName",
+										"cw_servidor": {
+											"value": "@pipeline().parameters.Servidor",
+											"type": "Expression"
+										},
+										"cw_baseDatos": {
+											"value": "@pipeline().parameters.BaseDatos",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"cw_structure": "@item().destination.structure",
+										"cw_tableName": "@item().destination.tableName"
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"Servidor": {
+				"type": "string",
+				"defaultValue": "SRVV-ZEUS"
+			},
+			"BaseDatos": {
+				"type": "string",
+				"defaultValue": "MAXPOINT_DISTRIB_19"
+			}
+		},
+		"variables": {
+			"cw_items": {
+				"type": "Array",
+				"defaultValue": [
+					{
+						"source": {
+							"structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDCabeceraRegaliasYUM",
+									"type": "Guid"
+								},
+								{
+									"name": "IdCadena",
+									"type": "Int64"
+								},
+								{
+									"name": "IdTienda",
+									"type": "Int64"
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "FechaApertura",
+									"type": "DateTime"
+								}
+							],
+							"tableName": "[dbo].[CabeceraRegaliasYUM]"
+						},
+						"destination": {
+							"structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime",
+									"precision": 23,
+									"scale": 3
+								},
+								{
+									"name": "IDCabeceraRegaliasYUM",
+									"type": "Guid",
+									"precision": 255,
+									"scale": 255
+								},
+								{
+									"name": "IdCadena",
+									"type": "Int64",
+									"precision": 19,
+									"scale": 255
+								},
+								{
+									"name": "IdTienda",
+									"type": "Int64",
+									"precision": 19,
+									"scale": 255
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String",
+									"precision": 255,
+									"scale": 255
+								},
+								{
+									"name": "FechaApertura",
+									"type": "DateTime",
+									"precision": 23,
+									"scale": 3
+								}
+							],
+							"tableName": "[dsa_ecu_mp].[CabeceraRegaliasYUM]"
+						},
+						"copySource": {
+							"sqlReaderQuery": "select GETDATE() as FechaCarga, * from [dbo].[CabeceraRegaliasYUM] "
+						},
+						"copySink": {
+							"preCopyScript": "TRUNCATE TABLE [dsa_ecu_mp].[CabeceraRegaliasYUM]"
+						},
+						"copyActivity": {
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"FechaCarga": "FechaCarga",
+									"IDCabeceraRegaliasYUM": "IDCabeceraRegaliasYUM",
+									"IdCadena": "IdCadena",
+									"IdTienda": "IdTienda",
+									"CentroCosto": "CentroCosto",
+									"FechaApertura": "FechaApertura"
+								}
+							}
+						}
+					},
+					{
+						"source": {
+							"structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDRegaliasYUM",
+									"type": "Guid"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int64"
+								},
+								{
+									"name": "Transaccion",
+									"type": "String"
+								},
+								{
+									"name": "VentaBruta",
+									"type": "Double"
+								},
+								{
+									"name": "VentaNeta",
+									"type": "Double"
+								},
+								{
+									"name": "FechaPeriodo",
+									"type": "DateTime"
+								}
+							],
+							"tableName": "[dbo].[RegaliasYUM]"
+						},
+						"destination": {
+							"structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime",
+									"precision": 23,
+									"scale": 3
+								},
+								{
+									"name": "IDRegaliasYUM",
+									"type": "Guid",
+									"precision": 255,
+									"scale": 255
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int64",
+									"precision": 19,
+									"scale": 255
+								},
+								{
+									"name": "Transaccion",
+									"type": "String",
+									"precision": 255,
+									"scale": 255
+								},
+								{
+									"name": "VentaBruta",
+									"type": "Double",
+									"precision": 15,
+									"scale": 255
+								},
+								{
+									"name": "VentaNeta",
+									"type": "Double",
+									"precision": 15,
+									"scale": 255
+								},
+								{
+									"name": "FechaPeriodo",
+									"type": "DateTime",
+									"precision": 23,
+									"scale": 3
+								}
+							],
+							"tableName": "[dsa_ecu_mp].[RegaliasYUM]"
+						},
+						"copySource": {
+							"sqlReaderQuery": "select GETDATE() as FechaCarga, * from [dbo].[RegaliasYUM] "
+						},
+						"copySink": {
+							"preCopyScript": "TRUNCATE TABLE [dsa_ecu_mp].[RegaliasYUM]\n"
+						},
+						"copyActivity": {
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"FechaCarga": "FechaCarga",
+									"IDRegaliasYUM": "IDRegaliasYUM",
+									"Cod_Restaurante": "Cod_Restaurante",
+									"Transaccion": "Transaccion",
+									"VentaBruta": "VentaBruta",
+									"VentaNeta": "VentaNeta",
+									"FechaPeriodo": "FechaPeriodo"
+								}
+							}
+						}
+					}
+				]
+			}
+		},
+		"folder": {
+			"name": "dsa_MaxPointEcu"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

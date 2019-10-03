@@ -1,0 +1,1280 @@
+{
+	"name": "pl_dsa_Conta_ConsolidadoTarjetas",
+	"properties": {
+		"activities": [
+			{
+				"name": "ConsolidadoAlia",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dsa_ecu_archivo].[ConsolidadoAlia]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_archivo].[ConsolidadoAlia]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT FechaCarga,Codigo,Local,Voucher,Consumo,Neto,IVA,RetencionIVA,RetencionFuente,Comision,Otro,Otro1,Otro2,ValorNeto,ValorR,NombreArchivo,CodigoCentroCosto,CentroCosto,Cadena,Empresa,FechaPago FROM dsa_ecu_archivo.ConsolidadoAlia"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": false,
+						"writeBatchSize": 10000
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"FechaCarga": "FechaCarga",
+							"Codigo": "Codigo",
+							"Local": "Local",
+							"Voucher": "Voucher",
+							"Consumo": "Consumo",
+							"Neto": "Neto",
+							"IVA": "IVA",
+							"RetencionIVA": "RetencionIVA",
+							"RetencionFuente": "RetencionFuente",
+							"Comision": "Comision",
+							"Otro": "Otro",
+							"Otro1": "Otro1",
+							"Otro2": "Otro2",
+							"ValorNeto": "ValorNeto",
+							"ValorR": "ValorR",
+							"NombreArchivo": "NombreArchivo",
+							"CodigoCentroCosto": "CodigoCentroCosto",
+							"CentroCosto": "CentroCosto",
+							"Cadena": "Cadena",
+							"Empresa": "Empresa",
+							"FechaPago": "FechaPago"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Codigo",
+									"type": "String"
+								},
+								{
+									"name": "Local",
+									"type": "String"
+								},
+								{
+									"name": "Voucher",
+									"type": "Int32"
+								},
+								{
+									"name": "Consumo",
+									"type": "Double"
+								},
+								{
+									"name": "Neto",
+									"type": "Double"
+								},
+								{
+									"name": "IVA",
+									"type": "Double"
+								},
+								{
+									"name": "RetencionIVA",
+									"type": "Double"
+								},
+								{
+									"name": "RetencionFuente",
+									"type": "Double"
+								},
+								{
+									"name": "Comision",
+									"type": "Double"
+								},
+								{
+									"name": "Otro",
+									"type": "Double"
+								},
+								{
+									"name": "Otro1",
+									"type": "Double"
+								},
+								{
+									"name": "Otro2",
+									"type": "Double"
+								},
+								{
+									"name": "ValorNeto",
+									"type": "Double"
+								},
+								{
+									"name": "ValorR",
+									"type": "String"
+								},
+								{
+									"name": "NombreArchivo",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								},
+								{
+									"name": "Empresa",
+									"type": "String"
+								},
+								{
+									"name": "FechaPago",
+									"type": "DateTime"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_archivo].[ConsolidadoAlia]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Codigo",
+									"type": "String"
+								},
+								{
+									"name": "Local",
+									"type": "String"
+								},
+								{
+									"name": "Voucher",
+									"type": "Int32"
+								},
+								{
+									"name": "Consumo",
+									"type": "Double"
+								},
+								{
+									"name": "Neto",
+									"type": "Double"
+								},
+								{
+									"name": "IVA",
+									"type": "Double"
+								},
+								{
+									"name": "RetencionIVA",
+									"type": "Double"
+								},
+								{
+									"name": "RetencionFuente",
+									"type": "Double"
+								},
+								{
+									"name": "Comision",
+									"type": "Double"
+								},
+								{
+									"name": "Otro",
+									"type": "Double"
+								},
+								{
+									"name": "Otro1",
+									"type": "Double"
+								},
+								{
+									"name": "Otro2",
+									"type": "Double"
+								},
+								{
+									"name": "ValorNeto",
+									"type": "Double"
+								},
+								{
+									"name": "ValorR",
+									"type": "String"
+								},
+								{
+									"name": "NombreArchivo",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								},
+								{
+									"name": "Empresa",
+									"type": "String"
+								},
+								{
+									"name": "FechaPago",
+									"type": "DateTime"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_archivo].[ConsolidadoAlia]"
+						}
+					}
+				]
+			},
+			{
+				"name": "ConsolidadoAmerican",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dsa_ecu_archivo].[ConsolidadoAmerican]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_archivo].[ConsolidadoAmerican]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT FechaCarga,FechaPago,Recap,Voucher,ValorNeto,TipoCredito,Cuota,FechaVoucher,STProceso,Codigo,NombreEstablecimiento,Marca,Tarjeta,Empresa,Consumo,Comision,IRF,IVA,RetencionIva,CodigoMatriz,CompRetencion,NombreArchivo,CodigoCentroCosto,CentroCosto,Cadena FROM dsa_ecu_archivo.ConsolidadoAmerican"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": false,
+						"writeBatchSize": 10000
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"FechaCarga": "FechaCarga",
+							"FechaPago": "FechaPago",
+							"Recap": "Recap",
+							"Voucher": "Voucher",
+							"ValorNeto": "ValorNeto",
+							"TipoCredito": "TipoCredito",
+							"Cuota": "Cuota",
+							"FechaVoucher": "FechaVoucher",
+							"STProceso": "STProceso",
+							"Codigo": "Codigo",
+							"NombreEstablecimiento": "NombreEstablecimiento",
+							"Marca": "Marca",
+							"Tarjeta": "Tarjeta",
+							"Empresa": "Empresa",
+							"Consumo": "Consumo",
+							"Comision": "Comision",
+							"IRF": "IRF",
+							"IVA": "IVA",
+							"RetencionIva": "RetencionIva",
+							"CodigoMatriz": "CodigoMatriz",
+							"CompRetencion": "CompRetencion",
+							"NombreArchivo": "NombreArchivo",
+							"CodigoCentroCosto": "CodigoCentroCosto",
+							"CentroCosto": "CentroCosto",
+							"Cadena": "Cadena"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "FechaPago",
+									"type": "String"
+								},
+								{
+									"name": "Recap",
+									"type": "Int64"
+								},
+								{
+									"name": "Voucher",
+									"type": "Int32"
+								},
+								{
+									"name": "ValorNeto",
+									"type": "Double"
+								},
+								{
+									"name": "TipoCredito",
+									"type": "Double"
+								},
+								{
+									"name": "Cuota",
+									"type": "Double"
+								},
+								{
+									"name": "FechaVoucher",
+									"type": "String"
+								},
+								{
+									"name": "STProceso",
+									"type": "Double"
+								},
+								{
+									"name": "Codigo",
+									"type": "String"
+								},
+								{
+									"name": "NombreEstablecimiento",
+									"type": "String"
+								},
+								{
+									"name": "Marca",
+									"type": "String"
+								},
+								{
+									"name": "Tarjeta",
+									"type": "String"
+								},
+								{
+									"name": "Empresa",
+									"type": "String"
+								},
+								{
+									"name": "Consumo",
+									"type": "Double"
+								},
+								{
+									"name": "Comision",
+									"type": "Double"
+								},
+								{
+									"name": "IRF",
+									"type": "Double"
+								},
+								{
+									"name": "IVA",
+									"type": "Double"
+								},
+								{
+									"name": "RetencionIva",
+									"type": "Double"
+								},
+								{
+									"name": "CodigoMatriz",
+									"type": "String"
+								},
+								{
+									"name": "CompRetencion",
+									"type": "String"
+								},
+								{
+									"name": "NombreArchivo",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_archivo].[ConsolidadoAmerican]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "FechaPago",
+									"type": "String"
+								},
+								{
+									"name": "Recap",
+									"type": "Int64"
+								},
+								{
+									"name": "Voucher",
+									"type": "Int32"
+								},
+								{
+									"name": "ValorNeto",
+									"type": "Double"
+								},
+								{
+									"name": "TipoCredito",
+									"type": "Double"
+								},
+								{
+									"name": "Cuota",
+									"type": "Double"
+								},
+								{
+									"name": "FechaVoucher",
+									"type": "String"
+								},
+								{
+									"name": "STProceso",
+									"type": "Double"
+								},
+								{
+									"name": "Codigo",
+									"type": "String"
+								},
+								{
+									"name": "NombreEstablecimiento",
+									"type": "String"
+								},
+								{
+									"name": "Marca",
+									"type": "String"
+								},
+								{
+									"name": "Tarjeta",
+									"type": "String"
+								},
+								{
+									"name": "Empresa",
+									"type": "String"
+								},
+								{
+									"name": "Consumo",
+									"type": "Double"
+								},
+								{
+									"name": "Comision",
+									"type": "Double"
+								},
+								{
+									"name": "IRF",
+									"type": "Double"
+								},
+								{
+									"name": "IVA",
+									"type": "Double"
+								},
+								{
+									"name": "RetencionIva",
+									"type": "Double"
+								},
+								{
+									"name": "CodigoMatriz",
+									"type": "String"
+								},
+								{
+									"name": "CompRetencion",
+									"type": "String"
+								},
+								{
+									"name": "NombreArchivo",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_archivo].[ConsolidadoAmerican]"
+						}
+					}
+				]
+			},
+			{
+				"name": "ConsolidadoBankard",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dsa_ecu_archivo].[ConsolidadoBankard]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_archivo].[ConsolidadoBankard]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT FechaCarga,FechaPago,Fecha,Codigo,Local,Lote,Voucher,Consumo,Comision,IVA,Retencion,Neto,1,2,BancoBolivariano,Estado,NombreArchivo,CodigoCentroCosto,CentroCosto,Cadena,Empresa FROM dsa_ecu_archivo.ConsolidadoBankard"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": false,
+						"writeBatchSize": 10000
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"1": "1",
+							"2": "2",
+							"FechaCarga": "FechaCarga",
+							"FechaPago": "FechaPago",
+							"Fecha": "Fecha",
+							"Codigo": "Codigo",
+							"Local": "Local",
+							"Lote": "Lote",
+							"Voucher": "Voucher",
+							"Consumo": "Consumo",
+							"Comision": "Comision",
+							"IVA": "IVA",
+							"Retencion": "Retencion",
+							"Neto": "Neto",
+							"BancoBolivariano": "BancoBolivariano",
+							"Estado": "Estado",
+							"NombreArchivo": "NombreArchivo",
+							"CodigoCentroCosto": "CodigoCentroCosto",
+							"CentroCosto": "CentroCosto",
+							"Cadena": "Cadena",
+							"Empresa": "Empresa"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "FechaPago",
+									"type": "DateTime"
+								},
+								{
+									"name": "Fecha",
+									"type": "DateTime"
+								},
+								{
+									"name": "Codigo",
+									"type": "String"
+								},
+								{
+									"name": "Local",
+									"type": "String"
+								},
+								{
+									"name": "Lote",
+									"type": "String"
+								},
+								{
+									"name": "Voucher",
+									"type": "Int32"
+								},
+								{
+									"name": "Consumo",
+									"type": "Double"
+								},
+								{
+									"name": "Comision",
+									"type": "Double"
+								},
+								{
+									"name": "IVA",
+									"type": "Double"
+								},
+								{
+									"name": "Retencion",
+									"type": "Double"
+								},
+								{
+									"name": "Neto",
+									"type": "Double"
+								},
+								{
+									"name": "1",
+									"type": "Double"
+								},
+								{
+									"name": "2",
+									"type": "Double"
+								},
+								{
+									"name": "BancoBolivariano",
+									"type": "String"
+								},
+								{
+									"name": "Estado",
+									"type": "String"
+								},
+								{
+									"name": "NombreArchivo",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								},
+								{
+									"name": "Empresa",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_archivo].[ConsolidadoBankard]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "FechaPago",
+									"type": "DateTime"
+								},
+								{
+									"name": "Fecha",
+									"type": "DateTime"
+								},
+								{
+									"name": "Codigo",
+									"type": "String"
+								},
+								{
+									"name": "Local",
+									"type": "String"
+								},
+								{
+									"name": "Lote",
+									"type": "String"
+								},
+								{
+									"name": "Voucher",
+									"type": "Int32"
+								},
+								{
+									"name": "Consumo",
+									"type": "Double"
+								},
+								{
+									"name": "Comision",
+									"type": "Double"
+								},
+								{
+									"name": "IVA",
+									"type": "Double"
+								},
+								{
+									"name": "Retencion",
+									"type": "Double"
+								},
+								{
+									"name": "Neto",
+									"type": "Double"
+								},
+								{
+									"name": "1",
+									"type": "Double"
+								},
+								{
+									"name": "2",
+									"type": "Double"
+								},
+								{
+									"name": "BancoBolivariano",
+									"type": "String"
+								},
+								{
+									"name": "Estado",
+									"type": "String"
+								},
+								{
+									"name": "NombreArchivo",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								},
+								{
+									"name": "Empresa",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_archivo].[ConsolidadoBankard]"
+						}
+					}
+				]
+			},
+			{
+				"name": "ConsolidadoDiners",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dsa_ecu_archivo].[ConsolidadoDiners]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_archivo].[ConsolidadoDiners]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT FechaCarga,NumeroFila,Estado,Voucher,EUPHXT,FechaPago,Codigo,EUN8NU,EUN9NU,Consumo,EUEJNR,EUAGN1,EUT8VL,EUT9VL,EUUAVL,EURETE,EUOANU,EUUBVL,EUUCVL,EUCAU1,EUTVAL,EUNREC,EUNLOT,EUFKXT,EUJ6NB,EUQLNU,EUQMNU,EUWYXT,EUWZXT,EUW5XT,EUTHXT,EUNOVR,EUNPVR,EUAA20,NombreArchivo,CodigoCentroCosto,CentroCosto,Cadena,Empresa FROM dsa_ecu_archivo.ConsolidadoDiners"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": false,
+						"writeBatchSize": 10000
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"FechaCarga": "FechaCarga",
+							"NumeroFila": "NumeroFila",
+							"Estado": "Estado",
+							"Voucher": "Voucher",
+							"EUPHXT": "EUPHXT",
+							"FechaPago": "FechaPago",
+							"Codigo": "Codigo",
+							"EUN8NU": "EUN8NU",
+							"EUN9NU": "EUN9NU",
+							"Consumo": "Consumo",
+							"EUEJNR": "EUEJNR",
+							"EUAGN1": "EUAGN1",
+							"EUT8VL": "EUT8VL",
+							"EUT9VL": "EUT9VL",
+							"EUUAVL": "EUUAVL",
+							"EURETE": "EURETE",
+							"EUOANU": "EUOANU",
+							"EUUBVL": "EUUBVL",
+							"EUUCVL": "EUUCVL",
+							"EUCAU1": "EUCAU1",
+							"EUTVAL": "EUTVAL",
+							"EUNREC": "EUNREC",
+							"EUNLOT": "EUNLOT",
+							"EUFKXT": "EUFKXT",
+							"EUJ6NB": "EUJ6NB",
+							"EUQLNU": "EUQLNU",
+							"EUQMNU": "EUQMNU",
+							"EUWYXT": "EUWYXT",
+							"EUWZXT": "EUWZXT",
+							"EUW5XT": "EUW5XT",
+							"EUTHXT": "EUTHXT",
+							"EUNOVR": "EUNOVR",
+							"EUNPVR": "EUNPVR",
+							"EUAA20": "EUAA20",
+							"NombreArchivo": "NombreArchivo",
+							"CodigoCentroCosto": "CodigoCentroCosto",
+							"CentroCosto": "CentroCosto",
+							"Cadena": "Cadena",
+							"Empresa": "Empresa"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "NumeroFila",
+									"type": "Int32"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "Voucher",
+									"type": "Int32"
+								},
+								{
+									"name": "EUPHXT",
+									"type": "String"
+								},
+								{
+									"name": "FechaPago",
+									"type": "String"
+								},
+								{
+									"name": "Codigo",
+									"type": "String"
+								},
+								{
+									"name": "EUN8NU",
+									"type": "String"
+								},
+								{
+									"name": "EUN9NU",
+									"type": "String"
+								},
+								{
+									"name": "Consumo",
+									"type": "Double"
+								},
+								{
+									"name": "EUEJNR",
+									"type": "String"
+								},
+								{
+									"name": "EUAGN1",
+									"type": "Double"
+								},
+								{
+									"name": "EUT8VL",
+									"type": "Double"
+								},
+								{
+									"name": "EUT9VL",
+									"type": "Double"
+								},
+								{
+									"name": "EUUAVL",
+									"type": "Double"
+								},
+								{
+									"name": "EURETE",
+									"type": "Double"
+								},
+								{
+									"name": "EUOANU",
+									"type": "Double"
+								},
+								{
+									"name": "EUUBVL",
+									"type": "Double"
+								},
+								{
+									"name": "EUUCVL",
+									"type": "Double"
+								},
+								{
+									"name": "EUCAU1",
+									"type": "Double"
+								},
+								{
+									"name": "EUTVAL",
+									"type": "Double"
+								},
+								{
+									"name": "EUNREC",
+									"type": "String"
+								},
+								{
+									"name": "EUNLOT",
+									"type": "String"
+								},
+								{
+									"name": "EUFKXT",
+									"type": "String"
+								},
+								{
+									"name": "EUJ6NB",
+									"type": "String"
+								},
+								{
+									"name": "EUQLNU",
+									"type": "String"
+								},
+								{
+									"name": "EUQMNU",
+									"type": "String"
+								},
+								{
+									"name": "EUWYXT",
+									"type": "String"
+								},
+								{
+									"name": "EUWZXT",
+									"type": "String"
+								},
+								{
+									"name": "EUW5XT",
+									"type": "String"
+								},
+								{
+									"name": "EUTHXT",
+									"type": "String"
+								},
+								{
+									"name": "EUNOVR",
+									"type": "Double"
+								},
+								{
+									"name": "EUNPVR",
+									"type": "Double"
+								},
+								{
+									"name": "EUAA20",
+									"type": "String"
+								},
+								{
+									"name": "NombreArchivo",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								},
+								{
+									"name": "Empresa",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_archivo].[ConsolidadoDiners]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "NumeroFila",
+									"type": "Int32"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "Voucher",
+									"type": "Int32"
+								},
+								{
+									"name": "EUPHXT",
+									"type": "String"
+								},
+								{
+									"name": "FechaPago",
+									"type": "String"
+								},
+								{
+									"name": "Codigo",
+									"type": "String"
+								},
+								{
+									"name": "EUN8NU",
+									"type": "String"
+								},
+								{
+									"name": "EUN9NU",
+									"type": "String"
+								},
+								{
+									"name": "Consumo",
+									"type": "Double"
+								},
+								{
+									"name": "EUEJNR",
+									"type": "String"
+								},
+								{
+									"name": "EUAGN1",
+									"type": "Double"
+								},
+								{
+									"name": "EUT8VL",
+									"type": "Double"
+								},
+								{
+									"name": "EUT9VL",
+									"type": "Double"
+								},
+								{
+									"name": "EUUAVL",
+									"type": "Double"
+								},
+								{
+									"name": "EURETE",
+									"type": "Double"
+								},
+								{
+									"name": "EUOANU",
+									"type": "Double"
+								},
+								{
+									"name": "EUUBVL",
+									"type": "Double"
+								},
+								{
+									"name": "EUUCVL",
+									"type": "Double"
+								},
+								{
+									"name": "EUCAU1",
+									"type": "Double"
+								},
+								{
+									"name": "EUTVAL",
+									"type": "Double"
+								},
+								{
+									"name": "EUNREC",
+									"type": "String"
+								},
+								{
+									"name": "EUNLOT",
+									"type": "String"
+								},
+								{
+									"name": "EUFKXT",
+									"type": "String"
+								},
+								{
+									"name": "EUJ6NB",
+									"type": "String"
+								},
+								{
+									"name": "EUQLNU",
+									"type": "String"
+								},
+								{
+									"name": "EUQMNU",
+									"type": "String"
+								},
+								{
+									"name": "EUWYXT",
+									"type": "String"
+								},
+								{
+									"name": "EUWZXT",
+									"type": "String"
+								},
+								{
+									"name": "EUW5XT",
+									"type": "String"
+								},
+								{
+									"name": "EUTHXT",
+									"type": "String"
+								},
+								{
+									"name": "EUNOVR",
+									"type": "Double"
+								},
+								{
+									"name": "EUNPVR",
+									"type": "Double"
+								},
+								{
+									"name": "EUAA20",
+									"type": "String"
+								},
+								{
+									"name": "NombreArchivo",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								},
+								{
+									"name": "Empresa",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_archivo].[ConsolidadoDiners]"
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"Servidor": {
+				"type": "string",
+				"defaultValue": "SAZSHAREPBDD\\BD_NEGOCIO"
+			},
+			"BaseDatos": {
+				"type": "string",
+				"defaultValue": "dw_dwh_suscripcion"
+			}
+		},
+		"folder": {
+			"name": "dsa_Intranet"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

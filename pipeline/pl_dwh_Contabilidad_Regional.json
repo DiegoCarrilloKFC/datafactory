@@ -1,0 +1,435 @@
+{
+	"name": "pl_dwh_Contabilidad_Regional",
+	"properties": {
+		"activities": [
+			{
+				"name": "arg_FacContabilidadRegional",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dwh_arg_conta].[usp_CargaFacContabilidadRegional]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": "ARG",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT\n\tFechaCarga=DATEADD(HH,-5,GETDATE()),\n\tFechaDesde=convert(smalldatetime,DATEADD(s,0,DATEADD(mm, DATEDIFF(m,0,DATEADD(HH,-5,GETDATE()))-1,0)),112),\n\tFechaHasta=convert(smalldatetime,EOMONTH(DATEADD(HH,-5,GETDATE()),-1),112)"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "col_FacContabilidadRegional",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dwh_col_conta].[usp_CargaFacContabilidadRegional]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": "COL",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "chl_FacContabilidadRegional",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dwh_chl_conta].[usp_CargaFacContabilidadRegional]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": "CHL",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ecu_FacContabilidadRegional",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dwh_ecu_conta].[usp_CargaFacContabilidadRegional]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": "ECU",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "usa_FacContabilidadRegional",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dwh_usa_conta].[usp_CargaFacContabilidadRegional]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": "USA",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "conta_FacContabilidadRegional",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "arg_FacContabilidadRegional",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "col_FacContabilidadRegional",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "chl_FacContabilidadRegional",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ecu_FacContabilidadRegional",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "usa_FacContabilidadRegional",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dwh_conta].[usp_CargaFacContabilidadRegional]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": "ECU",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"IDCadenaSistemaGerente": {
+				"type": "string",
+				"defaultValue": "0"
+			},
+			"TipoCarga": {
+				"type": "string",
+				"defaultValue": "AUTOMATICA"
+			}
+		},
+		"folder": {
+			"name": "dwh_CAREcu"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

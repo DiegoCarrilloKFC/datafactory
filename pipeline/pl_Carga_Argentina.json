@@ -1,0 +1,131 @@
+{
+	"name": "pl_Carga_Argentina",
+	"properties": {
+		"activities": [
+			{
+				"name": "Carga DSA SG Arg",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Inicializar Etapas",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_SistemaGerente_Arg",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Carga Dimension Arg",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga DSA SG Arg",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Dimensiones",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ARG",
+						"TipoCarga": "AUTOMATICA"
+					}
+				}
+			},
+			{
+				"name": "Carga Operacion Arg",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimension Arg",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_Arg",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ARG",
+						"TipoCarga": "AUTOMATICA"
+					}
+				}
+			},
+			{
+				"name": "Carga CAR Arg",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Operacion Arg",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Auditoria_Arg",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ARG",
+						"TipoCarga": "AUTOMATICA"
+					}
+				}
+			},
+			{
+				"name": "Inicializar Etapas",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "EXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ARG'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ARG'\n\nSELECT 'ok' AS Resultado"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Carga_dwh_Triggers"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

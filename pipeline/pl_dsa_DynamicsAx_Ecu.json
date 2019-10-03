@@ -1,0 +1,335 @@
+{
+	"name": "pl_dsa_DynamicsAx_Ecu",
+	"properties": {
+		"activities": [
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
+						"storedProcedureParameters": {
+							"Dias": {
+								"type": "Int32",
+								"value": null
+							},
+							"FechaDesde": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaFin": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaHasta": {
+								"type": "DateTime",
+								"value": null
+							}
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Carga Transaccional",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Catalogos",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_DynamicsAx_Ecu_Transaccional",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Servidor": {
+							"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+							"type": "Expression"
+						},
+						"FechaDesde": {
+							"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+							"type": "Expression"
+						},
+						"FechaHasta": {
+							"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Carga Catalogos",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Obtener Servidores",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_DynamicsAx_Ecu_Catalogo",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Servidor": {
+							"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Obtener Servidores",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_adm].[usp_ObtenerLinkedBase]",
+						"storedProcedureParameters": {
+							"CodigoETL": {
+								"type": "String",
+								"value": "BD-AX-ECU"
+							},
+							"FechaDesde": {
+								"type": "DateTime",
+								"value": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+									"type": "Expression"
+								}
+							},
+							"FechaHasta": {
+								"type": "DateTime",
+								"value": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Actualiza Estadistica 1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Carga Transaccional",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_adm].[ActualizarEstadisticas]",
+					"storedProcedureParameters": {
+						"Esquema": {
+							"value": "dsa_ecu_ax",
+							"type": "String"
+						},
+						"Paso": {
+							"value": "1",
+							"type": "Int16"
+						},
+						"Proceso": {
+							"value": "General",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Actualiza Estadistica 2",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Carga Transaccional",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_adm].[ActualizarEstadisticas]",
+					"storedProcedureParameters": {
+						"Esquema": {
+							"value": "dsa_ecu_ax",
+							"type": "String"
+						},
+						"Paso": {
+							"value": "2",
+							"type": "Int16"
+						},
+						"Proceso": {
+							"value": "General",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Actualiza Estadistica 3",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Carga Transaccional",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_adm].[ActualizarEstadisticas]",
+					"storedProcedureParameters": {
+						"Esquema": {
+							"value": "dsa_ecu_ax",
+							"type": "String"
+						},
+						"Paso": {
+							"value": "3",
+							"type": "Int16"
+						},
+						"Proceso": {
+							"value": "General",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Actualiza Estadistica 4",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Carga Transaccional",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_adm].[ActualizarEstadisticas]",
+					"storedProcedureParameters": {
+						"Esquema": {
+							"value": "dsa_ecu_ax",
+							"type": "String"
+						},
+						"Paso": {
+							"value": "4",
+							"type": "Int16"
+						},
+						"Proceso": {
+							"value": "General",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "dsa_DynamicsAxEcu"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

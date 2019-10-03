@@ -1,0 +1,135 @@
+{
+	"name": "pl_dwh_Planta_Ecu_Compras",
+	"properties": {
+		"description": "Carga Información Planta Ecuador",
+		"activities": [
+			{
+				"name": "plt_FacPedidoCompra",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "FechaCarga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dwh_ecu_plt].[usp_CargaFacPedidoCompra]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@formatDateTime(activity('FechaCarga').output.firstRow.FechaDesde, 'yyyy-MM-dd')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@formatDateTime(activity('FechaCarga').output.firstRow.FechaHasta, 'yyyy-MM-dd')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "FechaCarga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
+						"storedProcedureParameters": {
+							"Dias": {
+								"type": "Int32",
+								"value": "3"
+							},
+							"FechaDesde": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaFin": {
+								"type": "DateTime",
+								"value": {
+									"value": "@adddays(addhours(utcnow(),-5),1)",
+									"type": "Expression"
+								}
+							},
+							"FechaHasta": {
+								"type": "DateTime",
+								"value": null
+							}
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"IDCadenaSistemaGerente": {
+				"type": "String",
+				"defaultValue": "0"
+			},
+			"Pais": {
+				"type": "String",
+				"defaultValue": "ECU"
+			},
+			"TipoCarga": {
+				"type": "String",
+				"defaultValue": "MANUAL"
+			}
+		},
+		"folder": {
+			"name": "dwh_PlantaEcu"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

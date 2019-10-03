@@ -1,0 +1,780 @@
+{
+	"name": "pl_dsa_ListaExterna_Vito",
+	"properties": {
+		"activities": [
+			{
+				"name": "Freidora",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[Freidora]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_int_lst].[Freidora]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDFreidora,IDTipo,Modelo,Descripcion,CapacidadLitros,UsuarioInsert,FechaRegistro FROM app.Freidora"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": true,
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[Freidora]",
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"FechaCarga": "FechaCarga",
+							"IDFreidora": "IDFreidora",
+							"IDTipo": "IDTipo",
+							"Modelo": "Modelo",
+							"Descripcion": "Descripcion",
+							"CapacidadLitros": "CapacidadLitros",
+							"UsuarioInsert": "UsuarioInsert",
+							"FechaRegistro": "FechaRegistro"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDFreidora",
+									"type": "String"
+								},
+								{
+									"name": "IDTipo",
+									"type": "String"
+								},
+								{
+									"name": "Modelo",
+									"type": "String"
+								},
+								{
+									"name": "Descripcion",
+									"type": "String"
+								},
+								{
+									"name": "CapacidadLitros",
+									"type": "Int32"
+								},
+								{
+									"name": "UsuarioInsert",
+									"type": "String"
+								},
+								{
+									"name": "FechaRegistro",
+									"type": "DateTime"
+								}
+							],
+							"cw_tableName": "[dbo].[Freidora]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDFreidora",
+									"type": "String"
+								},
+								{
+									"name": "IDTipo",
+									"type": "String"
+								},
+								{
+									"name": "Modelo",
+									"type": "String"
+								},
+								{
+									"name": "Descripcion",
+									"type": "String"
+								},
+								{
+									"name": "CapacidadLitros",
+									"type": "Int32"
+								},
+								{
+									"name": "UsuarioInsert",
+									"type": "String"
+								},
+								{
+									"name": "FechaRegistro",
+									"type": "DateTime"
+								}
+							],
+							"cw_tableName": "[dsa_int_lst].[Freidora]"
+						}
+					}
+				]
+			},
+			{
+				"name": "FreidoraLocal",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[FreidoraLocal]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_int_lst].[FreidoraLocal]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDFreidoraLocal,IDFreidora,UsuarioLocal,NumeroFreidora,Estado,FechaCreado FROM app.FreidoraLocal"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": true,
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[FreidoraLocal]",
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"FechaCarga": "FechaCarga",
+							"IDFreidoraLocal": "IDFreidoraLocal",
+							"IDFreidora": "IDFreidora",
+							"UsuarioLocal": "UsuarioLocal",
+							"NumeroFreidora": "NumeroFreidora",
+							"Estado": "Estado",
+							"FechaCreado": "FechaCreado"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDFreidoraLocal",
+									"type": "String"
+								},
+								{
+									"name": "IDFreidora",
+									"type": "String"
+								},
+								{
+									"name": "UsuarioLocal",
+									"type": "String"
+								},
+								{
+									"name": "NumeroFreidora",
+									"type": "Int32"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "FechaCreado",
+									"type": "DateTime"
+								}
+							],
+							"cw_tableName": "[dbo].[FreidoraLocal]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDFreidoraLocal",
+									"type": "String"
+								},
+								{
+									"name": "IDFreidora",
+									"type": "String"
+								},
+								{
+									"name": "UsuarioLocal",
+									"type": "String"
+								},
+								{
+									"name": "NumeroFreidora",
+									"type": "Int32"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "FechaCreado",
+									"type": "DateTime"
+								}
+							],
+							"cw_tableName": "[dsa_int_lst].[FreidoraLocal]"
+						}
+					}
+				]
+			},
+			{
+				"name": "TipoFreidora",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[TipoFreidora]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_int_lst].[TipoFreidora]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDTipoFreidora,Tipo FROM app.TipoFreidora"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": true,
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[TipoFreidora]",
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"FechaCarga": "FechaCarga",
+							"IDTipoFreidora": "IDTipoFreidora",
+							"Tipo": "Tipo"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDTipoFreidora",
+									"type": "String"
+								},
+								{
+									"name": "Tipo",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dbo].[TipoFreidora]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDTipoFreidora",
+									"type": "String"
+								},
+								{
+									"name": "Tipo",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_int_lst].[TipoFreidora]"
+						}
+					}
+				]
+			},
+			{
+				"name": "UsuarioLocal",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[UsuarioLocal]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_int_lst].[UsuarioLocal]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Login,IDCentroCosto,CodigoCentroCosto,Pais FROM app.UsuarioLocal"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": true,
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[UsuarioLocal]",
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"FechaCarga": "FechaCarga",
+							"Login": "Login",
+							"IDCentroCosto": "IDCentroCosto",
+							"CodigoCentroCosto": "CodigoCentroCosto",
+							"Pais": "Pais"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Login",
+									"type": "String"
+								},
+								{
+									"name": "IDCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Pais",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dbo].[UsuarioLocal]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Login",
+									"type": "String"
+								},
+								{
+									"name": "IDCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "CodigoCentroCosto",
+									"type": "String"
+								},
+								{
+									"name": "Pais",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_int_lst].[UsuarioLocal]"
+						}
+					}
+				]
+			},
+			{
+				"name": "ReposicionAceite",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[ReposicionAceite]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_int_lst].[ReposicionAceite]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT GETDATE() AS FechaCarga,IDReposicionAceite,IDFreidoraLocal,FechaRegistro,ReposicionAceite,NivelacionAceiteLtrs,PorcentajeVitoAm,UsuarioLocal,Estado,EstadoAlerta FROM app.ReposicionAceite WHERE FechaRegistro >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND FechaRegistro <= DATEADD(DAY,2,'@{activity('Fecha Carga').output.firstRow.FechaHasta}')",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": true,
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[ReposicionAceite]",
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"FechaCarga": "FechaCarga",
+							"IDReposicionAceite": "IDReposicionAceite",
+							"IDFreidoraLocal": "IDFreidoraLocal",
+							"FechaRegistro": "FechaRegistro",
+							"ReposicionAceite": "ReposicionAceite",
+							"NivelacionAceiteLtrs": "NivelacionAceiteLtrs",
+							"PorcentajeVitoAm": "PorcentajeVitoAm",
+							"UsuarioLocal": "UsuarioLocal",
+							"Estado": "Estado",
+							"EstadoAlerta": "EstadoAlerta"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDReposicionAceite",
+									"type": "String"
+								},
+								{
+									"name": "IDFreidoraLocal",
+									"type": "String"
+								},
+								{
+									"name": "FechaRegistro",
+									"type": "DateTime"
+								},
+								{
+									"name": "ReposicionAceite",
+									"type": "Decimal"
+								},
+								{
+									"name": "NivelacionAceiteLtrs",
+									"type": "Decimal"
+								},
+								{
+									"name": "PorcentajeVitoAm",
+									"type": "Decimal"
+								},
+								{
+									"name": "UsuarioLocal",
+									"type": "String"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "EstadoAlerta",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dbo].[ReposicionAceite]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDReposicionAceite",
+									"type": "String"
+								},
+								{
+									"name": "IDFreidoraLocal",
+									"type": "String"
+								},
+								{
+									"name": "FechaRegistro",
+									"type": "DateTime"
+								},
+								{
+									"name": "ReposicionAceite",
+									"type": "Decimal"
+								},
+								{
+									"name": "NivelacionAceiteLtrs",
+									"type": "Decimal"
+								},
+								{
+									"name": "PorcentajeVitoAm",
+									"type": "Decimal"
+								},
+								{
+									"name": "UsuarioLocal",
+									"type": "String"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "EstadoAlerta",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dsa_int_lst].[ReposicionAceite]"
+						}
+					}
+				]
+			},
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
+						"storedProcedureParameters": {
+							"Dias": {
+								"type": "Int32",
+								"value": null
+							},
+							"FechaDesde": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaFin": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaHasta": {
+								"type": "DateTime",
+								"value": null
+							}
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"Servidor": {
+				"type": "string",
+				"defaultValue": "SAZSHAREPBDD\\BD_NEGOCIO"
+			},
+			"BaseDatos": {
+				"type": "string",
+				"defaultValue": "SharePoint_ListaExterna"
+			}
+		},
+		"folder": {
+			"name": "dsa_Intranet"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

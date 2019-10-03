@@ -1,0 +1,221 @@
+{
+	"name": "pl_dsa_ListaExterna_Contabilidad",
+	"properties": {
+		"activities": [
+			{
+				"name": "CodigoTarjeta",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[CodigoTarjeta]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_int_lst].[CodigoTarjeta]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT FechaCarga,IDCodigoTarjeta,CCC,MID,Amex,Diners,Bankard,CuotaFacil,Local,Beneficiario,Cadena,Provincia,Estado FROM dbo.CodigoTarjeta"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": true,
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[CodigoTarjeta]",
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"FechaCarga": "FechaCarga",
+							"IDCodigoTarjeta": "IDCodigoTarjeta",
+							"CCC": "CCC",
+							"MID": "MID",
+							"Amex": "Amex",
+							"Diners": "Diners",
+							"Bankard": "Bankard",
+							"CuotaFacil": "CuotaFacil",
+							"Local": "Local",
+							"Beneficiario": "Beneficiario",
+							"Cadena": "Cadena",
+							"Provincia": "Provincia",
+							"Estado": "Estado"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_Sharepoint",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDCodigoTarjeta",
+									"type": "Int32"
+								},
+								{
+									"name": "CCC",
+									"type": "String"
+								},
+								{
+									"name": "MID",
+									"type": "String"
+								},
+								{
+									"name": "Amex",
+									"type": "String"
+								},
+								{
+									"name": "Diners",
+									"type": "String"
+								},
+								{
+									"name": "Bankard",
+									"type": "String"
+								},
+								{
+									"name": "CuotaFacil",
+									"type": "String"
+								},
+								{
+									"name": "Local",
+									"type": "String"
+								},
+								{
+									"name": "Beneficiario",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								},
+								{
+									"name": "Provincia",
+									"type": "String"
+								},
+								{
+									"name": "Estado",
+									"type": "Boolean"
+								}
+							],
+							"cw_tableName": "[dbo].[CodigoTarjeta]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "IDCodigoTarjeta",
+									"type": "Int32"
+								},
+								{
+									"name": "CCC",
+									"type": "String"
+								},
+								{
+									"name": "MID",
+									"type": "String"
+								},
+								{
+									"name": "Amex",
+									"type": "String"
+								},
+								{
+									"name": "Diners",
+									"type": "String"
+								},
+								{
+									"name": "Bankard",
+									"type": "String"
+								},
+								{
+									"name": "CuotaFacil",
+									"type": "String"
+								},
+								{
+									"name": "Local",
+									"type": "String"
+								},
+								{
+									"name": "Beneficiario",
+									"type": "String"
+								},
+								{
+									"name": "Cadena",
+									"type": "String"
+								},
+								{
+									"name": "Provincia",
+									"type": "String"
+								},
+								{
+									"name": "Estado",
+									"type": "Boolean"
+								}
+							],
+							"cw_tableName": "[dsa_int_lst].[CodigoTarjeta]"
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"Servidor": {
+				"type": "string",
+				"defaultValue": "SAZSHAREPBDD\\BD_NEGOCIO"
+			},
+			"BaseDatos": {
+				"type": "string",
+				"defaultValue": "SharePoint_ListaExterna"
+			}
+		},
+		"folder": {
+			"name": "dsa_Intranet"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
