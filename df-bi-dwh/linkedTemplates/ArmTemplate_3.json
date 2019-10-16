@@ -13,2703 +13,6 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_DynamicsAx_Ecu_Transaccional_Compras')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "INVENTDIM",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[INVENTDIM]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_ax].[INVENTDIM]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlSource",
-								"sqlReaderQuery": "select GETDATE() as FechaCarga,INVENTDIMID,INVENTBATCHID,WMSLOCATIONID,INVENTSERIALID,INVENTLOCATIONID,CONFIGID,INVENTSIZEID,INVENTCOLORID,INVENTSITEID,DATAAREAID,RECVERSION,RECID from [dbo].[INVENTDIM] "
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"allowPolyBase": true,
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_ax].[INVENTDIM]",
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DynamicsAxEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "INVENTDIMID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTBATCHID",
-											"type": "String"
-										},
-										{
-											"name": "WMSLOCATIONID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTSERIALID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTLOCATIONID",
-											"type": "String"
-										},
-										{
-											"name": "CONFIGID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTSIZEID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTCOLORID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTSITEID",
-											"type": "String"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										}
-									],
-									"cw_tableName": "[[dbo].[INVENTDIM]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "INVENTDIMID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTBATCHID",
-											"type": "String"
-										},
-										{
-											"name": "WMSLOCATIONID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTSERIALID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTLOCATIONID",
-											"type": "String"
-										},
-										{
-											"name": "CONFIGID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTSIZEID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTCOLORID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTSITEID",
-											"type": "String"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_ax].[INVENTDIM]"
-								}
-							}
-						]
-					},
-					{
-						"name": "KFCLOCATIONSDIMENSIONS",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[KFCLOCATIONSDIMENSIONS]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_ax].[KFCLOCATIONSDIMENSIONS]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlSource",
-								"sqlReaderQuery": "select GETDATE() as FechaCarga,INVENTLOCATIONID,DIMENSION,DIMENSION2_,DIMENSION3_,DIMENSION4_,DATAAREAID,RECVERSION,RECID from [dbo].[KFCLOCATIONSDIMENSIONS] "
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"allowPolyBase": true,
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_ax].[KFCLOCATIONSDIMENSIONS]",
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DynamicsAxEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "INVENTLOCATIONID",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION2_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION3_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION4_",
-											"type": "String"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										}
-									],
-									"cw_tableName": "[[dbo].[KFCLOCATIONSDIMENSIONS]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "INVENTLOCATIONID",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION2_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION3_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION4_",
-											"type": "String"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_ax].[KFCLOCATIONSDIMENSIONS]"
-								}
-							}
-						]
-					},
-					{
-						"name": "PURCHLINE",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[PURCHLINE]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_ax].[PURCHLINE]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlSource",
-								"sqlReaderQuery": {
-									"value": "select GETDATE() as FechaCarga,PURCHID,LINENUM,ITEMID,PURCHSTATUS,SHIPPINGDATEREQUESTED,LEDGERACCOUNT,DELIVERYDATE,NAME,QTYORDERED,PURCHRECEIVEDNOW,REMAINPURCHPHYSICAL,REMAINPURCHFINANCIAL,PRICEUNIT,PURCHPRICE,CURRENCYCODE,LINEAMOUNT,EXTERNALITEMID,PURCHUNIT,DIMENSION,DIMENSION2_,DIMENSION3_,DIMENSION4_,CONFIRMEDDLV,ADDRESSREFRECID,INVENTTRANSID,VENDGROUP,VENDACCOUNT,ADDRESSREFTABLEID,PURCHQTY,PURCHMARKUP,INVENTRECEIVEDNOW,PURCHASETYPE,REMAININVENTPHYSICAL,SHIPPINGDATECONFIRMED,BARCODE,BARCODETYPE,INVENTREFID,INVENTREFTRANSID,ITEMREFTYPE,PROJTRANSID,BLOCKED,COMPLETE,REQPLANIDSCHED,REQPOID,ITEMROUTEID,LINEHEADER,SCRAP,RETURNACTIONID,INTERCOMPANYORIGIN,PROJCATEGORYID,PROJID,INVENTDIMID,ASSETID,ASSETTRANSTYPEPURCH,ASSETBOOKID,PROJLINEPROPERTYID,PROJTAXITEMGROUPID,PROJTAXGROUPID,PROJSALESPRICE,PROJSALESCURRENCYID,INTERCOMPANYINVENTTRANSID,PROJSALESUNITID,DELIVERYTYPE,CUSTOMERREF,CUSTPURCHASEORDERFORMNUM,BLANKETREFTRANSID,REMAININVENTFINANCIAL,ACTIVITYNUMBER,CREATEFIXEDASSET,ASSETGROUP,SUSTRIBCODE,ICECODE,RETIVACONCEPT,RETFTECONCEPT,CREATEDDATETIME,DATAAREAID,RECVERSION,RECID,TAXGROUP,LINEPERCENT,LINEDISC,MULTILNDISC,MULTILNPERCENT,COVREF,TAXITEMGROUP,TRANSACTIONCODE,TAXAUTOGENERATED,UNDERDELIVERYPCT,OVERDELIVERYPCT,ITEMBOMID,TRANSPORT,STATPROCID,PORT,DELIVERYADDRESS,DELIVERYNAME,DELIVERYSTREET,DELIVERYZIPCODE,DELIVERYCITY,DELIVERYCOUNTY,DELIVERYSTATE,DELIVERYCOUNTRYREGIONID,STATTRIANGULARDEAL,RETURNSTATUS,RETURNDISPOSITIONCODEID,ICETAXCODE,RETIVATAXCODE,RETFTETAXCODE,MODIFIEDDATETIME,MODIFIEDBY,CREATEDBY,DLVSTAT from [dbo].[PURCHLINE] where DELIVERYDATE >= '@{pipeline().parameters.FechaDesde}' AND DELIVERYDATE <= '@{pipeline().parameters.FechaHasta}'",
-									"type": "Expression"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"allowPolyBase": true,
-								"writeBatchSize": 10000,
-								"preCopyScript": {
-									"value": "DELETE FROM [dsa_ecu_ax].[PURCHLINE] where DELIVERYDATE >= '@{pipeline().parameters.FechaDesde}' AND DELIVERYDATE <= '@{pipeline().parameters.FechaHasta}'",
-									"type": "Expression"
-								},
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DynamicsAxEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "PURCHID",
-											"type": "String"
-										},
-										{
-											"name": "LINENUM",
-											"type": "Decimal"
-										},
-										{
-											"name": "ITEMID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "SHIPPINGDATEREQUESTED",
-											"type": "DateTime"
-										},
-										{
-											"name": "LEDGERACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "NAME",
-											"type": "String"
-										},
-										{
-											"name": "QTYORDERED",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHRECEIVEDNOW",
-											"type": "Decimal"
-										},
-										{
-											"name": "REMAINPURCHPHYSICAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "REMAINPURCHFINANCIAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "PRICEUNIT",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHPRICE",
-											"type": "Decimal"
-										},
-										{
-											"name": "CURRENCYCODE",
-											"type": "String"
-										},
-										{
-											"name": "LINEAMOUNT",
-											"type": "Decimal"
-										},
-										{
-											"name": "EXTERNALITEMID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHUNIT",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION2_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION3_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION4_",
-											"type": "String"
-										},
-										{
-											"name": "CONFIRMEDDLV",
-											"type": "DateTime"
-										},
-										{
-											"name": "ADDRESSREFRECID",
-											"type": "Int64"
-										},
-										{
-											"name": "INVENTTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "VENDGROUP",
-											"type": "String"
-										},
-										{
-											"name": "VENDACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "ADDRESSREFTABLEID",
-											"type": "Int32"
-										},
-										{
-											"name": "PURCHQTY",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHMARKUP",
-											"type": "Decimal"
-										},
-										{
-											"name": "INVENTRECEIVEDNOW",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHASETYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "REMAININVENTPHYSICAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "SHIPPINGDATECONFIRMED",
-											"type": "DateTime"
-										},
-										{
-											"name": "BARCODE",
-											"type": "String"
-										},
-										{
-											"name": "BARCODETYPE",
-											"type": "String"
-										},
-										{
-											"name": "INVENTREFID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTREFTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "ITEMREFTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "PROJTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "BLOCKED",
-											"type": "Int32"
-										},
-										{
-											"name": "COMPLETE",
-											"type": "Int32"
-										},
-										{
-											"name": "REQPLANIDSCHED",
-											"type": "String"
-										},
-										{
-											"name": "REQPOID",
-											"type": "String"
-										},
-										{
-											"name": "ITEMROUTEID",
-											"type": "String"
-										},
-										{
-											"name": "LINEHEADER",
-											"type": "String"
-										},
-										{
-											"name": "SCRAP",
-											"type": "Int32"
-										},
-										{
-											"name": "RETURNACTIONID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYORIGIN",
-											"type": "Int32"
-										},
-										{
-											"name": "PROJCATEGORYID",
-											"type": "String"
-										},
-										{
-											"name": "PROJID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTDIMID",
-											"type": "String"
-										},
-										{
-											"name": "ASSETID",
-											"type": "String"
-										},
-										{
-											"name": "ASSETTRANSTYPEPURCH",
-											"type": "Int32"
-										},
-										{
-											"name": "ASSETBOOKID",
-											"type": "String"
-										},
-										{
-											"name": "PROJLINEPROPERTYID",
-											"type": "String"
-										},
-										{
-											"name": "PROJTAXITEMGROUPID",
-											"type": "String"
-										},
-										{
-											"name": "PROJTAXGROUPID",
-											"type": "String"
-										},
-										{
-											"name": "PROJSALESPRICE",
-											"type": "Decimal"
-										},
-										{
-											"name": "PROJSALESCURRENCYID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYINVENTTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "PROJSALESUNITID",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "CUSTOMERREF",
-											"type": "String"
-										},
-										{
-											"name": "CUSTPURCHASEORDERFORMNUM",
-											"type": "String"
-										},
-										{
-											"name": "BLANKETREFTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "REMAININVENTFINANCIAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "ACTIVITYNUMBER",
-											"type": "String"
-										},
-										{
-											"name": "CREATEFIXEDASSET",
-											"type": "Int32"
-										},
-										{
-											"name": "ASSETGROUP",
-											"type": "String"
-										},
-										{
-											"name": "SUSTRIBCODE",
-											"type": "String"
-										},
-										{
-											"name": "ICECODE",
-											"type": "String"
-										},
-										{
-											"name": "RETIVACONCEPT",
-											"type": "String"
-										},
-										{
-											"name": "RETFTECONCEPT",
-											"type": "String"
-										},
-										{
-											"name": "CREATEDDATETIME",
-											"type": "DateTime"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										},
-										{
-											"name": "TAXGROUP",
-											"type": "String"
-										},
-										{
-											"name": "LINEPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEDISC",
-											"type": "Decimal"
-										},
-										{
-											"name": "MULTILNDISC",
-											"type": "Decimal"
-										},
-										{
-											"name": "MULTILNPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "COVREF",
-											"type": "Int32"
-										},
-										{
-											"name": "TAXITEMGROUP",
-											"type": "String"
-										},
-										{
-											"name": "TRANSACTIONCODE",
-											"type": "String"
-										},
-										{
-											"name": "TAXAUTOGENERATED",
-											"type": "Int32"
-										},
-										{
-											"name": "UNDERDELIVERYPCT",
-											"type": "Decimal"
-										},
-										{
-											"name": "OVERDELIVERYPCT",
-											"type": "Decimal"
-										},
-										{
-											"name": "ITEMBOMID",
-											"type": "String"
-										},
-										{
-											"name": "TRANSPORT",
-											"type": "String"
-										},
-										{
-											"name": "STATPROCID",
-											"type": "String"
-										},
-										{
-											"name": "PORT",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYADDRESS",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYNAME",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYSTREET",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYZIPCODE",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYCITY",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYCOUNTY",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYSTATE",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYCOUNTRYREGIONID",
-											"type": "String"
-										},
-										{
-											"name": "STATTRIANGULARDEAL",
-											"type": "Int32"
-										},
-										{
-											"name": "RETURNSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "RETURNDISPOSITIONCODEID",
-											"type": "String"
-										},
-										{
-											"name": "ICETAXCODE",
-											"type": "String"
-										},
-										{
-											"name": "RETIVATAXCODE",
-											"type": "String"
-										},
-										{
-											"name": "RETFTETAXCODE",
-											"type": "String"
-										},
-										{
-											"name": "MODIFIEDDATETIME",
-											"type": "DateTime"
-										},
-										{
-											"name": "MODIFIEDBY",
-											"type": "String"
-										},
-										{
-											"name": "CREATEDBY",
-											"type": "String"
-										},
-										{
-											"name": "DLVSTAT",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[PURCHLINE]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "PURCHID",
-											"type": "String"
-										},
-										{
-											"name": "LINENUM",
-											"type": "Decimal"
-										},
-										{
-											"name": "ITEMID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "SHIPPINGDATEREQUESTED",
-											"type": "DateTime"
-										},
-										{
-											"name": "LEDGERACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "NAME",
-											"type": "String"
-										},
-										{
-											"name": "QTYORDERED",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHRECEIVEDNOW",
-											"type": "Decimal"
-										},
-										{
-											"name": "REMAINPURCHPHYSICAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "REMAINPURCHFINANCIAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "PRICEUNIT",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHPRICE",
-											"type": "Decimal"
-										},
-										{
-											"name": "CURRENCYCODE",
-											"type": "String"
-										},
-										{
-											"name": "LINEAMOUNT",
-											"type": "Decimal"
-										},
-										{
-											"name": "EXTERNALITEMID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHUNIT",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION2_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION3_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION4_",
-											"type": "String"
-										},
-										{
-											"name": "CONFIRMEDDLV",
-											"type": "DateTime"
-										},
-										{
-											"name": "ADDRESSREFRECID",
-											"type": "Int64"
-										},
-										{
-											"name": "INVENTTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "VENDGROUP",
-											"type": "String"
-										},
-										{
-											"name": "VENDACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "ADDRESSREFTABLEID",
-											"type": "Int32"
-										},
-										{
-											"name": "PURCHQTY",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHMARKUP",
-											"type": "Decimal"
-										},
-										{
-											"name": "INVENTRECEIVEDNOW",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHASETYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "REMAININVENTPHYSICAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "SHIPPINGDATECONFIRMED",
-											"type": "DateTime"
-										},
-										{
-											"name": "BARCODE",
-											"type": "String"
-										},
-										{
-											"name": "BARCODETYPE",
-											"type": "String"
-										},
-										{
-											"name": "INVENTREFID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTREFTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "ITEMREFTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "PROJTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "BLOCKED",
-											"type": "Int32"
-										},
-										{
-											"name": "COMPLETE",
-											"type": "Int32"
-										},
-										{
-											"name": "REQPLANIDSCHED",
-											"type": "String"
-										},
-										{
-											"name": "REQPOID",
-											"type": "String"
-										},
-										{
-											"name": "ITEMROUTEID",
-											"type": "String"
-										},
-										{
-											"name": "LINEHEADER",
-											"type": "String"
-										},
-										{
-											"name": "SCRAP",
-											"type": "Int32"
-										},
-										{
-											"name": "RETURNACTIONID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYORIGIN",
-											"type": "Int32"
-										},
-										{
-											"name": "PROJCATEGORYID",
-											"type": "String"
-										},
-										{
-											"name": "PROJID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTDIMID",
-											"type": "String"
-										},
-										{
-											"name": "ASSETID",
-											"type": "String"
-										},
-										{
-											"name": "ASSETTRANSTYPEPURCH",
-											"type": "Int32"
-										},
-										{
-											"name": "ASSETBOOKID",
-											"type": "String"
-										},
-										{
-											"name": "PROJLINEPROPERTYID",
-											"type": "String"
-										},
-										{
-											"name": "PROJTAXITEMGROUPID",
-											"type": "String"
-										},
-										{
-											"name": "PROJTAXGROUPID",
-											"type": "String"
-										},
-										{
-											"name": "PROJSALESPRICE",
-											"type": "Decimal"
-										},
-										{
-											"name": "PROJSALESCURRENCYID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYINVENTTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "PROJSALESUNITID",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "CUSTOMERREF",
-											"type": "String"
-										},
-										{
-											"name": "CUSTPURCHASEORDERFORMNUM",
-											"type": "String"
-										},
-										{
-											"name": "BLANKETREFTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "REMAININVENTFINANCIAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "ACTIVITYNUMBER",
-											"type": "String"
-										},
-										{
-											"name": "CREATEFIXEDASSET",
-											"type": "Int32"
-										},
-										{
-											"name": "ASSETGROUP",
-											"type": "String"
-										},
-										{
-											"name": "SUSTRIBCODE",
-											"type": "String"
-										},
-										{
-											"name": "ICECODE",
-											"type": "String"
-										},
-										{
-											"name": "RETIVACONCEPT",
-											"type": "String"
-										},
-										{
-											"name": "RETFTECONCEPT",
-											"type": "String"
-										},
-										{
-											"name": "CREATEDDATETIME",
-											"type": "DateTime"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										},
-										{
-											"name": "TAXGROUP",
-											"type": "String"
-										},
-										{
-											"name": "LINEPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEDISC",
-											"type": "Decimal"
-										},
-										{
-											"name": "MULTILNDISC",
-											"type": "Decimal"
-										},
-										{
-											"name": "MULTILNPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "COVREF",
-											"type": "Int32"
-										},
-										{
-											"name": "TAXITEMGROUP",
-											"type": "String"
-										},
-										{
-											"name": "TRANSACTIONCODE",
-											"type": "String"
-										},
-										{
-											"name": "TAXAUTOGENERATED",
-											"type": "Int32"
-										},
-										{
-											"name": "UNDERDELIVERYPCT",
-											"type": "Decimal"
-										},
-										{
-											"name": "OVERDELIVERYPCT",
-											"type": "Decimal"
-										},
-										{
-											"name": "ITEMBOMID",
-											"type": "String"
-										},
-										{
-											"name": "TRANSPORT",
-											"type": "String"
-										},
-										{
-											"name": "STATPROCID",
-											"type": "String"
-										},
-										{
-											"name": "PORT",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYADDRESS",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYNAME",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYSTREET",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYZIPCODE",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYCITY",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYCOUNTY",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYSTATE",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYCOUNTRYREGIONID",
-											"type": "String"
-										},
-										{
-											"name": "STATTRIANGULARDEAL",
-											"type": "Int32"
-										},
-										{
-											"name": "RETURNSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "RETURNDISPOSITIONCODEID",
-											"type": "String"
-										},
-										{
-											"name": "ICETAXCODE",
-											"type": "String"
-										},
-										{
-											"name": "RETIVATAXCODE",
-											"type": "String"
-										},
-										{
-											"name": "RETFTETAXCODE",
-											"type": "String"
-										},
-										{
-											"name": "MODIFIEDDATETIME",
-											"type": "DateTime"
-										},
-										{
-											"name": "MODIFIEDBY",
-											"type": "String"
-										},
-										{
-											"name": "CREATEDBY",
-											"type": "String"
-										},
-										{
-											"name": "DLVSTAT",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_ax].[PURCHLINE]"
-								}
-							}
-						]
-					},
-					{
-						"name": "PURCHTABLE",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[PURCHTABLE]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_ax].[PURCHTABLE]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlSource",
-								"sqlReaderQuery": {
-									"value": "select GETDATE() as FechaCarga,PURCHID,PURCHNAME,ORDERACCOUNT,INVOICEACCOUNT,FREIGHTZONE,EMAIL,DELIVERYDATE,DELIVERYTYPE,ADDRESSREFRECID,ADDRESSREFTABLEID,INTERCOMPANYORIGINALSALESID,INTERCOMPANYORIGINALCUSTACCO12,CURRENCYCODE,PAYMENT,CASHDISC,PURCHPLACER,INTERCOMPANYDIRECTDELIVERY,VENDGROUP,DIMENSION,DIMENSION2_,DIMENSION3_,DIMENSION4_,INTERCOMPANYCUSTPURCHORDERFO26,DELIVERYADDRESS,DLVTERM,DLVMODE,PURCHSTATUS,PURCHASETYPE,URL,POSTINGPROFILE,DELIVERYZIPCODE,DLVCOUNTY,DLVCOUNTRYREGIONID,DLVSTATE,SETTLEVOUCHER,INTERCOMPANYALLOWINDIRECTCRE46,INTERCOMPANYORIGIN,CASHDISCPERCENT,DELIVERYNAME,INVENTSITEID,ONETIMEVENDOR,DOCUMENTSTATUS,CONTACTPERSONID,INVENTLOCATIONID,ITEMBUYERGROUPID,PROJID,PURCHPOOLID,INCLTAX,NUMBERSEQUENCEGROUP,LANGUAGEID,AUTOSUMMARYMODULETYPE,PAYMMODE,PAYMSPEC,FIXEDDUEDATE,DELIVERYCITY,DELIVERYSTREET,VENDORREF,INTERCOMPANYCOMPANYID,INTERCOMPANYSALESID,INTERCOMPANYORDER,SUSTRIBCODE,MODIFIEDDATETIME,MODIFIEDBY,CREATEDDATETIME,CREATEDBY,DATAAREAID,RECVERSION,RECID,LINEDISC,DISCPERCENT,PRICEGROUPID,MULTILINEDISC,ENDDISC,TAXGROUP,MARKUPGROUP,TRANSACTIONCODE,COVSTATUS,PAYMENTSCHED,RETURNITEMNUM,FREIGHTSLIPTYPE,VATNUM,PORT,TRANSPORT,STATPROCID,RETURNREASONCODEID,RETURNREPLACEMENTCREATED from [dbo].[PURCHTABLE] where DELIVERYDATE >= '@{pipeline().parameters.FechaDesde}' AND DELIVERYDATE <= '@{pipeline().parameters.FechaHasta}'",
-									"type": "Expression"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"allowPolyBase": true,
-								"writeBatchSize": 10000,
-								"preCopyScript": {
-									"value": "DELETE FROM [dsa_ecu_ax].[PURCHTABLE] where DELIVERYDATE >= '@{pipeline().parameters.FechaDesde}' AND DELIVERYDATE <= '@{pipeline().parameters.FechaHasta}'",
-									"type": "Expression"
-								},
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DynamicsAxEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "PURCHID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHNAME",
-											"type": "String"
-										},
-										{
-											"name": "ORDERACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "INVOICEACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "FREIGHTZONE",
-											"type": "String"
-										},
-										{
-											"name": "EMAIL",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "DELIVERYTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "ADDRESSREFRECID",
-											"type": "Int64"
-										},
-										{
-											"name": "ADDRESSREFTABLEID",
-											"type": "Int32"
-										},
-										{
-											"name": "INTERCOMPANYORIGINALSALESID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYORIGINALCUSTACCO12",
-											"type": "String"
-										},
-										{
-											"name": "CURRENCYCODE",
-											"type": "String"
-										},
-										{
-											"name": "PAYMENT",
-											"type": "String"
-										},
-										{
-											"name": "CASHDISC",
-											"type": "String"
-										},
-										{
-											"name": "PURCHPLACER",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYDIRECTDELIVERY",
-											"type": "Int32"
-										},
-										{
-											"name": "VENDGROUP",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION2_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION3_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION4_",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYCUSTPURCHORDERFO26",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYADDRESS",
-											"type": "String"
-										},
-										{
-											"name": "DLVTERM",
-											"type": "String"
-										},
-										{
-											"name": "DLVMODE",
-											"type": "String"
-										},
-										{
-											"name": "PURCHSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "PURCHASETYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "URL",
-											"type": "String"
-										},
-										{
-											"name": "POSTINGPROFILE",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYZIPCODE",
-											"type": "String"
-										},
-										{
-											"name": "DLVCOUNTY",
-											"type": "String"
-										},
-										{
-											"name": "DLVCOUNTRYREGIONID",
-											"type": "String"
-										},
-										{
-											"name": "DLVSTATE",
-											"type": "String"
-										},
-										{
-											"name": "SETTLEVOUCHER",
-											"type": "Int32"
-										},
-										{
-											"name": "INTERCOMPANYALLOWINDIRECTCRE46",
-											"type": "Int32"
-										},
-										{
-											"name": "INTERCOMPANYORIGIN",
-											"type": "Int32"
-										},
-										{
-											"name": "CASHDISCPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "DELIVERYNAME",
-											"type": "String"
-										},
-										{
-											"name": "INVENTSITEID",
-											"type": "String"
-										},
-										{
-											"name": "ONETIMEVENDOR",
-											"type": "Int32"
-										},
-										{
-											"name": "DOCUMENTSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "CONTACTPERSONID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTLOCATIONID",
-											"type": "String"
-										},
-										{
-											"name": "ITEMBUYERGROUPID",
-											"type": "String"
-										},
-										{
-											"name": "PROJID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHPOOLID",
-											"type": "String"
-										},
-										{
-											"name": "INCLTAX",
-											"type": "Int32"
-										},
-										{
-											"name": "NUMBERSEQUENCEGROUP",
-											"type": "String"
-										},
-										{
-											"name": "LANGUAGEID",
-											"type": "String"
-										},
-										{
-											"name": "AUTOSUMMARYMODULETYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "PAYMMODE",
-											"type": "String"
-										},
-										{
-											"name": "PAYMSPEC",
-											"type": "String"
-										},
-										{
-											"name": "FIXEDDUEDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "DELIVERYCITY",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYSTREET",
-											"type": "String"
-										},
-										{
-											"name": "VENDORREF",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYCOMPANYID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYSALESID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYORDER",
-											"type": "Int32"
-										},
-										{
-											"name": "SUSTRIBCODE",
-											"type": "String"
-										},
-										{
-											"name": "MODIFIEDDATETIME",
-											"type": "DateTime"
-										},
-										{
-											"name": "MODIFIEDBY",
-											"type": "String"
-										},
-										{
-											"name": "CREATEDDATETIME",
-											"type": "DateTime"
-										},
-										{
-											"name": "CREATEDBY",
-											"type": "String"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										},
-										{
-											"name": "LINEDISC",
-											"type": "String"
-										},
-										{
-											"name": "DISCPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "PRICEGROUPID",
-											"type": "String"
-										},
-										{
-											"name": "MULTILINEDISC",
-											"type": "String"
-										},
-										{
-											"name": "ENDDISC",
-											"type": "String"
-										},
-										{
-											"name": "TAXGROUP",
-											"type": "String"
-										},
-										{
-											"name": "MARKUPGROUP",
-											"type": "String"
-										},
-										{
-											"name": "TRANSACTIONCODE",
-											"type": "String"
-										},
-										{
-											"name": "COVSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "PAYMENTSCHED",
-											"type": "String"
-										},
-										{
-											"name": "RETURNITEMNUM",
-											"type": "String"
-										},
-										{
-											"name": "FREIGHTSLIPTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "VATNUM",
-											"type": "String"
-										},
-										{
-											"name": "PORT",
-											"type": "String"
-										},
-										{
-											"name": "TRANSPORT",
-											"type": "String"
-										},
-										{
-											"name": "STATPROCID",
-											"type": "String"
-										},
-										{
-											"name": "RETURNREASONCODEID",
-											"type": "String"
-										},
-										{
-											"name": "RETURNREPLACEMENTCREATED",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[PURCHTABLE]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "PURCHID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHNAME",
-											"type": "String"
-										},
-										{
-											"name": "ORDERACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "INVOICEACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "FREIGHTZONE",
-											"type": "String"
-										},
-										{
-											"name": "EMAIL",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "DELIVERYTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "ADDRESSREFRECID",
-											"type": "Int64"
-										},
-										{
-											"name": "ADDRESSREFTABLEID",
-											"type": "Int32"
-										},
-										{
-											"name": "INTERCOMPANYORIGINALSALESID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYORIGINALCUSTACCO12",
-											"type": "String"
-										},
-										{
-											"name": "CURRENCYCODE",
-											"type": "String"
-										},
-										{
-											"name": "PAYMENT",
-											"type": "String"
-										},
-										{
-											"name": "CASHDISC",
-											"type": "String"
-										},
-										{
-											"name": "PURCHPLACER",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYDIRECTDELIVERY",
-											"type": "Int32"
-										},
-										{
-											"name": "VENDGROUP",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION2_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION3_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION4_",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYCUSTPURCHORDERFO26",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYADDRESS",
-											"type": "String"
-										},
-										{
-											"name": "DLVTERM",
-											"type": "String"
-										},
-										{
-											"name": "DLVMODE",
-											"type": "String"
-										},
-										{
-											"name": "PURCHSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "PURCHASETYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "URL",
-											"type": "String"
-										},
-										{
-											"name": "POSTINGPROFILE",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYZIPCODE",
-											"type": "String"
-										},
-										{
-											"name": "DLVCOUNTY",
-											"type": "String"
-										},
-										{
-											"name": "DLVCOUNTRYREGIONID",
-											"type": "String"
-										},
-										{
-											"name": "DLVSTATE",
-											"type": "String"
-										},
-										{
-											"name": "SETTLEVOUCHER",
-											"type": "Int32"
-										},
-										{
-											"name": "INTERCOMPANYALLOWINDIRECTCRE46",
-											"type": "Int32"
-										},
-										{
-											"name": "INTERCOMPANYORIGIN",
-											"type": "Int32"
-										},
-										{
-											"name": "CASHDISCPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "DELIVERYNAME",
-											"type": "String"
-										},
-										{
-											"name": "INVENTSITEID",
-											"type": "String"
-										},
-										{
-											"name": "ONETIMEVENDOR",
-											"type": "Int32"
-										},
-										{
-											"name": "DOCUMENTSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "CONTACTPERSONID",
-											"type": "String"
-										},
-										{
-											"name": "INVENTLOCATIONID",
-											"type": "String"
-										},
-										{
-											"name": "ITEMBUYERGROUPID",
-											"type": "String"
-										},
-										{
-											"name": "PROJID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHPOOLID",
-											"type": "String"
-										},
-										{
-											"name": "INCLTAX",
-											"type": "Int32"
-										},
-										{
-											"name": "NUMBERSEQUENCEGROUP",
-											"type": "String"
-										},
-										{
-											"name": "LANGUAGEID",
-											"type": "String"
-										},
-										{
-											"name": "AUTOSUMMARYMODULETYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "PAYMMODE",
-											"type": "String"
-										},
-										{
-											"name": "PAYMSPEC",
-											"type": "String"
-										},
-										{
-											"name": "FIXEDDUEDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "DELIVERYCITY",
-											"type": "String"
-										},
-										{
-											"name": "DELIVERYSTREET",
-											"type": "String"
-										},
-										{
-											"name": "VENDORREF",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYCOMPANYID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYSALESID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYORDER",
-											"type": "Int32"
-										},
-										{
-											"name": "SUSTRIBCODE",
-											"type": "String"
-										},
-										{
-											"name": "MODIFIEDDATETIME",
-											"type": "DateTime"
-										},
-										{
-											"name": "MODIFIEDBY",
-											"type": "String"
-										},
-										{
-											"name": "CREATEDDATETIME",
-											"type": "DateTime"
-										},
-										{
-											"name": "CREATEDBY",
-											"type": "String"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										},
-										{
-											"name": "LINEDISC",
-											"type": "String"
-										},
-										{
-											"name": "DISCPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "PRICEGROUPID",
-											"type": "String"
-										},
-										{
-											"name": "MULTILINEDISC",
-											"type": "String"
-										},
-										{
-											"name": "ENDDISC",
-											"type": "String"
-										},
-										{
-											"name": "TAXGROUP",
-											"type": "String"
-										},
-										{
-											"name": "MARKUPGROUP",
-											"type": "String"
-										},
-										{
-											"name": "TRANSACTIONCODE",
-											"type": "String"
-										},
-										{
-											"name": "COVSTATUS",
-											"type": "Int32"
-										},
-										{
-											"name": "PAYMENTSCHED",
-											"type": "String"
-										},
-										{
-											"name": "RETURNITEMNUM",
-											"type": "String"
-										},
-										{
-											"name": "FREIGHTSLIPTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "VATNUM",
-											"type": "String"
-										},
-										{
-											"name": "PORT",
-											"type": "String"
-										},
-										{
-											"name": "TRANSPORT",
-											"type": "String"
-										},
-										{
-											"name": "STATPROCID",
-											"type": "String"
-										},
-										{
-											"name": "RETURNREASONCODEID",
-											"type": "String"
-										},
-										{
-											"name": "RETURNREPLACEMENTCREATED",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_ax].[PURCHTABLE]"
-								}
-							}
-						]
-					},
-					{
-						"name": "VENDINVOICETRANS",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[VENDINVOICETRANS]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_ax].[VENDINVOICETRANS]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlSource",
-								"sqlReaderQuery": {
-									"value": "select GETDATE() as FechaCarga,INVOICEID,INVOICEDATE,LINENUM,INVENTTRANSID,DESTCOUNTRYREGIONID,ITEMID,EXTERNALITEMID,NAME,CURRENCYCODE,PRICEUNIT,QTY,PURCHPRICE,LINEAMOUNT,LEDGERACCOUNT,DIMENSION,DIMENSION2_,DIMENSION3_,DIMENSION4_,QTYPHYSICAL,PARTDELIVERY,INVENTREFID,PURCHID,PURCHUNIT,PURCHMARKUP,INVENTREFTYPE,INVENTREFTRANSID,DESTSTATE,ORIGPURCHID,INTERNALINVOICEID,INTERCOMPANYINVENTTRANSID,NUMBERSEQUENCEGROUP,INVENTDIMID,LINEAMOUNTTAX,INVENTDATE,DESTCOUNTY,INVENTQTY,LINEAMOUNTMST,RETFTECONCEPT,RETIVACONCEPT,PURCHLINERECID,DATAAREAID,RECVERSION,RECID,TAXGROUP,DISCPERCENT,DISCAMOUNT,TAXAMOUNT,TRANSACTIONCODE,TAXWRITECODE,TAXAUTOGENERATED,TAXITEMGROUP,MULTILNDISC,MULTILNPERCENT,LINEDISC,LINEPERCENT,TRANSPORT,PORT,STATPROCID,INTRASTATDISPATCHID,RETIVATAXCODE,RETFTETAXCODE from [dbo].[VENDINVOICETRANS] where INVOICEDATE >= '@{pipeline().parameters.FechaDesde}' AND INVOICEDATE <= '@{pipeline().parameters.FechaHasta}'",
-									"type": "Expression"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"allowPolyBase": true,
-								"writeBatchSize": 10000,
-								"preCopyScript": {
-									"value": "DELETE FROM [dsa_ecu_ax].[VENDINVOICETRANS] where INVOICEDATE >= '@{pipeline().parameters.FechaDesde}' AND INVOICEDATE <= '@{pipeline().parameters.FechaHasta}'",
-									"type": "Expression"
-								},
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DynamicsAxEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "INVOICEID",
-											"type": "String"
-										},
-										{
-											"name": "INVOICEDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "LINENUM",
-											"type": "Decimal"
-										},
-										{
-											"name": "INVENTTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "DESTCOUNTRYREGIONID",
-											"type": "String"
-										},
-										{
-											"name": "ITEMID",
-											"type": "String"
-										},
-										{
-											"name": "EXTERNALITEMID",
-											"type": "String"
-										},
-										{
-											"name": "NAME",
-											"type": "String"
-										},
-										{
-											"name": "CURRENCYCODE",
-											"type": "String"
-										},
-										{
-											"name": "PRICEUNIT",
-											"type": "Decimal"
-										},
-										{
-											"name": "QTY",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHPRICE",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEAMOUNT",
-											"type": "Decimal"
-										},
-										{
-											"name": "LEDGERACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION2_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION3_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION4_",
-											"type": "String"
-										},
-										{
-											"name": "QTYPHYSICAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "PARTDELIVERY",
-											"type": "Int32"
-										},
-										{
-											"name": "INVENTREFID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHUNIT",
-											"type": "String"
-										},
-										{
-											"name": "PURCHMARKUP",
-											"type": "Decimal"
-										},
-										{
-											"name": "INVENTREFTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "INVENTREFTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "DESTSTATE",
-											"type": "String"
-										},
-										{
-											"name": "ORIGPURCHID",
-											"type": "String"
-										},
-										{
-											"name": "INTERNALINVOICEID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYINVENTTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "NUMBERSEQUENCEGROUP",
-											"type": "String"
-										},
-										{
-											"name": "INVENTDIMID",
-											"type": "String"
-										},
-										{
-											"name": "LINEAMOUNTTAX",
-											"type": "Decimal"
-										},
-										{
-											"name": "INVENTDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "DESTCOUNTY",
-											"type": "String"
-										},
-										{
-											"name": "INVENTQTY",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEAMOUNTMST",
-											"type": "Decimal"
-										},
-										{
-											"name": "RETFTECONCEPT",
-											"type": "String"
-										},
-										{
-											"name": "RETIVACONCEPT",
-											"type": "String"
-										},
-										{
-											"name": "PURCHLINERECID",
-											"type": "Int64"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										},
-										{
-											"name": "TAXGROUP",
-											"type": "String"
-										},
-										{
-											"name": "DISCPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "DISCAMOUNT",
-											"type": "Decimal"
-										},
-										{
-											"name": "TAXAMOUNT",
-											"type": "Decimal"
-										},
-										{
-											"name": "TRANSACTIONCODE",
-											"type": "String"
-										},
-										{
-											"name": "TAXWRITECODE",
-											"type": "String"
-										},
-										{
-											"name": "TAXAUTOGENERATED",
-											"type": "Int32"
-										},
-										{
-											"name": "TAXITEMGROUP",
-											"type": "String"
-										},
-										{
-											"name": "MULTILNDISC",
-											"type": "Decimal"
-										},
-										{
-											"name": "MULTILNPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEDISC",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "TRANSPORT",
-											"type": "String"
-										},
-										{
-											"name": "PORT",
-											"type": "String"
-										},
-										{
-											"name": "STATPROCID",
-											"type": "String"
-										},
-										{
-											"name": "INTRASTATDISPATCHID",
-											"type": "String"
-										},
-										{
-											"name": "RETIVATAXCODE",
-											"type": "String"
-										},
-										{
-											"name": "RETFTETAXCODE",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[VENDINVOICETRANS]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "INVOICEID",
-											"type": "String"
-										},
-										{
-											"name": "INVOICEDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "LINENUM",
-											"type": "Decimal"
-										},
-										{
-											"name": "INVENTTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "DESTCOUNTRYREGIONID",
-											"type": "String"
-										},
-										{
-											"name": "ITEMID",
-											"type": "String"
-										},
-										{
-											"name": "EXTERNALITEMID",
-											"type": "String"
-										},
-										{
-											"name": "NAME",
-											"type": "String"
-										},
-										{
-											"name": "CURRENCYCODE",
-											"type": "String"
-										},
-										{
-											"name": "PRICEUNIT",
-											"type": "Decimal"
-										},
-										{
-											"name": "QTY",
-											"type": "Decimal"
-										},
-										{
-											"name": "PURCHPRICE",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEAMOUNT",
-											"type": "Decimal"
-										},
-										{
-											"name": "LEDGERACCOUNT",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION2_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION3_",
-											"type": "String"
-										},
-										{
-											"name": "DIMENSION4_",
-											"type": "String"
-										},
-										{
-											"name": "QTYPHYSICAL",
-											"type": "Decimal"
-										},
-										{
-											"name": "PARTDELIVERY",
-											"type": "Int32"
-										},
-										{
-											"name": "INVENTREFID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHID",
-											"type": "String"
-										},
-										{
-											"name": "PURCHUNIT",
-											"type": "String"
-										},
-										{
-											"name": "PURCHMARKUP",
-											"type": "Decimal"
-										},
-										{
-											"name": "INVENTREFTYPE",
-											"type": "Int32"
-										},
-										{
-											"name": "INVENTREFTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "DESTSTATE",
-											"type": "String"
-										},
-										{
-											"name": "ORIGPURCHID",
-											"type": "String"
-										},
-										{
-											"name": "INTERNALINVOICEID",
-											"type": "String"
-										},
-										{
-											"name": "INTERCOMPANYINVENTTRANSID",
-											"type": "String"
-										},
-										{
-											"name": "NUMBERSEQUENCEGROUP",
-											"type": "String"
-										},
-										{
-											"name": "INVENTDIMID",
-											"type": "String"
-										},
-										{
-											"name": "LINEAMOUNTTAX",
-											"type": "Decimal"
-										},
-										{
-											"name": "INVENTDATE",
-											"type": "DateTime"
-										},
-										{
-											"name": "DESTCOUNTY",
-											"type": "String"
-										},
-										{
-											"name": "INVENTQTY",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEAMOUNTMST",
-											"type": "Decimal"
-										},
-										{
-											"name": "RETFTECONCEPT",
-											"type": "String"
-										},
-										{
-											"name": "RETIVACONCEPT",
-											"type": "String"
-										},
-										{
-											"name": "PURCHLINERECID",
-											"type": "Int64"
-										},
-										{
-											"name": "DATAAREAID",
-											"type": "String"
-										},
-										{
-											"name": "RECVERSION",
-											"type": "Int32"
-										},
-										{
-											"name": "RECID",
-											"type": "Int64"
-										},
-										{
-											"name": "TAXGROUP",
-											"type": "String"
-										},
-										{
-											"name": "DISCPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "DISCAMOUNT",
-											"type": "Decimal"
-										},
-										{
-											"name": "TAXAMOUNT",
-											"type": "Decimal"
-										},
-										{
-											"name": "TRANSACTIONCODE",
-											"type": "String"
-										},
-										{
-											"name": "TAXWRITECODE",
-											"type": "String"
-										},
-										{
-											"name": "TAXAUTOGENERATED",
-											"type": "Int32"
-										},
-										{
-											"name": "TAXITEMGROUP",
-											"type": "String"
-										},
-										{
-											"name": "MULTILNDISC",
-											"type": "Decimal"
-										},
-										{
-											"name": "MULTILNPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEDISC",
-											"type": "Decimal"
-										},
-										{
-											"name": "LINEPERCENT",
-											"type": "Decimal"
-										},
-										{
-											"name": "TRANSPORT",
-											"type": "String"
-										},
-										{
-											"name": "PORT",
-											"type": "String"
-										},
-										{
-											"name": "STATPROCID",
-											"type": "String"
-										},
-										{
-											"name": "INTRASTATDISPATCHID",
-											"type": "String"
-										},
-										{
-											"name": "RETIVATAXCODE",
-											"type": "String"
-										},
-										{
-											"name": "RETFTETAXCODE",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_ax].[VENDINVOICETRANS]"
-								}
-							}
-						]
-					}
-				],
-				"parameters": {
-					"Servidor": {
-						"type": "String",
-						"defaultValue": "SAZDYNDBEC"
-					},
-					"BaseDatos": {
-						"type": "String",
-						"defaultValue": "DynamicsAxEcu"
-					},
-					"FechaDesde": {
-						"type": "string"
-					},
-					"FechaHasta": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "dsa_DynamicsAxEcu"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_ListaExterna_Contabilidad')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -58979,6 +56282,1032 @@
 						"defaultValue": "dw_admin_Bi"
 					}
 				},
+				"folder": {
+					"name": "dwh_Intranet"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Contabilidad_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "conta_FacPyG",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPyG",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacCuentaPorPagar",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacCuentaPorPagar",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacFacturaCompra",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacFacturaCompra",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_CargaFacTarjeta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacTarjeta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacFacturaVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacFacturaVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacRetencionCompra",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacRetencionCompra",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacRetencionVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacRetencionVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacVentaDiaria",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVentaDiaria",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_CargaFacActivoFijo",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacActivoFijo",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cubo_FacPyGContabilidad",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "conta_FacPyG",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPyGContabilidad",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacPresupuestoLocal",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "conta_FacPyG",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPresupuestoLocal",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacPresupuestoRealLocal",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "cubo_FacPyGContabilidad",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "conta_FacPresupuestoLocal",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPresupuestoRealLocal",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacPresupuestoAdministrativo",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "conta_FacPresupuestoRealLocal",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPresupuestoAdministrativo",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "conta_FacPresupuestoRealAdministrativo",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "conta_FacPresupuestoAdministrativo",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPresupuestoRealAdministrativo",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cubo_usp_CargaFacPyGUniforme",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "conta_FacPresupuestoRealAdministrativo",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPyGUniforme",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cubo_usp_CargaFacPyGCajaChica",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "conta_FacPresupuestoRealAdministrativo",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPyGCajaChica",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Carga Info Conta",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "conta_FacPresupuestoRealLocal",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Proceso": "CONTA_ECU",
+								"SP": "admin_btc.usp_CargaInfoFacPyG"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "Int",
+						"defaultValue": 0
+					},
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_CAREcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Info_Suscripcion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Carga Dimensiones",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Proceso": "DIMENSION",
+								"SP": "admin_btc.usp_CargaInfoSuscripcion_Dimension"
+							}
+						}
+					},
+					{
+						"name": "Carga Venta Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Dimensiones",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Proceso": "VENTA_ECU",
+								"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Ecu"
+							}
+						}
+					},
+					{
+						"name": "Carga Venta Chl",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Dimensiones",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Proceso": "VENTA_CHL",
+								"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Chl"
+							}
+						}
+					},
+					{
+						"name": "Carga Venta Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Dimensiones",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Proceso": "VENTA_COL",
+								"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Col"
+							}
+						}
+					}
+				],
 				"folder": {
 					"name": "dwh_Intranet"
 				},
