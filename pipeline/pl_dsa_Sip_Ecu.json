@@ -24,6 +24,62 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "Cargar Catalogo",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sip_Ecu_Catalogo",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Servidor": "SAZCONTADB",
+						"BaseDatos": "Presupuestos"
+					}
+				}
+			},
+			{
+				"name": "Execute Pipeline2",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Cargar Catalogo",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sip_Ecu_Transaccional",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Servidor": "SAZCONTADB",
+						"BaseDatos": "Presupuestos",
+						"FechaDesde": {
+							"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+							"type": "Expression"
+						},
+						"FechaHasta": {
+							"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"folder": {
