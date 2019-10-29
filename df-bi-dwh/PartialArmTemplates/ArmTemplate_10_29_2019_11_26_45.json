@@ -1,0 +1,2333 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-bi-dwh"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_Carga_Multipais')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Carga DSA SG Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "Carga DSA SG Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "Carga DSA SG Chl",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Chl",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "Carga DSA AX Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_DynamicsAx_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "Carga DSA MP Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Maxpoint_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "Carga Dimension",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga DSA SG Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga DSA SG Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga DSA SG Chl",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga DSA AX Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga DSA MP Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga DSA DOM Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga DSA Conta Reg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga DSA SG Arg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga DSA Sip Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Dimensiones",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ALL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga Operacion Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga Plantas Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Planta_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga Operacion Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "COL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga Operacion Chl",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Chl",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "CHL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga CAR Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_CAR_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga CAR Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Auditoria_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "COL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga CAR Chl",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Chl",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Auditoria_Chl",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "CHL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Inicializar Etapas",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Escalar DWH",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "EXEC [dsa_int_lst].[usp_CargaTabla]\nEXEC [dsa_int_lst].[usp_CargaDependenciaTabla]\nEXEC [admin_btc].[usp_CargaTabla]\nEXEC [admin_btc].[usp_CargaDependenciaTabla]\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ECU'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ECU'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ECU'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'COL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'COL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'COL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'CHL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'CHL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'CHL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ARG'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ARG'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ARG'\n\n--Control de Cargas\nTRUNCATE TABLE admin_btc.CargaDataFactory\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA VENTA-CAR-PLANTA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Carga DSA DOM Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Domicilio_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "Escalar DWH",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW500c"
+							}
+						}
+					},
+					{
+						"name": "Recarga Permisologia",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Escalar DWH",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_App_Seguridad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+								"BaseDatos": "dw_admin_Bi"
+							}
+						}
+					},
+					{
+						"name": "Carga Info Sus Dim",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Dimension",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Proceso": "DIMENSION",
+								"SP": "admin_btc.usp_CargaInfoSuscripcion_Dimension"
+							}
+						}
+					},
+					{
+						"name": "Finalizar Carga UyC",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Reescalar DWH 2",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA USO CONSUMO ECU'\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Carga DSA Conta Reg",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_App_ContabilidadRegional",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+								"BaseDatos": "SharePoint_ListaExterna"
+							}
+						}
+					},
+					{
+						"name": "Finalizar Carga Venta",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Reescalar DWH 1",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA VENTA-CAR-PLANTA'\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Verificar Proceso Cubos Venta",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "Tiempo Espera",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Verificar Carga Venta').output.firstRow.Resultado, 'OK')",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Verificar Carga Venta",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "Espera",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlDWSource",
+											"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA-CAR-PLANTA' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado"
+										},
+										"dataset": {
+											"referenceName": "ds_dwh_general",
+											"type": "DatasetReference"
+										}
+									}
+								},
+								{
+									"name": "Espera",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 180
+									}
+								}
+							],
+							"timeout": "00.12:00:00"
+						}
+					},
+					{
+						"name": "Tiempo Espera",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "Finalizar Carga Venta",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 3600
+						}
+					},
+					{
+						"name": "Carga Operacion UyC Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Carga Uyc",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_UyC_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Inicializar Carga Uyc",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Verificar Proceso Cubos Venta",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA USO CONSUMO ECU',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Reescalar DWH 2",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion UyC Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW100c"
+							}
+						}
+					},
+					{
+						"name": "Reescalar DWH 1",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga CAR Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga CAR Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga CAR Chl",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Plantas Venta Embutser",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga CAR Arg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW400c"
+							}
+						}
+					},
+					{
+						"name": "Carga Plantas Venta Embutser",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Plantas Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Operacion Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Planta_Ecu_Venta_Embutser",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga DSA SG Arg",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Arg",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "Carga Operacion Arg",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Arg",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ARG",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga CAR Arg",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Arg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Auditoria_Arg",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ARG",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga DSA Sip Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sip_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					}
+				],
+				"folder": {
+					"name": "Carga_dwh_Triggers"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sip_Ecu')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sip_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "SELECT FechaCarga=GETDATE()\n,FechaDesde=DATEADD(yy, DATEDIFF(yy, 0, GETDATE())+1, 0)--inicia en enero +1\n,FechaHasta=DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) + 2, -1)--termina en diciembre+1"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Cargar Catalogo",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sip_Ecu_Catalogo",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": "SAZCONTADB",
+								"BaseDatos": "Presupuestos"
+							}
+						}
+					},
+					{
+						"name": "Cargar Transaccional",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Cargar Catalogo",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sip_Ecu_Transaccional",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": "SAZCONTADB",
+								"BaseDatos": "Presupuestos",
+								"FechaDesde": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+									"type": "Expression"
+								},
+								"FechaHasta": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Actualizar Estadisticas",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Cargar Transaccional",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "UPDATE STATISTICS [dsa_ecu_sip].[Cuentas]\nUPDATE STATISTICS [dsa_ecu_sip].[PresupuestoGastos]\nUPDATE STATISTICS [dsa_ecu_sip].[PresupuestoVentas]\nUPDATE STATISTICS [dsa_ecu_sip].[SolicitudTotal_Aprobacion]\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					}
+				],
+				"folder": {
+					"name": "dsa_SipEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sip_Ecu_Catalogo')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sip_Ecu_Transaccional')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sip_Ecu_Catalogo')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Cuentas",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[prp].[Cuentas]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sip].[Cuentas]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,idCuenta,jerarquia,nombreCuenta,subCuenta,categoria,agrupadora,encargado,rubroGerente,accountNum,proposito,tipoTabla,modificable,datosTabla,GRD FROM prp.Cuentas"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"allowPolyBase": true,
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sip].[Cuentas]",
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SipEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idCuenta",
+											"type": "Int32"
+										},
+										{
+											"name": "jerarquia",
+											"type": "String"
+										},
+										{
+											"name": "nombreCuenta",
+											"type": "String"
+										},
+										{
+											"name": "subCuenta",
+											"type": "String"
+										},
+										{
+											"name": "categoria",
+											"type": "String"
+										},
+										{
+											"name": "agrupadora",
+											"type": "String"
+										},
+										{
+											"name": "encargado",
+											"type": "String"
+										},
+										{
+											"name": "rubroGerente",
+											"type": "String"
+										},
+										{
+											"name": "accountNum",
+											"type": "String"
+										},
+										{
+											"name": "proposito",
+											"type": "String"
+										},
+										{
+											"name": "tipoTabla",
+											"type": "String"
+										},
+										{
+											"name": "modificable",
+											"type": "String"
+										},
+										{
+											"name": "datosTabla",
+											"type": "String"
+										},
+										{
+											"name": "GRD",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[prp].[Cuentas]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idCuenta",
+											"type": "Int32"
+										},
+										{
+											"name": "jerarquia",
+											"type": "String"
+										},
+										{
+											"name": "nombreCuenta",
+											"type": "String"
+										},
+										{
+											"name": "subCuenta",
+											"type": "String"
+										},
+										{
+											"name": "categoria",
+											"type": "String"
+										},
+										{
+											"name": "agrupadora",
+											"type": "String"
+										},
+										{
+											"name": "encargado",
+											"type": "String"
+										},
+										{
+											"name": "rubroGerente",
+											"type": "String"
+										},
+										{
+											"name": "accountNum",
+											"type": "String"
+										},
+										{
+											"name": "proposito",
+											"type": "String"
+										},
+										{
+											"name": "tipoTabla",
+											"type": "String"
+										},
+										{
+											"name": "modificable",
+											"type": "String"
+										},
+										{
+											"name": "datosTabla",
+											"type": "String"
+										},
+										{
+											"name": "GRD",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sip].[Cuentas]"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SAZCONTADB"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "Presupuestos"
+					}
+				},
+				"folder": {
+					"name": "dsa_SipEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_SipEcu')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sip_Ecu_Transaccional')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PresupuestoGastos",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[prp].[PresupuestoGastos]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sip].[PresupuestoGastos]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,idPresupuestoGastos,empresa,marca,cc,anio,mes,fecha,idCuenta,valorPresupuestado,subCuenta,valorGerente,estado,idGastosSolicitud FROM prp.PresupuestoGastos WHERE Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"allowPolyBase": true,
+								"writeBatchSize": 10000,
+								"preCopyScript": {
+									"value": "DELETE FROM [dsa_ecu_sip].[PresupuestoGastos] WHERE Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								},
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SipEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idPresupuestoGastos",
+											"type": "Int32"
+										},
+										{
+											"name": "empresa",
+											"type": "String"
+										},
+										{
+											"name": "marca",
+											"type": "String"
+										},
+										{
+											"name": "cc",
+											"type": "String"
+										},
+										{
+											"name": "anio",
+											"type": "Int16"
+										},
+										{
+											"name": "mes",
+											"type": "Int16"
+										},
+										{
+											"name": "fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "idCuenta",
+											"type": "Int32"
+										},
+										{
+											"name": "valorPresupuestado",
+											"type": "Double"
+										},
+										{
+											"name": "subCuenta",
+											"type": "String"
+										},
+										{
+											"name": "valorGerente",
+											"type": "Double"
+										},
+										{
+											"name": "estado",
+											"type": "String"
+										},
+										{
+											"name": "idGastosSolicitud",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[prp].[PresupuestoGastos]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idPresupuestoGastos",
+											"type": "Int32"
+										},
+										{
+											"name": "empresa",
+											"type": "String"
+										},
+										{
+											"name": "marca",
+											"type": "String"
+										},
+										{
+											"name": "cc",
+											"type": "String"
+										},
+										{
+											"name": "anio",
+											"type": "Int16"
+										},
+										{
+											"name": "mes",
+											"type": "Int16"
+										},
+										{
+											"name": "fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "idCuenta",
+											"type": "Int32"
+										},
+										{
+											"name": "valorPresupuestado",
+											"type": "Double"
+										},
+										{
+											"name": "subCuenta",
+											"type": "String"
+										},
+										{
+											"name": "valorGerente",
+											"type": "Double"
+										},
+										{
+											"name": "estado",
+											"type": "String"
+										},
+										{
+											"name": "idGastosSolicitud",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sip].[PresupuestoGastos]"
+								}
+							}
+						]
+					},
+					{
+						"name": "PresupuestoVentas",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[prp].[PresupuestoVentas]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sip].[PresupuestoVentas]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,idPresupuestoVentas,empresa,CC,anio,mes,dia,semana,fecha,ticketProm,numTrans,valor,evento,tipo,idSolicitud,Bitacora,ventaSugerido,ventaSugeridoFin,historicoVenta,historicoTrans,historicoTikPrm,periodo,ventaNeta,ventaBruta,savedByID,savedFecha FROM prp.PresupuestoVentas WHERE Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"allowPolyBase": true,
+								"writeBatchSize": 10000,
+								"preCopyScript": {
+									"value": "DELETE FROM [dsa_ecu_sip].[PresupuestoVentas] WHERE Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								},
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SipEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idPresupuestoVentas",
+											"type": "Int32"
+										},
+										{
+											"name": "empresa",
+											"type": "String"
+										},
+										{
+											"name": "CC",
+											"type": "String"
+										},
+										{
+											"name": "anio",
+											"type": "Int16"
+										},
+										{
+											"name": "mes",
+											"type": "Int16"
+										},
+										{
+											"name": "dia",
+											"type": "Int16"
+										},
+										{
+											"name": "semana",
+											"type": "Int16"
+										},
+										{
+											"name": "fecha",
+											"type": "String"
+										},
+										{
+											"name": "ticketProm",
+											"type": "Double"
+										},
+										{
+											"name": "numTrans",
+											"type": "Int32"
+										},
+										{
+											"name": "valor",
+											"type": "Double"
+										},
+										{
+											"name": "evento",
+											"type": "String"
+										},
+										{
+											"name": "tipo",
+											"type": "String"
+										},
+										{
+											"name": "idSolicitud",
+											"type": "Int32"
+										},
+										{
+											"name": "Bitacora",
+											"type": "String"
+										},
+										{
+											"name": "ventaSugerido",
+											"type": "Double"
+										},
+										{
+											"name": "ventaSugeridoFin",
+											"type": "Double"
+										},
+										{
+											"name": "historicoVenta",
+											"type": "Double"
+										},
+										{
+											"name": "historicoTrans",
+											"type": "Double"
+										},
+										{
+											"name": "historicoTikPrm",
+											"type": "Double"
+										},
+										{
+											"name": "periodo",
+											"type": "Int16"
+										},
+										{
+											"name": "ventaNeta",
+											"type": "Double"
+										},
+										{
+											"name": "ventaBruta",
+											"type": "Double"
+										},
+										{
+											"name": "savedByID",
+											"type": "Int32"
+										},
+										{
+											"name": "savedFecha",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[prp].[PresupuestoVentas]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idPresupuestoVentas",
+											"type": "Int32"
+										},
+										{
+											"name": "empresa",
+											"type": "String"
+										},
+										{
+											"name": "CC",
+											"type": "String"
+										},
+										{
+											"name": "anio",
+											"type": "Int16"
+										},
+										{
+											"name": "mes",
+											"type": "Int16"
+										},
+										{
+											"name": "dia",
+											"type": "Int16"
+										},
+										{
+											"name": "semana",
+											"type": "Int16"
+										},
+										{
+											"name": "fecha",
+											"type": "String"
+										},
+										{
+											"name": "ticketProm",
+											"type": "Double"
+										},
+										{
+											"name": "numTrans",
+											"type": "Int32"
+										},
+										{
+											"name": "valor",
+											"type": "Double"
+										},
+										{
+											"name": "evento",
+											"type": "String"
+										},
+										{
+											"name": "tipo",
+											"type": "String"
+										},
+										{
+											"name": "idSolicitud",
+											"type": "Int32"
+										},
+										{
+											"name": "Bitacora",
+											"type": "String"
+										},
+										{
+											"name": "ventaSugerido",
+											"type": "Double"
+										},
+										{
+											"name": "ventaSugeridoFin",
+											"type": "Double"
+										},
+										{
+											"name": "historicoVenta",
+											"type": "Double"
+										},
+										{
+											"name": "historicoTrans",
+											"type": "Double"
+										},
+										{
+											"name": "historicoTikPrm",
+											"type": "Double"
+										},
+										{
+											"name": "periodo",
+											"type": "Int16"
+										},
+										{
+											"name": "ventaNeta",
+											"type": "Double"
+										},
+										{
+											"name": "ventaBruta",
+											"type": "Double"
+										},
+										{
+											"name": "savedByID",
+											"type": "Int32"
+										},
+										{
+											"name": "savedFecha",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sip].[PresupuestoVentas]"
+								}
+							}
+						]
+					},
+					{
+						"name": "SolicitudTotal_Aprobacion",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[prp].[SolicitudTotal_Aprobacion]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sip].[SolicitudTotal_Aprobacion]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,idSolicitud,CC,idUsuario,anio,fechaSolicitud,fechaAprobado,estado,claseAprobacion,observaciones,predecesores,idAprobacion,bitacora,datosTipo,fechaAsentado,activo,idSolicitudVentas,idSolicitudGastos,totalVentas,totalGastos,PYG,tipo,ResSinDepreciacion,totalVentasBrutas FROM prp.SolicitudTotal_Aprobacion WHERE FechaSolicitud BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"allowPolyBase": true,
+								"writeBatchSize": 10000,
+								"preCopyScript": {
+									"value": "DELETE FROM [dsa_ecu_sip].[SolicitudTotal_Aprobacion] WHERE FechaSolicitud BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								},
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SipEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idSolicitud",
+											"type": "Int32"
+										},
+										{
+											"name": "CC",
+											"type": "String"
+										},
+										{
+											"name": "idUsuario",
+											"type": "Int32"
+										},
+										{
+											"name": "anio",
+											"type": "String"
+										},
+										{
+											"name": "fechaSolicitud",
+											"type": "String"
+										},
+										{
+											"name": "fechaAprobado",
+											"type": "String"
+										},
+										{
+											"name": "estado",
+											"type": "String"
+										},
+										{
+											"name": "claseAprobacion",
+											"type": "String"
+										},
+										{
+											"name": "observaciones",
+											"type": "String"
+										},
+										{
+											"name": "predecesores",
+											"type": "String"
+										},
+										{
+											"name": "idAprobacion",
+											"type": "Int32"
+										},
+										{
+											"name": "bitacora",
+											"type": "String"
+										},
+										{
+											"name": "datosTipo",
+											"type": "String"
+										},
+										{
+											"name": "fechaAsentado",
+											"type": "String"
+										},
+										{
+											"name": "activo",
+											"type": "String"
+										},
+										{
+											"name": "idSolicitudVentas",
+											"type": "Int32"
+										},
+										{
+											"name": "idSolicitudGastos",
+											"type": "Int32"
+										},
+										{
+											"name": "totalVentas",
+											"type": "Double"
+										},
+										{
+											"name": "totalGastos",
+											"type": "Double"
+										},
+										{
+											"name": "PYG",
+											"type": "Double"
+										},
+										{
+											"name": "tipo",
+											"type": "String"
+										},
+										{
+											"name": "ResSinDepreciacion",
+											"type": "Double"
+										},
+										{
+											"name": "totalVentasBrutas",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[prp].[SolicitudTotal_Aprobacion]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idSolicitud",
+											"type": "Int32"
+										},
+										{
+											"name": "CC",
+											"type": "String"
+										},
+										{
+											"name": "idUsuario",
+											"type": "Int32"
+										},
+										{
+											"name": "anio",
+											"type": "String"
+										},
+										{
+											"name": "fechaSolicitud",
+											"type": "String"
+										},
+										{
+											"name": "fechaAprobado",
+											"type": "String"
+										},
+										{
+											"name": "estado",
+											"type": "String"
+										},
+										{
+											"name": "claseAprobacion",
+											"type": "String"
+										},
+										{
+											"name": "observaciones",
+											"type": "String"
+										},
+										{
+											"name": "predecesores",
+											"type": "String"
+										},
+										{
+											"name": "idAprobacion",
+											"type": "Int32"
+										},
+										{
+											"name": "bitacora",
+											"type": "String"
+										},
+										{
+											"name": "datosTipo",
+											"type": "String"
+										},
+										{
+											"name": "fechaAsentado",
+											"type": "String"
+										},
+										{
+											"name": "activo",
+											"type": "String"
+										},
+										{
+											"name": "idSolicitudVentas",
+											"type": "Int32"
+										},
+										{
+											"name": "idSolicitudGastos",
+											"type": "Int32"
+										},
+										{
+											"name": "totalVentas",
+											"type": "Double"
+										},
+										{
+											"name": "totalGastos",
+											"type": "Double"
+										},
+										{
+											"name": "PYG",
+											"type": "Double"
+										},
+										{
+											"name": "tipo",
+											"type": "String"
+										},
+										{
+											"name": "ResSinDepreciacion",
+											"type": "Double"
+										},
+										{
+											"name": "totalVentasBrutas",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sip].[SolicitudTotal_Aprobacion]"
+								}
+							}
+						]
+					},
+					{
+						"name": "VentasSolicitud",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[prp].[VentasSolicitud]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sip].[VentasSolicitud]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,idVentaSolicitud,CC,anio,fechaSolicitud,sumNumTrans,sumValor,tipo,tikPrm,sumSugeridoIni,sumSugeridoFin,sumValor_Anterior,sumNumTrans_Anterior,tikPrm_Anterior,idSolicitudAprobacion,estado,idSolicitudVentasPadre,ventaNeta,ventaBruta FROM prp.VentasSolicitud WHERE FechaSolicitud BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"allowPolyBase": true,
+								"writeBatchSize": 10000,
+								"preCopyScript": {
+									"value": "DELETE FROM [dsa_ecu_sip].[VentasSolicitud] WHERE FechaSolicitud BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								},
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SipEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idVentaSolicitud",
+											"type": "Int32"
+										},
+										{
+											"name": "CC",
+											"type": "String"
+										},
+										{
+											"name": "anio",
+											"type": "String"
+										},
+										{
+											"name": "fechaSolicitud",
+											"type": "DateTime"
+										},
+										{
+											"name": "sumNumTrans",
+											"type": "Int32"
+										},
+										{
+											"name": "sumValor",
+											"type": "Double"
+										},
+										{
+											"name": "tipo",
+											"type": "String"
+										},
+										{
+											"name": "tikPrm",
+											"type": "Double"
+										},
+										{
+											"name": "sumSugeridoIni",
+											"type": "Double"
+										},
+										{
+											"name": "sumSugeridoFin",
+											"type": "Double"
+										},
+										{
+											"name": "sumValor_Anterior",
+											"type": "Double"
+										},
+										{
+											"name": "sumNumTrans_Anterior",
+											"type": "Int32"
+										},
+										{
+											"name": "tikPrm_Anterior",
+											"type": "Double"
+										},
+										{
+											"name": "idSolicitudAprobacion",
+											"type": "Int32"
+										},
+										{
+											"name": "estado",
+											"type": "String"
+										},
+										{
+											"name": "idSolicitudVentasPadre",
+											"type": "Int32"
+										},
+										{
+											"name": "ventaNeta",
+											"type": "Double"
+										},
+										{
+											"name": "ventaBruta",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[prp].[VentasSolicitud]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "idVentaSolicitud",
+											"type": "Int32"
+										},
+										{
+											"name": "CC",
+											"type": "String"
+										},
+										{
+											"name": "anio",
+											"type": "String"
+										},
+										{
+											"name": "fechaSolicitud",
+											"type": "DateTime"
+										},
+										{
+											"name": "sumNumTrans",
+											"type": "Int32"
+										},
+										{
+											"name": "sumValor",
+											"type": "Double"
+										},
+										{
+											"name": "tipo",
+											"type": "String"
+										},
+										{
+											"name": "tikPrm",
+											"type": "Double"
+										},
+										{
+											"name": "sumSugeridoIni",
+											"type": "Double"
+										},
+										{
+											"name": "sumSugeridoFin",
+											"type": "Double"
+										},
+										{
+											"name": "sumValor_Anterior",
+											"type": "Double"
+										},
+										{
+											"name": "sumNumTrans_Anterior",
+											"type": "Int32"
+										},
+										{
+											"name": "tikPrm_Anterior",
+											"type": "Double"
+										},
+										{
+											"name": "idSolicitudAprobacion",
+											"type": "Int32"
+										},
+										{
+											"name": "estado",
+											"type": "String"
+										},
+										{
+											"name": "idSolicitudVentasPadre",
+											"type": "Int32"
+										},
+										{
+											"name": "ventaNeta",
+											"type": "Double"
+										},
+										{
+											"name": "ventaBruta",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sip].[VentasSolicitud]"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SAZCONTADB"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "Presupuestos"
+					},
+					"FechaDesde": {
+						"type": "string"
+					},
+					"FechaHasta": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_SipEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_SipEcu')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_SipEcu')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_sip_ecu",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": {
+							"value": "@dataset().cw_servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@dataset().cw_baseDatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_Sip"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
