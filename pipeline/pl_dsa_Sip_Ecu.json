@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlDWSource",
-						"sqlReaderQuery": "SELECT FechaCarga=GETDATE()\n,FechaDesde=DATEADD(yy, DATEDIFF(yy, 0, GETDATE())+1, 0)--inicia en enero +1\n,FechaHasta=DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) + 2, -1)--termina en diciembre+1"
+						"sqlReaderQuery": "SELECT\n\tFechaCarga=GETDATE(),\n\tFechaDesde=MIN(Fecha),--inicia en enero +1\n\tFechaHasta=DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) + 2, -1)--termina en diciembre+1\nFROM dwh_dim.Tiempo\nwhere AnioNumero52Semanas=year(DATEADD(yy, DATEDIFF(yy, 0, GETDATE())+1, 0))"
 					},
 					"dataset": {
 						"referenceName": "ds_dwh_general",
