@@ -27,7 +27,7 @@
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "Carga Dimension Ecu",
+						"activity": "Escalar DWH",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -100,9 +100,9 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Carga Embutser Ecu",
+						"activity": "Escalar DWH_copy1",
 						"dependencyConditions": [
-							"Completed"
+							"Succeeded"
 						]
 					}
 				],
@@ -122,6 +122,84 @@
 					"dataset": {
 						"referenceName": "ds_dwh_general",
 						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Escalar DWH",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Espera 1",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_admin_Escalar_DWH",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"DWU": "DW500c"
+					}
+				}
+			},
+			{
+				"name": "Espera 1",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimension Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			},
+			{
+				"name": "Espera 2",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Carga Embutser Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			},
+			{
+				"name": "Escalar DWH_copy1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Espera 2",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_admin_Escalar_DWH",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"DWU": "DW500c"
 					}
 				}
 			}
