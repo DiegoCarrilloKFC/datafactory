@@ -153,7 +153,7 @@
 				"type": "Wait",
 				"dependsOn": [
 					{
-						"activity": "Carga Dimension Ecu",
+						"activity": "Enviar Notificacion",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -184,6 +184,43 @@
 					"waitOnCompletion": true,
 					"parameters": {
 						"DWU": "DW100c"
+					}
+				}
+			},
+			{
+				"name": "Enviar Notificacion",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimension Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "usp_EnviarSuscripcion",
+					"storedProcedureParameters": {
+						"JobID": {
+							"value": "C86CF45F-0A1A-40CD-ABC8-FEFC873B051D",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_sharepoint",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+						"BaseDatos": "dw_admin_Bi"
 					}
 				}
 			}
