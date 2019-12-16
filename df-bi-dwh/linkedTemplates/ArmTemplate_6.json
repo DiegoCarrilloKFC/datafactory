@@ -13,6 +13,245 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_Recarga_Embutser_Ecuador')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Carga DSA AX Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Carga",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_DynamicsAx_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Carga Embutser Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Escalar DWH",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Planta_Ecu_Embutser",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "MANUAL"
+							}
+						}
+					},
+					{
+						"name": "Carga Dimension Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga DSA AX Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Dimensiones_Embutser",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "MANUAL"
+							}
+						}
+					},
+					{
+						"name": "Inicializar Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nDELETE FROM admin_btc.CargaDataFactory\nWHERE FechaPeriodo = CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'EMBUTSER ECUADOR'\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'EMBUTSER ECUADOR',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Finalizar Carga",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Escalar DWH 2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'EMBUTSER ECUADOR'\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Escalar DWH",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Espera 1",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW200c"
+							}
+						}
+					},
+					{
+						"name": "Espera 1",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "Enviar Notificacion",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 300
+						}
+					},
+					{
+						"name": "Escalar DWH 2",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Embutser Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW100c"
+							}
+						}
+					},
+					{
+						"name": "Enviar Notificacion",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Carga Dimension Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "adm.usp_EnviarSuscripcion",
+							"storedProcedureParameters": {
+								"JobID": {
+									"value": "C86CF45F-0A1A-40CD-ABC8-FEFC873B051D",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_sharepoint",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+								"BaseDatos": "dw_admin_Bi"
+							}
+						}
+					}
+				],
+				"folder": {
+					"name": "Carga_dwh_Triggers"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -259,7 +498,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlDWSource",
-								"sqlReaderQuery": "TRUNCATE TABLE [dsa_ecu_sg].[ArticuloBodega]\nTRUNCATE TABLE [dsa_ecu_sg].[AuditTrans]\nTRUNCATE TABLE [dsa_ecu_sg].[CabeceraMarcacion]\nTRUNCATE TABLE [dsa_ecu_sg].[CabPedidos]\nTRUNCATE TABLE [dsa_ecu_sg].[CajaChica]\nTRUNCATE TABLE [dsa_ecu_sg].[CierreCajas]\nTRUNCATE TABLE [dsa_ecu_sg].[CierreChica]\nTRUNCATE TABLE [dsa_ecu_sg].[Consolidado_DomicilioTiempos]\nTRUNCATE TABLE [dsa_ecu_sg].[Costos_Historicos]\nTRUNCATE TABLE [dsa_ecu_sg].[CuponCliente]\nTRUNCATE TABLE [dsa_ecu_sg].[Cupones]\nTRUNCATE TABLE [dsa_ecu_sg].[Depositos]\nTRUNCATE TABLE [dsa_ecu_sg].[Detalle_Solicitud]\nTRUNCATE TABLE [dsa_ecu_sg].[DetPedidos]\nTRUNCATE TABLE [dsa_ecu_sg].[DinTrans]\nTRUNCATE TABLE [dsa_ecu_sg].[Estado_PyG]\nTRUNCATE TABLE [dsa_ecu_sg].[Factura_Electronica]\nTRUNCATE TABLE [dsa_ecu_sg].[GastosGenerales]\nTRUNCATE TABLE [dsa_ecu_sg].[InvMovimiento]\nTRUNCATE TABLE [dsa_ecu_sg].[Log_Marcacion_Hora_Extra]\nTRUNCATE TABLE [dsa_ecu_sg].[Marcacion]\nTRUNCATE TABLE [dsa_ecu_sg].[VentasCaja]\nTRUNCATE TABLE [dsa_ecu_sg].[VentasHora]\nTRUNCATE TABLE [dsa_ecu_sg].[VentasHora_Domicilio]\nTRUNCATE TABLE [dsa_ecu_sg].[Marcacion_Hora_Extra]\nTRUNCATE TABLE [dsa_ecu_sg].[MixCab]\nTRUNCATE TABLE [dsa_ecu_sg].[MixTrans]\nTRUNCATE TABLE [dsa_ecu_sg].[MovInv]\nTRUNCATE TABLE [dsa_ecu_sg].[Novedad]\nTRUNCATE TABLE [dsa_ecu_sg].[PlusCupones]\nTRUNCATE TABLE [dsa_ecu_sg].[PlusTrans]\nTRUNCATE TABLE [dsa_ecu_sg].[Porcentuales]\nTRUNCATE TABLE [dsa_ecu_sg].[Porcentuales_Restaurante]\nTRUNCATE TABLE [dsa_ecu_sg].[PyG]\nTRUNCATE TABLE [dsa_ecu_sg].[Solicitud]\nTRUNCATE TABLE [dsa_ecu_sg].[Solicitud_Cupon]\nTRUNCATE TABLE [dsa_ecu_sg].[Subdetalle_Solicitud]\nTRUNCATE TABLE [dsa_ecu_sg].[TomaFisica]\nTRUNCATE TABLE [dsa_ecu_sg].[VentasUsuario]\n\nSELECT 'ok' AS Resultado"
+								"sqlReaderQuery": "TRUNCATE TABLE [dsa_ecu_sg].[ArticuloBodega]\nTRUNCATE TABLE [dsa_ecu_sg].[AuditTrans]\nTRUNCATE TABLE [dsa_ecu_sg].[CabeceraMarcacion]\nTRUNCATE TABLE [dsa_ecu_sg].[CabPedidos]\nTRUNCATE TABLE [dsa_ecu_sg].[CajaChica]\nTRUNCATE TABLE [dsa_ecu_sg].[CierreCajas]\nTRUNCATE TABLE [dsa_ecu_sg].[CierreChica]\nTRUNCATE TABLE [dsa_ecu_sg].[Consolidado_DomicilioTiempos]\nTRUNCATE TABLE [dsa_ecu_sg].[CuponCliente]\nTRUNCATE TABLE [dsa_ecu_sg].[Cupones]\nTRUNCATE TABLE [dsa_ecu_sg].[Depositos]\nTRUNCATE TABLE [dsa_ecu_sg].[Detalle_Solicitud]\nTRUNCATE TABLE [dsa_ecu_sg].[DetPedidos]\nTRUNCATE TABLE [dsa_ecu_sg].[DinTrans]\nTRUNCATE TABLE [dsa_ecu_sg].[Estado_PyG]\nTRUNCATE TABLE [dsa_ecu_sg].[Factura_Electronica]\nTRUNCATE TABLE [dsa_ecu_sg].[GastosGenerales]\nTRUNCATE TABLE [dsa_ecu_sg].[Log_Marcacion_Hora_Extra]\nTRUNCATE TABLE [dsa_ecu_sg].[Marcacion]\nTRUNCATE TABLE [dsa_ecu_sg].[VentasCaja]\nTRUNCATE TABLE [dsa_ecu_sg].[VentasHora]\nTRUNCATE TABLE [dsa_ecu_sg].[VentasHora_Domicilio]\nTRUNCATE TABLE [dsa_ecu_sg].[Marcacion_Hora_Extra]\nTRUNCATE TABLE [dsa_ecu_sg].[MixCab]\nTRUNCATE TABLE [dsa_ecu_sg].[MixTrans]\nTRUNCATE TABLE [dsa_ecu_sg].[MovInv]\nTRUNCATE TABLE [dsa_ecu_sg].[Novedad]\nTRUNCATE TABLE [dsa_ecu_sg].[PlusCupones]\nTRUNCATE TABLE [dsa_ecu_sg].[PlusTrans]\nTRUNCATE TABLE [dsa_ecu_sg].[Porcentuales]\nTRUNCATE TABLE [dsa_ecu_sg].[Porcentuales_Restaurante]\nTRUNCATE TABLE [dsa_ecu_sg].[PyG]\nTRUNCATE TABLE [dsa_ecu_sg].[Solicitud]\nTRUNCATE TABLE [dsa_ecu_sg].[Solicitud_Cupon]\nTRUNCATE TABLE [dsa_ecu_sg].[Subdetalle_Solicitud]\nTRUNCATE TABLE [dsa_ecu_sg].[TomaFisica]\nTRUNCATE TABLE [dsa_ecu_sg].[VentasUsuario]\n\nSELECT 'ok' AS Resultado"
 							},
 							"dataset": {
 								"referenceName": "ds_dwh_general",
@@ -1114,6 +1353,12 @@
 								"dependencyConditions": [
 									"Completed"
 								]
+							},
+							{
+								"activity": "Carga DSA SG INV Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
 							}
 						],
 						"userProperties": [],
@@ -1705,6 +1950,27 @@
 						"typeProperties": {
 							"waitTimeInSeconds": 300
 						}
+					},
+					{
+						"name": "Carga DSA SG INV Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_Inventario",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"folder": {
@@ -1870,7 +2136,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_Recarga_Embutser_Ecuador')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Carga Multipais')]",

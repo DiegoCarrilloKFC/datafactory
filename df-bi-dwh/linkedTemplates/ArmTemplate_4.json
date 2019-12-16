@@ -22866,197 +22866,6 @@
 						]
 					},
 					{
-						"name": "Costos_Historicos",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 1,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Costos_Historicos]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[Costos_Historicos]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": {
-									"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{pipeline().parameters.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
-									"type": "Expression"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_CostHist",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Toma_Fisica",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Art_Bodega",
-											"type": "Int32"
-										},
-										{
-											"name": "Costo",
-											"type": "Double"
-										},
-										{
-											"name": "Fecha",
-											"type": "DateTime"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Articulo",
-											"type": "String"
-										},
-										{
-											"name": "Cantidad",
-											"type": "Double"
-										},
-										{
-											"name": "Tipo",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Bodega",
-											"type": "Int32"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Region",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[Costos_Historicos]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_CostHist",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Toma_Fisica",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Art_Bodega",
-											"type": "Int32"
-										},
-										{
-											"name": "Costo",
-											"type": "Double"
-										},
-										{
-											"name": "Fecha",
-											"type": "DateTime"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Articulo",
-											"type": "String"
-										},
-										{
-											"name": "Cantidad",
-											"type": "Double"
-										},
-										{
-											"name": "Tipo",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Bodega",
-											"type": "Int32"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Region",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[Costos_Historicos]"
-								}
-							}
-						]
-					},
-					{
 						"name": "CuponCliente",
 						"type": "Copy",
 						"dependsOn": [],
@@ -24755,221 +24564,6 @@
 										}
 									],
 									"cw_tableName": "[[dsa_ecu_sg].[GastosGenerales]"
-								}
-							}
-						]
-					},
-					{
-						"name": "InvMovimiento",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 1,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[InvMovimiento]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[InvMovimiento]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": {
-									"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{pipeline().parameters.FechaDesde}' AND inv.Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}') AND inv.Tipo_Mov!=6",
-									"type": "Expression"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Art_Bodega",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Unidad",
-											"type": "String"
-										},
-										{
-											"name": "Valor",
-											"type": "Double"
-										},
-										{
-											"name": "Cantidad",
-											"type": "Double"
-										},
-										{
-											"name": "Cod_Grupo",
-											"type": "String"
-										},
-										{
-											"name": "Costo",
-											"type": "Double"
-										},
-										{
-											"name": "Tipo_Mov",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Mov_Inv",
-											"type": "String"
-										},
-										{
-											"name": "Fecha",
-											"type": "DateTime"
-										},
-										{
-											"name": "Fecha_Creacion",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipMovInv",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Proveedor",
-											"type": "Int32"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Region",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[InvMovimiento]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Art_Bodega",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Unidad",
-											"type": "String"
-										},
-										{
-											"name": "Valor",
-											"type": "Double"
-										},
-										{
-											"name": "Cantidad",
-											"type": "Double"
-										},
-										{
-											"name": "Cod_Grupo",
-											"type": "String"
-										},
-										{
-											"name": "Costo",
-											"type": "Double"
-										},
-										{
-											"name": "Tipo_Mov",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Mov_Inv",
-											"type": "String"
-										},
-										{
-											"name": "Fecha",
-											"type": "DateTime"
-										},
-										{
-											"name": "Fecha_Creacion",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipMovInv",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Proveedor",
-											"type": "Int32"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Region",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[InvMovimiento]"
 								}
 							}
 						]
@@ -31572,6 +31166,2701 @@
 						"defaultValue": "QUITO"
 					}
 				},
+				"folder": {
+					"name": "dsa_SistemaGerenteEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_Transaccional_Inventario')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": null
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": null
+									}
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Obtener Servidores",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
+								"storedProcedureParameters": {
+									"CodigoETL": {
+										"type": "String",
+										"value": "BD-SG-ECU"
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+											"type": "Expression"
+										}
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+											"type": "Expression"
+										}
+									}
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Truncar Transaccional",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Obtener Servidores",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "TRUNCATE TABLE [dsa_ecu_sg].[Costos_Historicos]\nTRUNCATE TABLE [dsa_ecu_sg].[InvMovimiento]\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Carga Transaccional",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Truncar Transaccional",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Fecha Carga').output.firstRow.AnioFechaInicio, activity('Fecha Carga').output.firstRow.AnioFechaFin)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Costos_Historicos UIO Anterior",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[Costos_Historicos]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[Costos_Historicos]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionAnterior1}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior}')",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[Costos_Historicos]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior1",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior1",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[Costos_Historicos]"
+											}
+										}
+									]
+								},
+								{
+									"name": "InvMovimiento UIO Anterior",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[InvMovimiento]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[InvMovimiento]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionAnterior1}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior}') AND inv.Tipo_Mov!=6",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[InvMovimiento]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior1",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior1",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[InvMovimiento]"
+											}
+										}
+									]
+								},
+								{
+									"name": "Costos_Historicos GYE Anterior",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Costos_Historicos UIO Anterior",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[Costos_Historicos]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[Costos_Historicos]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionAnterior2}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior}')",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[Costos_Historicos]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior2",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior2",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[Costos_Historicos]"
+											}
+										}
+									]
+								},
+								{
+									"name": "InvMovimiento GYE Anterior",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "InvMovimiento UIO Anterior",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[InvMovimiento]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[InvMovimiento]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionAnterior2}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior}') AND inv.Tipo_Mov!=6",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[InvMovimiento]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior2",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior2",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[InvMovimiento]"
+											}
+										}
+									]
+								},
+								{
+									"name": "Costos_Historicos UIO Actual",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Costos_Historicos GYE Anterior",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[Costos_Historicos]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[Costos_Historicos]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual1}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}')",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[Costos_Historicos]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[Costos_Historicos]"
+											}
+										}
+									]
+								},
+								{
+									"name": "InvMovimiento UIO Actual",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "InvMovimiento GYE Anterior",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[InvMovimiento]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[InvMovimiento]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual1}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND inv.Tipo_Mov!=6",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[InvMovimiento]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[InvMovimiento]"
+											}
+										}
+									]
+								},
+								{
+									"name": "Costos_Historicos GYE Actual",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Costos_Historicos UIO Actual",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[Costos_Historicos]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[Costos_Historicos]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual2}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}')",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[Costos_Historicos]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[Costos_Historicos]"
+											}
+										}
+									]
+								},
+								{
+									"name": "InvMovimiento GYE Actual",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "InvMovimiento UIO Actual",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[InvMovimiento]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[InvMovimiento]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual2}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND inv.Tipo_Mov!=6",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[InvMovimiento]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[InvMovimiento]"
+											}
+										}
+									]
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Costos_Historicos UIO",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[Costos_Historicos]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[Costos_Historicos]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual1}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}')",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[Costos_Historicos]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[Costos_Historicos]"
+											}
+										}
+									]
+								},
+								{
+									"name": "InvMovimiento UIO",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[InvMovimiento]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[InvMovimiento]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual1}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND inv.Tipo_Mov!=6",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[InvMovimiento]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[InvMovimiento]"
+											}
+										}
+									]
+								},
+								{
+									"name": "Costos_Historicos GYE",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Costos_Historicos UIO",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[Costos_Historicos]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[Costos_Historicos]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual2}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}')",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[Costos_Historicos]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_CostHist",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Toma_Fisica",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Articulo",
+														"type": "String"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[Costos_Historicos]"
+											}
+										}
+									]
+								},
+								{
+									"name": "InvMovimiento GYE",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "InvMovimiento UIO",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dbo].[InvMovimiento]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[InvMovimiento]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual2}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND inv.Tipo_Mov!=6",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											}
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dbo].[InvMovimiento]",
+												"cw_servidor": {
+													"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+													"type": "Expression"
+												},
+												"cw_baseDatos": {
+													"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_Restaurante",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Art_Bodega",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Unidad",
+														"type": "String"
+													},
+													{
+														"name": "Valor",
+														"type": "Double"
+													},
+													{
+														"name": "Cantidad",
+														"type": "Double"
+													},
+													{
+														"name": "Cod_Grupo",
+														"type": "String"
+													},
+													{
+														"name": "Costo",
+														"type": "Double"
+													},
+													{
+														"name": "Tipo_Mov",
+														"type": "String"
+													},
+													{
+														"name": "Cod_Mov_Inv",
+														"type": "String"
+													},
+													{
+														"name": "Fecha",
+														"type": "DateTime"
+													},
+													{
+														"name": "Fecha_Creacion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Cod_TipMovInv",
+														"type": "Int32"
+													},
+													{
+														"name": "Estado",
+														"type": "Int32"
+													},
+													{
+														"name": "Cod_Proveedor",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													},
+													{
+														"name": "Region",
+														"type": "String"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[InvMovimiento]"
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Actualiza Estadistica",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Carga Transaccional",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dsa_ecu_sg",
+									"type": "String"
+								},
+								"Paso": {
+									"value": "5",
+									"type": "Int16"
+								},
+								"Proceso": {
+									"value": "General",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
 				"folder": {
 					"name": "dsa_SistemaGerenteEcu"
 				},
@@ -40118,393 +42407,6 @@
 				},
 				"folder": {
 					"name": "dsa_Intranet"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_Domicilio_Col')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Fecha Carga",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
-								"storedProcedureParameters": {
-									"Dias": {
-										"type": "Int32",
-										"value": null
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaFin": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": null
-									}
-								}
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Carga Transaccional",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Catalogos",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Domicilio_Col_Transaccional",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Servidor": {
-									"value": "@activity('Servidor Domicilio').output.firstRow.ServidorActual1",
-									"type": "Expression"
-								},
-								"BaseDatosDomicilio": {
-									"value": "@activity('Servidor Domicilio').output.firstRow.BaseDatosActual1",
-									"type": "Expression"
-								},
-								"BaseDatosDomicilioWeb": {
-									"value": "@activity('Servidor Domicilio Web').output.firstRow.BaseDatosActual1",
-									"type": "Expression"
-								},
-								"BaseDatosDomicilioGerente": {
-									"value": "@activity('Servidor Domicilio SG').output.firstRow.BaseDatosActual1",
-									"type": "Expression"
-								},
-								"FechaDesde": {
-									"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-									"type": "Expression"
-								},
-								"FechaHasta": {
-									"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "Carga Catalogos",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Servidor Domicilio",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "Servidor Domicilio Web",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "Servidor Domicilio SG",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Domicilio_Col_Catalogo",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Servidor": {
-									"value": "@activity('Servidor Domicilio').output.firstRow.ServidorActual1",
-									"type": "Expression"
-								},
-								"BaseDatosDomicilio": {
-									"value": "@activity('Servidor Domicilio').output.firstRow.BaseDatosActual1",
-									"type": "Expression"
-								},
-								"BaseDatosDomicilioWeb": {
-									"value": "@activity('Servidor Domicilio Web').output.firstRow.BaseDatosActual1",
-									"type": "Expression"
-								},
-								"BaseDatosDomicilioGerente": {
-									"value": "@activity('Servidor Domicilio SG').output.firstRow.BaseDatosActual1",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "Servidor Domicilio",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
-								"storedProcedureParameters": {
-									"CodigoETL": {
-										"type": "String",
-										"value": "BD-DOMI-COL"
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-											"type": "Expression"
-										}
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
-											"type": "Expression"
-										}
-									}
-								}
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Actualiza Estadistica 1",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Carga Transaccional",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dsa_col_domi",
-									"type": "String"
-								},
-								"Paso": {
-									"value": "1",
-									"type": "Int16"
-								},
-								"Proceso": {
-									"value": "General",
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Actualiza Estadistica 2",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Carga Transaccional",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dsa_col_domi",
-									"type": "String"
-								},
-								"Paso": {
-									"value": "2",
-									"type": "Int16"
-								},
-								"Proceso": {
-									"value": "General",
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Servidor Domicilio Web",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
-								"storedProcedureParameters": {
-									"CodigoETL": {
-										"type": "String",
-										"value": "BD-DOMIWEB-COL"
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-											"type": "Expression"
-										}
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
-											"type": "Expression"
-										}
-									}
-								}
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Servidor Domicilio SG",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
-								"storedProcedureParameters": {
-									"CodigoETL": {
-										"type": "String",
-										"value": "BD-DOMISG-COL"
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-											"type": "Expression"
-										}
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
-											"type": "Expression"
-										}
-									}
-								}
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					}
-				],
-				"folder": {
-					"name": "dsa_DomicilioCol"
 				},
 				"annotations": []
 			},
