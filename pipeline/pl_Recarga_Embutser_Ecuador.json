@@ -27,7 +27,7 @@
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "Escalar DWH",
+						"activity": "Carga Dimension Ecu",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -100,9 +100,9 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Escalar DWH 2",
+						"activity": "Carga Embutser Ecu",
 						"dependencyConditions": [
-							"Succeeded"
+							"Completed"
 						]
 					}
 				],
@@ -122,105 +122,6 @@
 					"dataset": {
 						"referenceName": "ds_dwh_general",
 						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "Escalar DWH",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Espera 1",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_admin_Escalar_DWH",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"DWU": "DW200c"
-					}
-				}
-			},
-			{
-				"name": "Espera 1",
-				"type": "Wait",
-				"dependsOn": [
-					{
-						"activity": "Enviar Notificacion",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"waitTimeInSeconds": 300
-				}
-			},
-			{
-				"name": "Escalar DWH 2",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Carga Embutser Ecu",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_admin_Escalar_DWH",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"DWU": "DW100c"
-					}
-				}
-			},
-			{
-				"name": "Enviar Notificacion",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "Carga Dimension Ecu",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "adm.usp_EnviarSuscripcion",
-					"storedProcedureParameters": {
-						"JobID": {
-							"value": "C86CF45F-0A1A-40CD-ABC8-FEFC873B051D",
-							"type": "String"
-						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "linked_sharepoint",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
-						"BaseDatos": "dw_admin_Bi"
 					}
 				}
 			}
