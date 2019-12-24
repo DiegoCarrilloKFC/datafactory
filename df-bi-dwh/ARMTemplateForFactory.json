@@ -2299,7 +2299,14 @@
 					{
 						"name": "Inicializar Etapas",
 						"type": "Lookup",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Escalar DWH",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -2345,7 +2352,14 @@
 					{
 						"name": "Recarga Permisologia",
 						"type": "ExecutePipeline",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Escalar DWH",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -2388,7 +2402,7 @@
 						"type": "Lookup",
 						"dependsOn": [
 							{
-								"activity": "Carga Operacion UyC Ecu",
+								"activity": "Reescalar DWH 2",
 								"dependencyConditions": [
 									"Completed"
 								]
@@ -2789,6 +2803,45 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "Escalar DWH",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW500c"
+							}
+						}
+					},
+					{
+						"name": "Reescalar DWH 2",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion UyC Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW100c"
+							}
+						}
 					}
 				],
 				"folder": {
@@ -2821,7 +2874,8 @@
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Operaciones_Arg')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Auditoria_Arg')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sip_Ecu')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_Transaccional_Inventario')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_Transaccional_Inventario')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_admin_Escalar_DWH')]"
 			]
 		},
 		{
