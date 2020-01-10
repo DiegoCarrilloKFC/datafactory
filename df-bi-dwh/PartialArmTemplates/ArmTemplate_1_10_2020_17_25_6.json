@@ -1,0 +1,256 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-bi-dwh"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_App_ContabilidadRegional')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "contabilidad",
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "SELECT\n\tFechaCarga=DATEADD(HH,-5,GETDATE()),\n\tFechaDesde=convert(smalldatetime,DATEADD(s,0,DATEADD(mm, DATEDIFF(m,0,DATEADD(HH,-5,GETDATE()))-3,0)),112),\n\tFechaHasta=convert(smalldatetime,EOMONTH(DATEADD(HH,-5,GETDATE()),-1),112)"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Cargar Catalogo",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_App_ContabilidadRegional_Catalogo",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": {
+									"value": "@pipeline().parameters.Servidor",
+									"type": "Expression"
+								},
+								"BaseDatos": {
+									"value": "@pipeline().parameters.BaseDatos",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Carga Transaccional",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Cargar Catalogo",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_App_ContabilidadRegional_Transaccional",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": {
+									"value": "@pipeline().parameters.Servidor",
+									"type": "Expression"
+								},
+								"BaseDatos": {
+									"value": "@pipeline().parameters.BaseDatos",
+									"type": "Expression"
+								},
+								"FechaDesde": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+									"type": "Expression"
+								},
+								"FechaHasta": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SAZSHAREPBDD\\BD_NEGOCIO"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "SharePoint_ListaExterna"
+					}
+				},
+				"folder": {
+					"name": "dsa_Intranet"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sip_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "SIP",
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "SELECT\n\tFechaCarga=GETDATE(),\n\tFechaDesde=MIN(Fecha),--inicia en enero +1\n\tFechaHasta=DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) + 2, -1)--termina en diciembre+1\nFROM dwh_dim.Tiempo\nwhere AnioNumero52Semanas=year(DATEADD(yy, DATEDIFF(yy, 0, GETDATE())+1, 0))"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Cargar Catalogo",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sip_Ecu_Catalogo",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": "SAZCONTADB",
+								"BaseDatos": "Presupuestos"
+							}
+						}
+					},
+					{
+						"name": "Cargar Transaccional",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Cargar Catalogo",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sip_Ecu_Transaccional",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": "SAZCONTADB",
+								"BaseDatos": "Presupuestos",
+								"FechaDesde": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+									"type": "Expression"
+								},
+								"FechaHasta": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Actualizar Estadisticas",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Cargar Transaccional",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "UPDATE STATISTICS [dsa_ecu_sip].[Cuentas]\nUPDATE STATISTICS [dsa_ecu_sip].[PresupuestoGastos]\nUPDATE STATISTICS [dsa_ecu_sip].[PresupuestoVentas]\nUPDATE STATISTICS [dsa_ecu_sip].[SolicitudTotal_Aprobacion]\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					}
+				],
+				"folder": {
+					"name": "dsa_SipEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
