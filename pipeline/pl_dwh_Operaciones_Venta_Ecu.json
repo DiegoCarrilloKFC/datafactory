@@ -6,7 +6,14 @@
 			{
 				"name": "ope_FacSgVentaDiaria",
 				"type": "SqlServerStoredProcedure",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -16,11 +23,21 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureName": "[dwh_ecu_ope].[usp_CargaFacSgVentaDiaria2017]",
 					"storedProcedureParameters": {
-						"Esquema": {
-							"value": "dwh_ecu_ope",
-							"type": "String"
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
 						},
 						"IDCadenaSistemaGerente": {
 							"value": {
@@ -34,10 +51,6 @@
 								"value": "@pipeline().parameters.Pais",
 								"type": "Expression"
 							},
-							"type": "String"
-						},
-						"Procedimiento": {
-							"value": "usp_CargaFacSgVentaDiaria2017",
 							"type": "String"
 						},
 						"TipoCarga": {
@@ -74,11 +87,21 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureName": "[dwh_ecu_ope].[usp_CargaFacSgVentaAcumulada]",
 					"storedProcedureParameters": {
-						"Esquema": {
-							"value": "dwh_ecu_ope",
-							"type": "String"
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
 						},
 						"IDCadenaSistemaGerente": {
 							"value": {
@@ -92,10 +115,6 @@
 								"value": "@pipeline().parameters.Pais",
 								"type": "Expression"
 							},
-							"type": "String"
-						},
-						"Procedimiento": {
-							"value": "usp_CargaFacSgVentaAcumulada",
 							"type": "String"
 						},
 						"TipoCarga": {
@@ -140,6 +159,47 @@
 					"parameters": {
 						"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
 						"BaseDatos": "dw_dwh_suscripcion"
+					}
+				}
+			},
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
+						"storedProcedureParameters": {
+							"Dias": {
+								"type": "Int32",
+								"value": null
+							},
+							"FechaDesde": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaFin": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaHasta": {
+								"type": "DateTime",
+								"value": null
+							}
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
 					}
 				}
 			}
