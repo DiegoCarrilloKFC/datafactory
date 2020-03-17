@@ -113,8 +113,8 @@
 				}
 			},
 			{
-				"name": "Carga Info Sus Venta",
-				"type": "ExecutePipeline",
+				"name": "Carga Info Suscripcion Venta",
+				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
 						"activity": "ope_FacSgVentaAcumulada",
@@ -123,16 +123,23 @@
 						]
 					}
 				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 300,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
+					"storedProcedureName": "[admin_btc].[usp_CargaInfoSuscripcion_Recarga_Venta_Ecu]"
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_sharepoint",
+					"type": "LinkedServiceReference",
 					"parameters": {
-						"Proceso": "VENTA_ECU",
-						"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Ecu"
+						"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+						"BaseDatos": "dw_dwh_suscripcion"
 					}
 				}
 			}
