@@ -38063,6 +38063,698 @@
 								}
 							}
 						]
+					},
+					{
+						"name": "Cupones",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Cupones]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[Cupones]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Cupon,Cod_CuponCliente,Cod_Cadena,Num_Cupon,Estado,Estado_Impr,Fisico_Cupon,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Cupones",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Cupon",
+											"type": "String"
+										},
+										{
+											"name": "Cod_CuponCliente",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Num_Cupon",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado_Impr",
+											"type": "Int32"
+										},
+										{
+											"name": "Fisico_Cupon",
+											"type": "Int64"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[Cupones]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Cupon",
+											"type": "String"
+										},
+										{
+											"name": "Cod_CuponCliente",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Num_Cupon",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado_Impr",
+											"type": "Int32"
+										},
+										{
+											"name": "Fisico_Cupon",
+											"type": "Int64"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[Cupones]"
+								}
+							}
+						]
+					},
+					{
+						"name": "CuponCliente",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[CuponCliente]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[CuponCliente]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_CuponCliente,Cod_Cadena,Cod_Canje,Cod_Cliente,Nombre_Cupon,Descripcion,Iniciales,Total,Estado,Fecha,Fecha_Caducidad,Locales,Nombre_Alterno,Num_Factura,Tipo,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.CuponCliente",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_CuponCliente",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Canje",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cliente",
+											"type": "Int32"
+										},
+										{
+											"name": "Nombre_Cupon",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Iniciales",
+											"type": "String"
+										},
+										{
+											"name": "Total",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Fecha_Caducidad",
+											"type": "DateTime"
+										},
+										{
+											"name": "Locales",
+											"type": "String"
+										},
+										{
+											"name": "Nombre_Alterno",
+											"type": "String"
+										},
+										{
+											"name": "Num_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Tipo",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[CuponCliente]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_CuponCliente",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Canje",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cliente",
+											"type": "Int32"
+										},
+										{
+											"name": "Nombre_Cupon",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Iniciales",
+											"type": "String"
+										},
+										{
+											"name": "Total",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Fecha_Caducidad",
+											"type": "DateTime"
+										},
+										{
+											"name": "Locales",
+											"type": "String"
+										},
+										{
+											"name": "Nombre_Alterno",
+											"type": "String"
+										},
+										{
+											"name": "Num_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Tipo",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[CuponCliente]"
+								}
+							}
+						]
+					},
+					{
+						"name": "PlusCupones",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[PlusCupones]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[PlusCupones]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Cupon,Cod_Plu,Cantidad,Estado,Tipo,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.PlusCupones",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Cupon",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Plu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Tipo",
+											"type": "String"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[PlusCupones]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Cupon",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Plu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Tipo",
+											"type": "String"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[PlusCupones]"
+								}
+							}
+						]
+					},
+					{
+						"name": "VentaXMedio",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[VentaXMedio]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[VentaXMedio]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,cod_vtamedio,cod_cierre,fecha,cod_medio,ventaNeta,iva,ventaBruta,transacciones,YEAR(Fecha ) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.VentaXMedio WHERE Fecha  >= '@{pipeline().parameters.FechaDesde}' AND Fecha  < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_vtamedio",
+											"type": "Int32"
+										},
+										{
+											"name": "cod_cierre",
+											"type": "String"
+										},
+										{
+											"name": "fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_medio",
+											"type": "Int32"
+										},
+										{
+											"name": "ventaNeta",
+											"type": "Double"
+										},
+										{
+											"name": "iva",
+											"type": "Double"
+										},
+										{
+											"name": "ventaBruta",
+											"type": "Double"
+										},
+										{
+											"name": "transacciones",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[VentaXMedio]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_vtamedio",
+											"type": "Int32"
+										},
+										{
+											"name": "cod_cierre",
+											"type": "String"
+										},
+										{
+											"name": "fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_medio",
+											"type": "Int32"
+										},
+										{
+											"name": "ventaNeta",
+											"type": "Double"
+										},
+										{
+											"name": "iva",
+											"type": "Double"
+										},
+										{
+											"name": "ventaBruta",
+											"type": "Double"
+										},
+										{
+											"name": "transacciones",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[VentaXMedio]"
+								}
+							}
+						]
 					}
 				],
 				"parameters": {
