@@ -41,7 +41,7 @@
 					},
 					"waitOnCompletion": true,
 					"parameters": {
-						"IDCadenaSistemaGerente": "0",
+						"IDCadenaSistemaGerente": 0,
 						"Pais": "ECU",
 						"TipoCarga": "MANUAL"
 					}
@@ -89,7 +89,7 @@
 					},
 					"waitOnCompletion": true,
 					"parameters": {
-						"IDCadenaSistemaGerente": "0",
+						"IDCadenaSistemaGerente": 0,
 						"Pais": "ECU",
 						"TipoCarga": "MANUAL"
 					}
@@ -101,6 +101,12 @@
 				"dependsOn": [
 					{
 						"activity": "Carga Auditoria Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "Recarga Venta Ecu",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -123,6 +129,22 @@
 						"referenceName": "ds_dwh_general",
 						"type": "DatasetReference"
 					}
+				}
+			},
+			{
+				"name": "Recarga Venta Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimension Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitOnCompletion": true
 				}
 			}
 		],
