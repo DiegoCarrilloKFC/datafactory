@@ -38755,6 +38755,308 @@
 								}
 							}
 						]
+					},
+					{
+						"name": "AuditTrans",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[AuditTrans]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[AuditTrans]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Audit,Cod_Restaurante,Cod_Usuario,Fecha_Audit,Modulo,Descripcion,Accion,YEAR(Fecha_Audit) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.AuditTrans WHERE Fecha_Audit >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Audit < DATEADD(DAY,2,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Audit",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Audit",
+											"type": "DateTime"
+										},
+										{
+											"name": "Modulo",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Accion",
+											"type": "String"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[AuditTrans]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Audit",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Audit",
+											"type": "DateTime"
+										},
+										{
+											"name": "Modulo",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Accion",
+											"type": "String"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[AuditTrans]"
+								}
+							}
+						]
+					},
+					{
+						"name": "MixCab",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[MixCab]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[MixCab]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_MixCab,Cod_Restaurante,Fecha,Estado,Cod_Mov_Inv,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.MixCab WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_MixCab",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Mov_Inv",
+											"type": "String"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[MixCab]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_MixCab",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Mov_Inv",
+											"type": "String"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[MixCab]"
+								}
+							}
+						]
 					}
 				],
 				"parameters": {
