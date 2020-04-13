@@ -1,0 +1,1082 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-bi-dwh"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_Transaccional_2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "VentasCaja",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[VentasCaja]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[VentasCaja]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Ven_Caja,Cod_Restaurante,Fecha,Cod_Caja,Tiempo,Transacciones,Valor,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.VentasCaja WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Ven_Caja",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Caja",
+											"type": "String"
+										},
+										{
+											"name": "Tiempo",
+											"type": "String"
+										},
+										{
+											"name": "Transacciones",
+											"type": "Double"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[VentasCaja]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Ven_Caja",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Caja",
+											"type": "String"
+										},
+										{
+											"name": "Tiempo",
+											"type": "String"
+										},
+										{
+											"name": "Transacciones",
+											"type": "Double"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[VentasCaja]"
+								}
+							}
+						]
+					},
+					{
+						"name": "VentasHora",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[VentasHora]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[VentasHora]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Hora,Cod_Restaurante,Fecha,Tiempo,Transacciones,Valor,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.VentasHora WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Hora",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Tiempo",
+											"type": "String"
+										},
+										{
+											"name": "Transacciones",
+											"type": "Double"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[VentasHora]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Hora",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Tiempo",
+											"type": "String"
+										},
+										{
+											"name": "Transacciones",
+											"type": "Double"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[VentasHora]"
+								}
+							}
+						]
+					},
+					{
+						"name": "VentasHora_Domicilio",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[VentasHora_Domicilio]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[VentasHora_Domicilio]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Hora_domicilio,Cod_Restaurante,Fecha,Tiempo,Transacciones,Valor,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.VentasHora_Domicilio WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Hora_domicilio",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Tiempo",
+											"type": "String"
+										},
+										{
+											"name": "Transacciones",
+											"type": "Double"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[VentasHora_Domicilio]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Hora_domicilio",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Tiempo",
+											"type": "String"
+										},
+										{
+											"name": "Transacciones",
+											"type": "Double"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[VentasHora_Domicilio]"
+								}
+							}
+						]
+					},
+					{
+						"name": "VentasUsuario",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[VentasUsuario]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[VentasUsuario]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Ven_Usuario,Cod_Restaurante,Fecha,Cod_Usuario,Usuario,NombreUsuario,Tiempo,Transacciones,Valor,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.VentasUsuario WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Ven_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Usuario",
+											"type": "String"
+										},
+										{
+											"name": "NombreUsuario",
+											"type": "String"
+										},
+										{
+											"name": "Tiempo",
+											"type": "String"
+										},
+										{
+											"name": "Transacciones",
+											"type": "Double"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[VentasUsuario]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Ven_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Usuario",
+											"type": "String"
+										},
+										{
+											"name": "NombreUsuario",
+											"type": "String"
+										},
+										{
+											"name": "Tiempo",
+											"type": "String"
+										},
+										{
+											"name": "Transacciones",
+											"type": "Double"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[VentasUsuario]"
+								}
+							}
+						]
+					},
+					{
+						"name": "If Condition1",
+						"description": "Aplica solo para QUITO",
+						"type": "IfCondition",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(pipeline().parameters.Region,'QUITO')",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "ST_Transaccional",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 3,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "[[dsa_ecu_sg].[ST_Transaccional]"
+										},
+										{
+											"name": "Destination",
+											"value": "[[dsa_ecu_sg].[ST_Transaccional]"
+										}
+									],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "SELECT GETDATE() AS FechaCarga,Merchantid,Fecha_Transaccion,Hora_Transaccion,Estado,Numero_Lote,Face_Value,Id_Grupo_Tarjeta,Id_Adquirente,numero_tarjeta_mask,Numero_Autorizacion,Numero_Referencia,Tipo_Transaccion,Resultado_Externo,Tipo_Switch,origen_Transaccion,YEAR(Fecha_Transaccion) AS Anio FROM dbo.ST_Transaccional WHERE Fecha_Transaccion >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Transaccion < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBatchSize": 10000,
+											"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[ST_Transaccional]",
+											"allowPolyBase": true,
+											"polyBaseSettings": {
+												"rejectValue": 0,
+												"rejectType": "value",
+												"useTypeDefault": true
+											},
+											"disableMetricsCollection": false
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "linked_storage",
+												"type": "LinkedServiceReference"
+											},
+											"path": "contenedor"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_SistemaGerenteEcu",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Merchantid",
+														"type": "String"
+													},
+													{
+														"name": "Fecha_Transaccion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Hora_Transaccion",
+														"type": "String"
+													},
+													{
+														"name": "Estado",
+														"type": "String"
+													},
+													{
+														"name": "Numero_Lote",
+														"type": "String"
+													},
+													{
+														"name": "Face_Value",
+														"type": "Decimal"
+													},
+													{
+														"name": "Id_Grupo_Tarjeta",
+														"type": "String"
+													},
+													{
+														"name": "Id_Adquirente",
+														"type": "String"
+													},
+													{
+														"name": "numero_tarjeta_mask",
+														"type": "String"
+													},
+													{
+														"name": "Numero_Autorizacion",
+														"type": "String"
+													},
+													{
+														"name": "Numero_Referencia",
+														"type": "String"
+													},
+													{
+														"name": "Tipo_Transaccion",
+														"type": "String"
+													},
+													{
+														"name": "Resultado_Externo",
+														"type": "String"
+													},
+													{
+														"name": "Tipo_Switch",
+														"type": "Int32"
+													},
+													{
+														"name": "origen_Transaccion",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													}
+												],
+												"cw_tableName": "[[dbo].[ST_Transaccional]",
+												"cw_servidor": {
+													"value": "@pipeline().parameters.Servidor",
+													"type": "Expression"
+												},
+												"cw_baseDatos": "GerenteNacional_19"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dwh",
+											"type": "DatasetReference",
+											"parameters": {
+												"cw_structure": [
+													{
+														"name": "FechaCarga",
+														"type": "DateTime"
+													},
+													{
+														"name": "Merchantid",
+														"type": "String"
+													},
+													{
+														"name": "Fecha_Transaccion",
+														"type": "DateTime"
+													},
+													{
+														"name": "Hora_Transaccion",
+														"type": "String"
+													},
+													{
+														"name": "Estado",
+														"type": "String"
+													},
+													{
+														"name": "Numero_Lote",
+														"type": "String"
+													},
+													{
+														"name": "Face_Value",
+														"type": "Decimal"
+													},
+													{
+														"name": "Id_Grupo_Tarjeta",
+														"type": "String"
+													},
+													{
+														"name": "Id_Adquirente",
+														"type": "String"
+													},
+													{
+														"name": "numero_tarjeta_mask",
+														"type": "String"
+													},
+													{
+														"name": "Numero_Autorizacion",
+														"type": "String"
+													},
+													{
+														"name": "Numero_Referencia",
+														"type": "String"
+													},
+													{
+														"name": "Tipo_Transaccion",
+														"type": "String"
+													},
+													{
+														"name": "Resultado_Externo",
+														"type": "String"
+													},
+													{
+														"name": "Tipo_Switch",
+														"type": "Int32"
+													},
+													{
+														"name": "origen_Transaccion",
+														"type": "Int32"
+													},
+													{
+														"name": "Anio",
+														"type": "Int32"
+													}
+												],
+												"cw_tableName": "[[dsa_ecu_sg].[ST_Transaccional]"
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "VentaXMedio",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[VentaXMedio]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[VentaXMedio]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,cod_vtamedio,cod_cierre,fecha,cod_medio,ventaNeta,iva,ventaBruta,transacciones,YEAR(Fecha ) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.VentaXMedio WHERE Fecha  >= '@{pipeline().parameters.FechaDesde}' AND Fecha  < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_vtamedio",
+											"type": "Int32"
+										},
+										{
+											"name": "cod_cierre",
+											"type": "String"
+										},
+										{
+											"name": "fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_medio",
+											"type": "Int32"
+										},
+										{
+											"name": "ventaNeta",
+											"type": "Double"
+										},
+										{
+											"name": "iva",
+											"type": "Double"
+										},
+										{
+											"name": "ventaBruta",
+											"type": "Double"
+										},
+										{
+											"name": "transacciones",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[VentaXMedio]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_vtamedio",
+											"type": "Int32"
+										},
+										{
+											"name": "cod_cierre",
+											"type": "String"
+										},
+										{
+											"name": "fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_medio",
+											"type": "Int32"
+										},
+										{
+											"name": "ventaNeta",
+											"type": "Double"
+										},
+										{
+											"name": "iva",
+											"type": "Double"
+										},
+										{
+											"name": "ventaBruta",
+											"type": "Double"
+										},
+										{
+											"name": "transacciones",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[VentaXMedio]"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SAZGERENTEDBUIO"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "SQLGerente_19"
+					},
+					"FechaDesde": {
+						"type": "string"
+					},
+					"FechaHasta": {
+						"type": "string"
+					},
+					"Region": {
+						"type": "string",
+						"defaultValue": "QUITO"
+					}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerenteEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
