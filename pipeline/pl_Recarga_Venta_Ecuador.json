@@ -1,0 +1,75 @@
+{
+	"name": "pl_Recarga_Venta_Ecuador",
+	"properties": {
+		"activities": [
+			{
+				"name": "Carga DSA SG Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_SistemaGerente_Ecu_Auditoria",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Carga Dimension Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga DSA SG Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Dimensiones_Auditoria",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": 0,
+						"Pais": "ECU",
+						"TipoCarga": "MANUAL"
+					}
+				}
+			},
+			{
+				"name": "Recarga Venta Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimension Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_Venta_Ecu",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ECU",
+						"TipoCarga": "MANUAL"
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Carga_dwh_Triggers"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
