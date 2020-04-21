@@ -5,7 +5,14 @@
 			{
 				"name": "Carga DSA SG Ecu",
 				"type": "ExecutePipeline",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Enviar Suscripcion Venta Agregadores",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
@@ -62,6 +69,30 @@
 						"IDCadenaSistemaGerente": "0",
 						"Pais": "ECU",
 						"TipoCarga": "MANUAL"
+					}
+				}
+			},
+			{
+				"name": "Enviar Suscripcion Venta Agregadores",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_btc].[EnviarSuscripcionVentaAgregador]"
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_sharepoint",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+						"BaseDatos": "dw_dwh_suscripcion"
 					}
 				}
 			}
