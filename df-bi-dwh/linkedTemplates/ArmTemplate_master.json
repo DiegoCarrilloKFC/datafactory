@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_ax_ecu'"
 		},
+		"linked_domicilio_col_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linked_domicilio_col'"
+		},
 		"linked_dwh_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_dwh'"
@@ -58,10 +62,6 @@
 		"linked_storage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_storage'"
-		},
-		"linked_domicilio_col_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'linked_domicilio_col'"
 		},
 		"containerUri": {
 			"type": "string",
@@ -123,6 +123,9 @@
 					"linked_ax_ecu_connectionString": {
 						"value": "[parameters('linked_ax_ecu_connectionString')]"
 					},
+					"linked_domicilio_col_connectionString": {
+						"value": "[parameters('linked_domicilio_col_connectionString')]"
+					},
 					"linked_mp_ecu_connectionString": {
 						"value": "[parameters('linked_mp_ecu_connectionString')]"
 					},
@@ -137,9 +140,6 @@
 					},
 					"linked_sg_ecu_connectionString": {
 						"value": "[parameters('linked_sg_ecu_connectionString')]"
-					},
-					"linked_sg_esp_connectionString": {
-						"value": "[parameters('linked_sg_esp_connectionString')]"
 					}
 				}
 			},
@@ -161,14 +161,14 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"linked_sg_esp_connectionString": {
+						"value": "[parameters('linked_sg_esp_connectionString')]"
+					},
 					"linked_sharepoint_connectionString": {
 						"value": "[parameters('linked_sharepoint_connectionString')]"
 					},
 					"linked_sip_ecu_connectionString": {
 						"value": "[parameters('linked_sip_ecu_connectionString')]"
-					},
-					"linked_domicilio_col_connectionString": {
-						"value": "[parameters('linked_domicilio_col_connectionString')]"
 					}
 				}
 			},
@@ -254,6 +254,26 @@
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_5')]"
+			]
+		},
+		{
+			"name": "ArmTemplate_7",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_7.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_6')]"
 			]
 		}
 	]
