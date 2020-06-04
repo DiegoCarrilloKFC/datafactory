@@ -4655,6 +4655,189 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "VentaXMedio",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[VentaXMedio]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_chl_sg].[VentaXMedio]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT GETDATE() AS FechaCarga,cod_vtamedio,cod_cierre,fecha,cod_medio,ventaNeta,ventaBruta,transacciones,iva,cod_restaurante,Sistema,rvc,YEAR(Fecha) AS Anio FROM dbo.VentaXMedio WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBatchSize": 10000,
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_SistemaGerenteChl",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "cod_vtamedio",
+									"type": "Int32"
+								},
+								{
+									"name": "cod_cierre",
+									"type": "String"
+								},
+								{
+									"name": "fecha",
+									"type": "DateTime"
+								},
+								{
+									"name": "cod_medio",
+									"type": "Int32"
+								},
+								{
+									"name": "ventaNeta",
+									"type": "Double"
+								},
+								{
+									"name": "ventaBruta",
+									"type": "Double"
+								},
+								{
+									"name": "transacciones",
+									"type": "Int32"
+								},
+								{
+									"name": "iva",
+									"type": "Double"
+								},
+								{
+									"name": "cod_restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Sistema",
+									"type": "Int32"
+								},
+								{
+									"name": "rvc",
+									"type": "String"
+								},
+								{
+									"name": "Anio",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dbo].[VentaXMedio]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "cod_vtamedio",
+									"type": "Int32"
+								},
+								{
+									"name": "cod_cierre",
+									"type": "String"
+								},
+								{
+									"name": "fecha",
+									"type": "DateTime"
+								},
+								{
+									"name": "cod_medio",
+									"type": "Int32"
+								},
+								{
+									"name": "ventaNeta",
+									"type": "Double"
+								},
+								{
+									"name": "ventaBruta",
+									"type": "Double"
+								},
+								{
+									"name": "transacciones",
+									"type": "Int32"
+								},
+								{
+									"name": "iva",
+									"type": "Double"
+								},
+								{
+									"name": "cod_restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Sistema",
+									"type": "Int32"
+								},
+								{
+									"name": "rvc",
+									"type": "String"
+								},
+								{
+									"name": "Anio",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dsa_chl_sg].[VentaXMedio]"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
