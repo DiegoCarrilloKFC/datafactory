@@ -7,10 +7,6 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "df-bi-dwh"
 		},
-		"linked_sg_esp_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'linked_sg_esp'"
-		},
 		"linked_sharepoint_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_sharepoint'"
@@ -24,34 +20,6 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
-		{
-			"name": "[concat(parameters('factoryName'), '/linked_sg_esp')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Conexión dinámica Sistema Gerente España",
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "192.168.146.61"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "SQLGerente_19"
-					}
-				},
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('linked_sg_esp_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "IR-SistemaGerenteEsp",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": []
-		},
 		{
 			"name": "[concat(parameters('factoryName'), '/linked_sharepoint')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -291,462 +259,6 @@
 				},
 				"folder": {
 					"name": "Admin_dwh"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Chl')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Fecha Carga",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
-								"storedProcedureParameters": {
-									"Dias": {
-										"type": "Int32",
-										"value": null
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaFin": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": null
-									}
-								}
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Cargar Catalogo 1",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Truncar Transaccional",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_SistemaGerente_Chl_Catalogo_1",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Servidor": {
-									"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
-									"type": "Expression"
-								},
-								"BaseDatos": {
-									"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "Carga Transaccional",
-						"type": "IfCondition",
-						"dependsOn": [
-							{
-								"activity": "Cargar Catalogo 1",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"expression": {
-								"value": "@equals(activity('Fecha Carga').output.firstRow.AnioFechaInicio, activity('Fecha Carga').output.firstRow.AnioFechaFin)",
-								"type": "Expression"
-							},
-							"ifFalseActivities": [
-								{
-									"name": "Carga Anterior",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "pl_dsa_SistemaGerente_Chl_Transaccional_1",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"Servidor": {
-												"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior1",
-												"type": "Expression"
-											},
-											"BaseDatos": {
-												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior1",
-												"type": "Expression"
-											},
-											"FechaDesde": {
-												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-												"type": "Expression"
-											},
-											"FechaHasta": {
-												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
-												"type": "Expression"
-											}
-										}
-									}
-								},
-								{
-									"name": "Carga Actual_",
-									"type": "ExecutePipeline",
-									"dependsOn": [
-										{
-											"activity": "Carga Anterior",
-											"dependencyConditions": [
-												"Completed"
-											]
-										}
-									],
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "pl_dsa_SistemaGerente_Chl_Transaccional_1",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"Servidor": {
-												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
-												"type": "Expression"
-											},
-											"BaseDatos": {
-												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
-												"type": "Expression"
-											},
-											"FechaDesde": {
-												"value": "@activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual",
-												"type": "Expression"
-											},
-											"FechaHasta": {
-												"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							],
-							"ifTrueActivities": [
-								{
-									"name": "Carga Actual",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "pl_dsa_SistemaGerente_Chl_Transaccional_1",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"Servidor": {
-												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
-												"type": "Expression"
-											},
-											"BaseDatos": {
-												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
-												"type": "Expression"
-											},
-											"FechaDesde": {
-												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-												"type": "Expression"
-											},
-											"FechaHasta": {
-												"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							]
-						}
-					},
-					{
-						"name": "Truncar Transaccional",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Obtener Servidores",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "TRUNCATE TABLE [dsa_chl_sg].[ArticuloBodega]\nTRUNCATE TABLE [dsa_chl_sg].[AuditTrans]\nTRUNCATE TABLE [dsa_chl_sg].[CabPedidos]\nTRUNCATE TABLE [dsa_chl_sg].[CajaChica]\nTRUNCATE TABLE [dsa_chl_sg].[CierreCajas]\nTRUNCATE TABLE [dsa_chl_sg].[CierreChica]\nTRUNCATE TABLE [dsa_chl_sg].[Costos_Historicos]\nTRUNCATE TABLE [dsa_chl_sg].[CuponCliente]\nTRUNCATE TABLE [dsa_chl_sg].[Cupones]\nTRUNCATE TABLE [dsa_chl_sg].[Depositos]\nTRUNCATE TABLE [dsa_chl_sg].[DetPedidos]\nTRUNCATE TABLE [dsa_chl_sg].[DinTrans]\nTRUNCATE TABLE [dsa_chl_sg].[Estado_PyG]\nTRUNCATE TABLE [dsa_chl_sg].[GastosGenerales]\nTRUNCATE TABLE [dsa_chl_sg].[InvMovimiento]\nTRUNCATE TABLE [dsa_chl_sg].[MixCab]\nTRUNCATE TABLE [dsa_chl_sg].[MixTrans]\nTRUNCATE TABLE [dsa_chl_sg].[MovInv]\nTRUNCATE TABLE [dsa_chl_sg].[PlusCupones]\nTRUNCATE TABLE [dsa_chl_sg].[PlusTrans]\nTRUNCATE TABLE [dsa_chl_sg].[Porcentuales]\nTRUNCATE TABLE [dsa_chl_sg].[Porcentuales_Restaurante]\nTRUNCATE TABLE [dsa_chl_sg].[PyG]\nTRUNCATE TABLE [dsa_chl_sg].[TomaFisica]\nTRUNCATE TABLE [dsa_chl_sg].[VentasHora]\nTRUNCATE TABLE [dsa_chl_sg].[VentasHora_Domicilio]\n\n\nSELECT 'ok' AS Resultado"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					},
-					{
-						"name": "Obtener Servidores",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
-								"storedProcedureParameters": {
-									"CodigoETL": {
-										"type": "String",
-										"value": "BD-SG-CHL"
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-											"type": "Expression"
-										}
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
-											"type": "Expression"
-										}
-									}
-								}
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Actualiza Estadistica 1",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Carga Transaccional",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dsa_chl_sg",
-									"type": "String"
-								},
-								"Paso": {
-									"value": "1",
-									"type": "Int16"
-								},
-								"Proceso": {
-									"value": "General",
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Actualiza Estadistica 2",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Carga Transaccional",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dsa_chl_sg",
-									"type": "String"
-								},
-								"Paso": {
-									"value": "2",
-									"type": "Int16"
-								},
-								"Proceso": {
-									"value": "General",
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Actualiza Estadistica 3",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Carga Transaccional",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dsa_chl_sg",
-									"type": "String"
-								},
-								"Paso": {
-									"value": "3",
-									"type": "Int16"
-								},
-								"Proceso": {
-									"value": "General",
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Actualiza Estadistica 4",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Carga Transaccional",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dsa_chl_sg",
-									"type": "String"
-								},
-								"Paso": {
-									"value": "4",
-									"type": "Int16"
-								},
-								"Proceso": {
-									"value": "General",
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"folder": {
-					"name": "dsa_SistemaGerenteChl"
 				},
 				"annotations": []
 			},
@@ -1870,6 +1382,683 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Planta_Ecu_Embutser')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Planta Ecuador",
+				"activities": [
+					{
+						"name": "plt_FacDevolucion",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacDevolucion",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacDevolucion",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacProyeccionVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacProyeccionVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cubo_FacVentaConsolidadaEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacProyeccionVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "plt_FacVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVentaConsolidadaEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacPyG",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPyG",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacProyeccionPyG",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacProyeccionPyG",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cubo_FacPyGEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacProyeccionPyG",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "plt_FacPyG",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPyGEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cubo_FacVentaSemanalEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVentaSemanalEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "rpt_FacVentaMensualEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_rpt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVentaMensualEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "rpt_FacVentaSemanalEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_rpt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVentaSemanalEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacPedidoVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPedidoVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Carga Info Suscripcion Venta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 300,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_CargaInfoSuscripcion_Planta_Ecu]"
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_sharepoint",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+								"BaseDatos": "dw_dwh_suscripcion"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "String",
+						"defaultValue": "0"
+					},
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_PlantaEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linked_sharepoint')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_DomicilioCol')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -2258,6 +2447,53 @@
 			"properties": {
 				"linkedServiceName": {
 					"referenceName": "linked_sg_ecu",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": {
+							"value": "@dataset().cw_servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@dataset().cw_baseDatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerente"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteEsp')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_sg_esp",
 					"type": "LinkedServiceReference",
 					"parameters": {
 						"Servidor": {
