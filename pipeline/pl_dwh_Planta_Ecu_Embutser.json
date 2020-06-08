@@ -619,8 +619,8 @@
 				}
 			},
 			{
-				"name": "Carga Info Sus Planta",
-				"type": "ExecutePipeline",
+				"name": "Carga Info Suscripcion Venta",
+				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
 						"activity": "plt_FacVenta",
@@ -629,16 +629,23 @@
 						]
 					}
 				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 300,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
+					"storedProcedureName": "[admin_btc].[usp_CargaInfoSuscripcion_Planta_Ecu]"
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_sharepoint",
+					"type": "LinkedServiceReference",
 					"parameters": {
-						"Proceso": "PLANTA_ECU",
-						"SP": "admin_btc.usp_CargaInfoSuscripcion_Planta_Ecu"
+						"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+						"BaseDatos": "dw_dwh_suscripcion"
 					}
 				}
 			}
