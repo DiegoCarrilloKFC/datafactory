@@ -1,0 +1,469 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-bi-dwh"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Chl')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": null
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": null
+									}
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Cargar Catalogo 1",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Truncar Transaccional",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Chl_Catalogo_1",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": {
+									"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+									"type": "Expression"
+								},
+								"BaseDatos": {
+									"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Carga Transaccional",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Cargar Catalogo 1",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Fecha Carga').output.firstRow.AnioFechaInicio, activity('Fecha Carga').output.firstRow.AnioFechaFin)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Carga Anterior",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Chl_Transaccional_1",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior1",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior1",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "Carga Actual_",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Carga Anterior",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Chl_Transaccional_1",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Carga Actual",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Chl_Transaccional_1",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Truncar Transaccional",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Obtener Servidores",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "TRUNCATE TABLE [dsa_chl_sg].[ArticuloBodega]\nTRUNCATE TABLE [dsa_chl_sg].[AuditTrans]\nTRUNCATE TABLE [dsa_chl_sg].[CabPedidos]\nTRUNCATE TABLE [dsa_chl_sg].[CajaChica]\nTRUNCATE TABLE [dsa_chl_sg].[CierreCajas]\nTRUNCATE TABLE [dsa_chl_sg].[CierreChica]\nTRUNCATE TABLE [dsa_chl_sg].[Costos_Historicos]\nTRUNCATE TABLE [dsa_chl_sg].[CuponCliente]\nTRUNCATE TABLE [dsa_chl_sg].[Cupones]\nTRUNCATE TABLE [dsa_chl_sg].[Depositos]\nTRUNCATE TABLE [dsa_chl_sg].[DetPedidos]\nTRUNCATE TABLE [dsa_chl_sg].[DinTrans]\nTRUNCATE TABLE [dsa_chl_sg].[Estado_PyG]\nTRUNCATE TABLE [dsa_chl_sg].[GastosGenerales]\nTRUNCATE TABLE [dsa_chl_sg].[InvMovimiento]\nTRUNCATE TABLE [dsa_chl_sg].[MixCab]\nTRUNCATE TABLE [dsa_chl_sg].[MixTrans]\nTRUNCATE TABLE [dsa_chl_sg].[MovInv]\nTRUNCATE TABLE [dsa_chl_sg].[PlusCupones]\nTRUNCATE TABLE [dsa_chl_sg].[PlusTrans]\nTRUNCATE TABLE [dsa_chl_sg].[Porcentuales]\nTRUNCATE TABLE [dsa_chl_sg].[Porcentuales_Restaurante]\nTRUNCATE TABLE [dsa_chl_sg].[PyG]\nTRUNCATE TABLE [dsa_chl_sg].[TomaFisica]\nTRUNCATE TABLE [dsa_chl_sg].[VentasHora]\nTRUNCATE TABLE [dsa_chl_sg].[VentasHora_Domicilio]\nTRUNCATE TABLE [dsa_chl_sg].[VentaXMedio]\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Obtener Servidores",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
+								"storedProcedureParameters": {
+									"CodigoETL": {
+										"type": "String",
+										"value": "BD-SG-CHL"
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+											"type": "Expression"
+										}
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+											"type": "Expression"
+										}
+									}
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Actualiza Estadistica 1",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Carga Transaccional",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dsa_chl_sg",
+									"type": "String"
+								},
+								"Paso": {
+									"value": "1",
+									"type": "Int16"
+								},
+								"Proceso": {
+									"value": "General",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Actualiza Estadistica 2",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Carga Transaccional",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dsa_chl_sg",
+									"type": "String"
+								},
+								"Paso": {
+									"value": "2",
+									"type": "Int16"
+								},
+								"Proceso": {
+									"value": "General",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Actualiza Estadistica 3",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Carga Transaccional",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dsa_chl_sg",
+									"type": "String"
+								},
+								"Paso": {
+									"value": "3",
+									"type": "Int16"
+								},
+								"Proceso": {
+									"value": "General",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Actualiza Estadistica 4",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Carga Transaccional",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dsa_chl_sg",
+									"type": "String"
+								},
+								"Paso": {
+									"value": "4",
+									"type": "Int16"
+								},
+								"Proceso": {
+									"value": "General",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"folder": {
+					"name": "dsa_SistemaGerenteChl"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
