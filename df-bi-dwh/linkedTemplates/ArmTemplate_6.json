@@ -13,6 +13,159 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_CAR_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Carga Auditoria",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Auditoria_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": {
+									"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+									"type": "Expression"
+								},
+								"Pais": {
+									"value": "@pipeline().parameters.Pais",
+									"type": "Expression"
+								},
+								"TipoCarga": {
+									"value": "@pipeline().parameters.TipoCarga",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Carga Construccion",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Construccion_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": {
+									"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+									"type": "Expression"
+								},
+								"Pais": {
+									"value": "@pipeline().parameters.Pais",
+									"type": "Expression"
+								},
+								"TipoCarga": {
+									"value": "@pipeline().parameters.TipoCarga",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Carga Contabilidad",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Contabilidad_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": {
+									"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+									"type": "Expression"
+								},
+								"Pais": {
+									"value": "@pipeline().parameters.Pais",
+									"type": "Expression"
+								},
+								"TipoCarga": {
+									"value": "@pipeline().parameters.TipoCarga",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Carga RRHH",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_RecursosHumanos_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": {
+									"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+									"type": "Expression"
+								},
+								"Pais": {
+									"value": "@pipeline().parameters.Pais",
+									"type": "Expression"
+								},
+								"TipoCarga": {
+									"value": "@pipeline().parameters.TipoCarga",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Carga Contabilidad Reg",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Contabilidad_Regional",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"TipoCarga": "MANUAL"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "int",
+						"defaultValue": 0
+					},
+					"Pais": {
+						"type": "string",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "string",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_CAREcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_Carga_Argentina')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -2294,7 +2447,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_dwh_CAR_Ecu')]"
 			]
 		},
 		{
@@ -2401,11 +2555,14 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "pl_dsa_Maxpoint_Ecu",
+								"referenceName": "pl_dsa_Maxpoint_Ecu_Drive",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {}
+							"parameters": {
+								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+								"BaseDatos": "dw_dwh_suscripcion"
+							}
 						}
 					},
 					{
@@ -3339,7 +3496,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_dwh_CAR_Ecu')]"
 			]
 		},
 		{
@@ -3543,45 +3701,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl_Recarga_Embutser_Ecuador')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Recarga Venta Agregador')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Recarga Venta Agregador POS",
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "pl_Recarga_Venta_Ecuador",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2020-04-21T23:55:00.000Z",
-						"timeZone": "UTC",
-						"schedule": {
-							"minutes": [
-								30
-							],
-							"hours": [
-								13
-							]
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_Recarga_Venta_Ecuador')]"
 			]
 		}
 	]
