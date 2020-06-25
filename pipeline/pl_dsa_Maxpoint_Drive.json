@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Aplicacion",
+				"name": "RegaliasYUM",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -16,28 +16,29 @@
 				"userProperties": [
 					{
 						"name": "Source",
-						"value": "[app].[Aplicacion]"
+						"value": "[dwh_ecu_ope].[RegaliasYUM]"
 					},
 					{
 						"name": "Destination",
-						"value": "[admin_app].[Aplicacion]"
+						"value": "[dsa_ecu_mp].[RegaliasYUM]"
 					}
 				],
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "SELECT IDAplicacion,IDPais,FechaRegistro,NombreAplicacion,NombreServidor,IPServidor,DireccionUrl,Descripcion,Estatus FROM app.Aplicacion"
+						"sqlReaderQuery": "select GETDATE() as FechaCarga, * from [dwh_ecu_ope].[RegaliasYUM]"
 					},
 					"sink": {
 						"type": "SqlDWSink",
 						"writeBatchSize": 10000,
-						"preCopyScript": "TRUNCATE TABLE [admin_app].[Aplicacion]",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_mp].[RegaliasYUM]",
 						"allowPolyBase": true,
 						"polyBaseSettings": {
 							"rejectValue": 0,
 							"rejectType": "value",
 							"useTypeDefault": true
-						}
+						},
+						"disableMetricsCollection": false
 					},
 					"enableStaging": true,
 					"stagingSettings": {
@@ -55,43 +56,35 @@
 						"parameters": {
 							"cw_structure": [
 								{
-									"name": "IDAplicacion",
-									"type": "Guid"
-								},
-								{
-									"name": "IDPais",
-									"type": "String"
-								},
-								{
-									"name": "FechaRegistro",
+									"name": "FechaCarga",
 									"type": "DateTime"
 								},
 								{
-									"name": "NombreAplicacion",
+									"name": "IDRegaliasYUM",
+									"type": "Guid"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int64"
+								},
+								{
+									"name": "Transaccion",
 									"type": "String"
 								},
 								{
-									"name": "NombreServidor",
-									"type": "String"
+									"name": "VentaBruta",
+									"type": "Double"
 								},
 								{
-									"name": "IPServidor",
-									"type": "String"
+									"name": "VentaNeta",
+									"type": "Double"
 								},
 								{
-									"name": "DireccionUrl",
-									"type": "String"
-								},
-								{
-									"name": "Descripcion",
-									"type": "String"
-								},
-								{
-									"name": "Estatus",
-									"type": "Int32"
+									"name": "FechaPeriodo",
+									"type": "DateTime"
 								}
 							],
-							"cw_tableName": "[app].[Aplicacion]",
+							"cw_tableName": "[dwh_ecu_ope].[RegaliasYUM]",
 							"cw_servidor": {
 								"value": "@pipeline().parameters.Servidor",
 								"type": "Expression"
@@ -110,43 +103,35 @@
 						"parameters": {
 							"cw_structure": [
 								{
-									"name": "IDAplicacion",
-									"type": "Guid"
-								},
-								{
-									"name": "IDPais",
-									"type": "String"
-								},
-								{
-									"name": "FechaRegistro",
+									"name": "FechaCarga",
 									"type": "DateTime"
 								},
 								{
-									"name": "NombreAplicacion",
+									"name": "IDRegaliasYUM",
+									"type": "Guid"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int64"
+								},
+								{
+									"name": "Transaccion",
 									"type": "String"
 								},
 								{
-									"name": "NombreServidor",
-									"type": "String"
+									"name": "VentaBruta",
+									"type": "Double"
 								},
 								{
-									"name": "IPServidor",
-									"type": "String"
+									"name": "VentaNeta",
+									"type": "Double"
 								},
 								{
-									"name": "DireccionUrl",
-									"type": "String"
-								},
-								{
-									"name": "Descripcion",
-									"type": "String"
-								},
-								{
-									"name": "Estatus",
-									"type": "Int32"
+									"name": "FechaPeriodo",
+									"type": "DateTime"
 								}
 							],
-							"cw_tableName": "[admin_app].[Aplicacion]"
+							"cw_tableName": "[dsa_ecu_mp].[RegaliasYUM]"
 						}
 					}
 				]
