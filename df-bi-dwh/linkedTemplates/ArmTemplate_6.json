@@ -2135,6 +2135,393 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_Carga_Multipais_Ext')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Finalizar Carga UyC",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Reescalar DWH 2",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA USO CONSUMO ECU'\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Verificar Proceso Cubos Venta",
+						"type": "Until",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Verificar Carga Venta').output.firstRow.Resultado, 'OK')",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Verificar Carga Venta",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "Espera",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlDWSource",
+											"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA-CAR-PLANTA' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado"
+										},
+										"dataset": {
+											"referenceName": "ds_dwh_general",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									}
+								},
+								{
+									"name": "Espera",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 180
+									}
+								}
+							],
+							"timeout": "00.12:00:00"
+						}
+					},
+					{
+						"name": "Carga Operacion UyC Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Carga Uyc",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_UyC_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Inicializar Carga Uyc",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Tiempo Espera Log",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA USO CONSUMO ECU',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Carga DSA SG Arg",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Verificar Proceso Cubos Venta",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Arg",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Carga Operacion Arg",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Dimension ARG",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Arg",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ARG",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga CAR Arg",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Arg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Auditoria_Arg",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ARG",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Tiempo Espera Log",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "Verificar Proceso Cubos Venta Arg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 300
+						}
+					},
+					{
+						"name": "Reescalar DWH 2",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion UyC Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW100c"
+							}
+						}
+					},
+					{
+						"name": "Verificar Proceso Cubos Venta Arg",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "Finalizar Carga Venta ARG",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Verificar Carga Venta').output.firstRow.Resultado, 'OK')",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Verificar Carga Venta ARG",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "Espera_copy1",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlDWSource",
+											"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA ARG' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado"
+										},
+										"dataset": {
+											"referenceName": "ds_dwh_general",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									}
+								},
+								{
+									"name": "Espera_copy1",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 180
+									}
+								}
+							],
+							"timeout": "00.12:00:00"
+						}
+					},
+					{
+						"name": "Carga Dimension ARG",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga DSA SG Arg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Dimensiones",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ARG",
+								"TipoCarga": "MANUAL"
+							}
+						}
+					},
+					{
+						"name": "Finalizar Carga Venta ARG",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Carga CAR Arg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "UPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA ARGENTINA'\n\nSELECT 'ok' AS Resultado"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					}
+				],
+				"folder": {
+					"name": "Carga_dwh_Triggers"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_Carga_Ecuador')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -2505,12 +2892,6 @@
 								]
 							},
 							{
-								"activity": "Carga DSA SG Arg",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
 								"activity": "Carga DSA Sip Ecu",
 								"dependencyConditions": [
 									"Completed"
@@ -2746,7 +3127,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlDWSource",
-								"sqlReaderQuery": "EXEC [dsa_int_lst].[usp_CargaTabla]\nEXEC [dsa_int_lst].[usp_CargaDependenciaTabla]\nEXEC [admin_btc].[usp_CargaTabla]\nEXEC [admin_btc].[usp_CargaDependenciaTabla]\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ECU'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ECU'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ECU'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'COL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'COL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'COL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'CHL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'CHL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'CHL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ARG'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ARG'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ARG'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ESP'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ESP'\n\n--Control de Cargas\nTRUNCATE TABLE admin_btc.CargaDataFactory\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA VENTA-CAR-PLANTA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA ESPANIA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado"
+								"sqlReaderQuery": "EXEC [dsa_int_lst].[usp_CargaTabla]\nEXEC [dsa_int_lst].[usp_CargaDependenciaTabla]\nEXEC [admin_btc].[usp_CargaTabla]\nEXEC [admin_btc].[usp_CargaDependenciaTabla]\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ECU'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ECU'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ECU'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'COL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'COL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'COL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'CHL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'CHL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'CHL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ARG'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ARG'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ARG'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ESP'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ESP'\n\n--Control de Cargas\nTRUNCATE TABLE admin_btc.CargaDataFactory\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA VENTA-CAR-PLANTA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA ESPANIA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA ARGENTINA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado"
 							},
 							"dataset": {
 								"referenceName": "ds_dwh_general",
@@ -2826,38 +3207,6 @@
 						}
 					},
 					{
-						"name": "Finalizar Carga UyC",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Reescalar DWH 2",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA USO CONSUMO ECU'\n\nSELECT 'ok' AS Resultado"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					},
-					{
 						"name": "Carga DSA Conta Reg",
 						"type": "ExecutePipeline",
 						"dependsOn": [
@@ -2885,12 +3234,6 @@
 						"name": "Finalizar Carga Venta",
 						"type": "Lookup",
 						"dependsOn": [
-							{
-								"activity": "Carga CAR Arg",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
 							{
 								"activity": "Carga CAR Chl",
 								"dependencyConditions": [
@@ -2932,68 +3275,6 @@
 						}
 					},
 					{
-						"name": "Verificar Proceso Cubos Venta",
-						"type": "Until",
-						"dependsOn": [
-							{
-								"activity": "Tiempo Espera",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"expression": {
-								"value": "@equals(activity('Verificar Carga Venta').output.firstRow.Resultado, 'OK')",
-								"type": "Expression"
-							},
-							"activities": [
-								{
-									"name": "Verificar Carga Venta",
-									"type": "Lookup",
-									"dependsOn": [
-										{
-											"activity": "Espera",
-											"dependencyConditions": [
-												"Completed"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "SqlDWSource",
-											"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA-CAR-PLANTA' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado"
-										},
-										"dataset": {
-											"referenceName": "ds_dwh_general",
-											"type": "DatasetReference",
-											"parameters": {}
-										}
-									}
-								},
-								{
-									"name": "Espera",
-									"type": "Wait",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"waitTimeInSeconds": 180
-									}
-								}
-							],
-							"timeout": "00.12:00:00"
-						}
-					},
-					{
 						"name": "Tiempo Espera",
 						"type": "Wait",
 						"dependsOn": [
@@ -3007,63 +3288,6 @@
 						"userProperties": [],
 						"typeProperties": {
 							"waitTimeInSeconds": 3600
-						}
-					},
-					{
-						"name": "Carga Operacion UyC Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Carga Uyc",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_UyC_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Inicializar Carga Uyc",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Tiempo Espera Log",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA USO CONSUMO ECU',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
 						}
 					},
 					{
@@ -3098,77 +3322,6 @@
 						}
 					},
 					{
-						"name": "Carga DSA SG Arg",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_SistemaGerente_Arg",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Carga Operacion Arg",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Info Sus Dim",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_Arg",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ARG",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga CAR Arg",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Operacion Arg",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Auditoria_Arg",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ARG",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
 						"name": "Carga DSA Sip Ecu",
 						"type": "ExecutePipeline",
 						"dependsOn": [
@@ -3187,22 +3340,6 @@
 							},
 							"waitOnCompletion": true,
 							"parameters": {}
-						}
-					},
-					{
-						"name": "Tiempo Espera Log",
-						"type": "Wait",
-						"dependsOn": [
-							{
-								"activity": "Verificar Proceso Cubos Venta",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": 300
 						}
 					},
 					{
@@ -3239,29 +3376,6 @@
 							"waitOnCompletion": true,
 							"parameters": {
 								"DWU": "DW500c"
-							}
-						}
-					},
-					{
-						"name": "Reescalar DWH 2",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Operacion UyC Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_admin_Escalar_DWH",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"DWU": "DW100c"
 							}
 						}
 					},
@@ -3387,6 +3501,27 @@
 								"TipoCarga": "MANUAL"
 							}
 						}
+					},
+					{
+						"name": "Continuacion Carga Multipais",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Tiempo Espera",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_Carga_Multipais_Ext",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"folder": {
@@ -3395,7 +3530,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_Carga_Multipais_Ext')]"
 			]
 		},
 		{
@@ -3561,45 +3697,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl_Recarga_Auditoria_Ecuador')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Recarga Compras Ecuador')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Recarga Compras Ecuador",
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "pl_Recarga_Compras_Ecuador",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2019-07-19T16:43:00Z",
-						"timeZone": "UTC",
-						"schedule": {
-							"minutes": [
-								0
-							],
-							"hours": [
-								18
-							]
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_Recarga_Compras_Ecuador')]"
 			]
 		}
 	]
