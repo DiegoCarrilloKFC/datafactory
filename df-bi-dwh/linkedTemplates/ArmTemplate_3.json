@@ -13,6 +13,53 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteEsp')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_sg_esp",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": {
+							"value": "@dataset().cw_servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@dataset().cw_baseDatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerente"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_App_ContabilidadRegional_Catalogo')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",

@@ -34,10 +34,6 @@
 		"linked_sg_ecu_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_sg_ecu'"
-		},
-		"linked_sg_esp_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'linked_sg_esp'"
 		}
 	},
 	"variables": {
@@ -4592,6 +4588,86 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Operaciones_POS_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Operaciones POS",
+				"activities": [
+					{
+						"name": "ope_FacPOSVentaHoraAcumulada",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPosVentaHoraAcumulada",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "String",
+						"defaultValue": "0"
+					},
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_OperacionesEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dwh_Operaciones_Vito')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -7155,34 +7231,6 @@
 				},
 				"connectVia": {
 					"referenceName": "IR-SistemaGerenteEcu",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/linked_sg_esp')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Conexión dinámica Sistema Gerente España",
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "192.168.146.61"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "SQLGerente_19"
-					}
-				},
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('linked_sg_esp_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "IR-SistemaGerenteEsp",
 					"type": "IntegrationRuntimeReference"
 				}
 			},
