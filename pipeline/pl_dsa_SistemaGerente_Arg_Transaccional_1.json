@@ -1173,7 +1173,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{pipeline().parameters.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}') AND YEAR(Fecha) = YEAR('@{pipeline().parameters.FechaDesde}')",
+							"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,Costo_Recalculado,CostoReal,YEAR(Fecha) AS Anio FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{pipeline().parameters.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}') AND YEAR(Fecha) = YEAR('@{pipeline().parameters.FechaDesde}')",
 							"type": "Expression"
 						}
 					},
@@ -1251,6 +1251,14 @@
 									"type": "Int32"
 								},
 								{
+									"name": "Costo_Recalculado",
+									"type": "Double"
+								},
+								{
+									"name": "CostoReal",
+									"type": "Double"
+								},
+								{
 									"name": "Anio",
 									"type": "Int32"
 								}
@@ -1320,6 +1328,14 @@
 								{
 									"name": "Cod_Bodega",
 									"type": "Int32"
+								},
+								{
+									"name": "Costo_Recalculado",
+									"type": "Double"
+								},
+								{
+									"name": "CostoReal",
+									"type": "Double"
 								},
 								{
 									"name": "Anio",
@@ -2311,7 +2327,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT GETDATE() AS FechaCarga,Cod_Restaurante,Cod_Art_Bodega,Cod_Unidad,Valor,Cantidad,Cod_Grupo,Costo,Tipo_Mov,Cod_Mov_Inv,Fecha,YEAR(Fecha) AS Anio FROM dbo.InvMovimiento WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}') AND Tipo_Mov!=6",
+							"value": "SELECT GETDATE() AS FechaCarga,Cod_Restaurante,Cod_Art_Bodega,Cod_Unidad,Valor,Cantidad,Cod_Grupo,Costo,Tipo_Mov,Cod_Mov_Inv,Fecha,ValorReal,CostoReal,YEAR(Fecha) AS Anio FROM dbo.InvMovimiento WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}') AND Tipo_Mov!=6",
 							"type": "Expression"
 						}
 					},
@@ -2385,6 +2401,14 @@
 									"type": "DateTime"
 								},
 								{
+									"name": "ValorReal",
+									"type": "Double"
+								},
+								{
+									"name": "CostoReal",
+									"type": "Double"
+								},
+								{
 									"name": "Anio",
 									"type": "Int32"
 								}
@@ -2450,6 +2474,14 @@
 								{
 									"name": "Fecha",
 									"type": "DateTime"
+								},
+								{
+									"name": "ValorReal",
+									"type": "Double"
+								},
+								{
+									"name": "CostoReal",
+									"type": "Double"
 								},
 								{
 									"name": "Anio",
