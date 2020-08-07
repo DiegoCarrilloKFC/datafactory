@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "df-bi-dwh"
 		},
+		"linked_sg_chl_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linked_sg_chl'"
+		},
 		"linked_sg_col_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_sg_col'"
@@ -32,6 +36,34 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/linked_sg_chl')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexión dinámica Sistema Gerente Chile",
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SAZGERENTEDB-CL"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "SqlGerente_19"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('linked_sg_chl_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "IR-SistemaGerenteChl",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/linked_sg_col')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -197,7 +229,8 @@
 								"sqlReaderQuery": {
 									"value": "--Escalar Data Warehouse\nALTER DATABASE dwh\nMODIFY (SERVICE_OBJECTIVE = '@{pipeline().parameters.DWU}');\n\nSELECT 'ok' AS Resultado",
 									"type": "Expression"
-								}
+								},
+								"partitionOption": "None"
 							},
 							"dataset": {
 								"referenceName": "ds_dwh_master",
@@ -228,7 +261,8 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlDWSource",
-								"sqlReaderQuery": "--Verificar estatus de escalado cada 5 segudnos\nWHILE \n(\n    SELECT TOP 1 state_desc\n    FROM sys.dm_operation_status\n    WHERE \n        1=1\n        AND resource_type_desc = 'Database'\n        AND major_resource_id = 'dwh'\n        AND operation = 'ALTER DATABASE'\n    ORDER BY\n        start_time DESC\n) = 'IN_PROGRESS'\nBEGIN\n    RAISERROR('El escalado de la base de datos está en progreso',0,0) WITH NOWAIT;\n    WAITFOR DELAY '00:00:05';\nEND\nWAITFOR DELAY '00:00:30';\nSelect 'Complete' AS Resultado;"
+								"sqlReaderQuery": "--Verificar estatus de escalado cada 5 segudnos\nWHILE \n(\n    SELECT TOP 1 state_desc\n    FROM sys.dm_operation_status\n    WHERE \n        1=1\n        AND resource_type_desc = 'Database'\n        AND major_resource_id = 'dwh'\n        AND operation = 'ALTER DATABASE'\n    ORDER BY\n        start_time DESC\n) = 'IN_PROGRESS'\nBEGIN\n    RAISERROR('El escalado de la base de datos está en progreso',0,0) WITH NOWAIT;\n    WAITFOR DELAY '00:00:05';\nEND\nWAITFOR DELAY '00:00:30';\nSelect 'Complete' AS Resultado;",
+								"partitionOption": "None"
 							},
 							"dataset": {
 								"referenceName": "ds_dwh_master",
@@ -290,7 +324,8 @@
 									"typeProperties": {
 										"source": {
 											"type": "SqlDWSource",
-											"sqlReaderQuery": "IF EXISTS(SELECT * FROM dwh.admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO_CUBOS_MULTIPAIS' AND Estado = 1)\n\tSELECT 'REESCALAR' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado"
+											"sqlReaderQuery": "IF EXISTS(SELECT * FROM dwh.admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO_CUBOS_MULTIPAIS' AND Estado = 1)\n\tSELECT 'REESCALAR' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado",
+											"partitionOption": "None"
 										},
 										"dataset": {
 											"referenceName": "ds_dwh_general",
@@ -337,7 +372,8 @@
 								"sqlReaderQuery": {
 									"value": "--Escalar Data Warehouse\nALTER DATABASE dwh\nMODIFY (SERVICE_OBJECTIVE = '@{pipeline().parameters.DWU}');\n\nSELECT 'ok' AS Resultado",
 									"type": "Expression"
-								}
+								},
+								"partitionOption": "None"
 							},
 							"dataset": {
 								"referenceName": "ds_dwh_master",
@@ -442,7 +478,8 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlDWSource",
-								"sqlReaderQuery": "SELECT\n\tFechaCarga=DATEADD(HH,-5,GETDATE()),\n\tFechaDesde=convert(smalldatetime,DATEADD(s,0,DATEADD(mm, DATEDIFF(m,0,DATEADD(HH,-5,GETDATE()))-1,0)),112),\n\tFechaHasta=convert(smalldatetime,EOMONTH(DATEADD(HH,-5,GETDATE()),-1),112)"
+								"sqlReaderQuery": "SELECT\n\tFechaCarga=DATEADD(HH,-5,GETDATE()),\n\tFechaDesde=convert(smalldatetime,DATEADD(s,0,DATEADD(mm, DATEDIFF(m,0,DATEADD(HH,-5,GETDATE()))-1,0)),112),\n\tFechaHasta=convert(smalldatetime,EOMONTH(DATEADD(HH,-5,GETDATE()),-1),112)",
+								"partitionOption": "None"
 							},
 							"dataset": {
 								"referenceName": "ds_dwh_general",
@@ -967,7 +1004,8 @@
 														"type": "Expression"
 													}
 												}
-											}
+											},
+											"partitionOption": "None"
 										},
 										"dataset": {
 											"referenceName": "ds_dwh_general",
@@ -1008,7 +1046,8 @@
 											"type": "Expression"
 										}
 									}
-								}
+								},
+								"partitionOption": "None"
 							},
 							"dataset": {
 								"referenceName": "ds_dwh_general",
@@ -1242,7 +1281,8 @@
 										"type": "DateTime",
 										"value": null
 									}
-								}
+								},
+								"partitionOption": "None"
 							},
 							"dataset": {
 								"referenceName": "ds_dwh_general",
@@ -1446,7 +1486,8 @@
 										"type": "DateTime",
 										"value": null
 									}
-								}
+								},
+								"partitionOption": "None"
 							},
 							"dataset": {
 								"referenceName": "ds_dwh_general",
@@ -2460,53 +2501,6 @@
 			"properties": {
 				"linkedServiceName": {
 					"referenceName": "linked_sg_arg",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"Servidor": {
-							"value": "@dataset().cw_servidor",
-							"type": "Expression"
-						},
-						"BaseDatos": {
-							"value": "@dataset().cw_baseDatos",
-							"type": "Expression"
-						}
-					}
-				},
-				"parameters": {
-					"cw_structure": {
-						"type": "Array"
-					},
-					"cw_tableName": {
-						"type": "String"
-					},
-					"cw_servidor": {
-						"type": "string"
-					},
-					"cw_baseDatos": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "dsa_SistemaGerente"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"typeProperties": {
-					"tableName": {
-						"value": "@dataset().cw_tableName",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteChl')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "linked_sg_chl",
 					"type": "LinkedServiceReference",
 					"parameters": {
 						"Servidor": {
