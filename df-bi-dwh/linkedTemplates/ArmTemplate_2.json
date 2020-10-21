@@ -7,6 +7,14 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "df-bi-dwh"
 		},
+		"linked_mp_ecu_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linked_mp_ecu'"
+		},
+		"linked_sg_arg_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linked_sg_arg'"
+		},
 		"linked_sg_chl_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_sg_chl'"
@@ -36,6 +44,62 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/linked_mp_ecu')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexión dinámica centralizador Maxpoint Ecuador",
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SRVV-ZEUS"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "MAXPOINT_DISTRIB_19"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('linked_mp_ecu_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "IR-MaxpointEcu",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/linked_sg_arg')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexión dinámica Sistema Gerente Argentina",
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SAZGERENTEDB-AR"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "SqlGerente_19"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('linked_sg_arg_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "IR-SistemaGerenteArgV2",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/linked_sg_chl')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -2394,7 +2458,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linked_mp_ecu')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ds_Sharepoint')]",
@@ -2444,102 +2510,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/linked_sharepoint')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_SipEcu')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "linked_sip_ecu",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"Servidor": {
-							"value": "@dataset().cw_servidor",
-							"type": "Expression"
-						},
-						"BaseDatos": {
-							"value": "@dataset().cw_baseDatos",
-							"type": "Expression"
-						}
-					}
-				},
-				"parameters": {
-					"cw_structure": {
-						"type": "Array"
-					},
-					"cw_tableName": {
-						"type": "String"
-					},
-					"cw_servidor": {
-						"type": "string"
-					},
-					"cw_baseDatos": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "dsa_Sip"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"typeProperties": {
-					"tableName": {
-						"value": "@dataset().cw_tableName",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/linked_sip_ecu')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteArg')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "linked_sg_arg",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"Servidor": {
-							"value": "@dataset().cw_servidor",
-							"type": "Expression"
-						},
-						"BaseDatos": {
-							"value": "@dataset().cw_baseDatos",
-							"type": "Expression"
-						}
-					}
-				},
-				"parameters": {
-					"cw_structure": {
-						"type": "Array"
-					},
-					"cw_tableName": {
-						"type": "String"
-					},
-					"cw_servidor": {
-						"type": "string"
-					},
-					"cw_baseDatos": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "dsa_SistemaGerente"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"typeProperties": {
-					"tableName": {
-						"value": "@dataset().cw_tableName",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": []
 		}
 	]
 }

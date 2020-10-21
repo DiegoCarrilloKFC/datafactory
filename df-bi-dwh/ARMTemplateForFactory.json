@@ -11,6 +11,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_ax_ecu'"
 		},
+		"linked_bi_dev_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linked_bi_dev'"
+		},
+		"linked_bi_dev_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'linked_bi_dev'"
+		},
 		"linked_domicilio_col_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_domicilio_col'"
@@ -62,6 +70,10 @@
 		"linked_storage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_storage'"
+		},
+		"linked_bi_dev_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "kfc\\diego.carrillo"
 		}
 	},
 	"variables": {
@@ -2915,6 +2927,43 @@
 								"parameters": {}
 							}
 						}
+					},
+					{
+						"name": "Enviar Suscripcion Venta Embutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Finalizar Carga",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[EnviarSuscripcionVentaEmbutser]",
+							"storedProcedureParameters": {
+								"Formato": {
+									"value": "2E4DD05F-DD69-4FD7-A294-8068AE9F57B7",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_sharepoint",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+								"BaseDatos": "dw_dwh_suscripcion"
+							}
+						}
 					}
 				],
 				"folder": {
@@ -2926,7 +2975,8 @@
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_DynamicsAx_Ecu')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Planta_Ecu_Embutser')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Dimensiones_Embutser')]",
-				"[concat(variables('factoryId'), '/datasets/ds_dwh_general')]"
+				"[concat(variables('factoryId'), '/datasets/ds_dwh_general')]",
+				"[concat(variables('factoryId'), '/linkedServices/linked_sharepoint')]"
 			]
 		},
 		{
@@ -144010,6 +144060,31 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/linked_bi_dev')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexión ambiente de desarrollo",
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('linked_bi_dev_connectionString')]",
+					"userName": "[parameters('linked_bi_dev_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('linked_bi_dev_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "IR-BI-Desarrollo",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/IR-BI-Desarrollo')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/linked_domicilio_col')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -144778,6 +144853,17 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl_Recarga_Vito_Ecuador')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IR-BI-Desarrollo')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"description": "Integration Runtime ambiente de desarrollo BI",
+				"typeProperties": {}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/IR-BI-Sharepoint')]",
