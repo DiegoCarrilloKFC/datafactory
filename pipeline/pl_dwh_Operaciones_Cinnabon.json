@@ -24,7 +24,7 @@
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "Fecha Carga",
+						"activity": "rpt_VentaExterna_VentaMix",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -114,7 +114,8 @@
 								"type": "DateTime",
 								"value": null
 							}
-						}
+						},
+						"partitionOption": "None"
 					},
 					"dataset": {
 						"referenceName": "ds_dwh_general",
@@ -127,7 +128,7 @@
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "Fecha Carga",
+						"activity": "rpt_VentaExterna_VentaMix",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -164,6 +165,116 @@
 						},
 						"Pais": {
 							"value": "ECU",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_sharepoint",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+						"BaseDatos": "dw_dwh_suscripcion"
+					}
+				}
+			},
+			{
+				"name": "rpt_VentaExterna_Financiero",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 300,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dwh_ecu_rpt].[usp_CargaFacVentaExternaFinancieroCinnabon]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": "ECU",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": "MANUAL",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_sharepoint",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+						"BaseDatos": "dw_dwh_suscripcion"
+					}
+				}
+			},
+			{
+				"name": "rpt_VentaExterna_VentaMix",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "rpt_VentaExterna_Financiero",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 300,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dwh_ecu_rpt].[usp_CargaFacVentaExternaFinancieroCinnabon]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": "ECU",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": "MANUAL",
 							"type": "String"
 						}
 					}
