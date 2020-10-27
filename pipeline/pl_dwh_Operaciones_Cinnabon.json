@@ -3,23 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Carga Info Sus Venta Cinnabon",
-				"type": "ExecutePipeline",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"Proceso": "CINNABON_ECU",
-						"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Cinnabon_Ecu"
-					}
-				}
-			},
-			{
 				"name": "rpt_usp_SuscripcionFinancieroCinnabon",
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
@@ -77,14 +60,7 @@
 			{
 				"name": "Fecha Carga",
 				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "Carga Info Sus Venta Cinnabon",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -96,25 +72,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlDWSource",
-						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
-						"storedProcedureParameters": {
-							"Dias": {
-								"type": "Int32",
-								"value": null
-							},
-							"FechaDesde": {
-								"type": "DateTime",
-								"value": null
-							},
-							"FechaFin": {
-								"type": "DateTime",
-								"value": null
-							},
-							"FechaHasta": {
-								"type": "DateTime",
-								"value": null
-							}
-						},
+						"sqlReaderQuery": "[admin_adm].[usp_CargaFecha] '20200824',1,null,null",
 						"partitionOption": "None"
 					},
 					"dataset": {
