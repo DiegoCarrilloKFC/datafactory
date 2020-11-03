@@ -13,6 +13,177 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_Recarga_Venta_Colombia')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Carga DSA SG Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Carga Dimension Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga DSA SG Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carta DSA DOM Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Dimensiones_Venta_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "COL",
+								"TipoCarga": "MANUAL"
+							}
+						}
+					},
+					{
+						"name": "Carga Operacion Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Dimension Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Venta_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "COL",
+								"TipoCarga": "MANUAL"
+							}
+						}
+					},
+					{
+						"name": "Carta DSA DOM Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Domicilio_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Inicializar Etapas",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "INSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'RECARGA VENTA COLOMBIA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Finalizar Carga Venta",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'RECARGA VENTA COLOMBIA'\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					}
+				],
+				"folder": {
+					"name": "Carga_dwh_Triggers"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_Recarga_Venta_Ecuador')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -708,7 +879,7 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2019-07-19T16:12:00.000Z",
+						"startTime": "2019-07-19T16:12:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
@@ -1807,7 +1978,7 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2020-01-20T22:06:00.000Z",
+						"startTime": "2020-01-20T22:06:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
@@ -1844,7 +2015,7 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2019-07-19T16:47:00.000Z",
+						"startTime": "2019-07-19T16:47:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
@@ -1881,7 +2052,7 @@
 					"recurrence": {
 						"frequency": "Month",
 						"interval": 1,
-						"startTime": "2019-07-19T16:49:00.000Z",
+						"startTime": "2019-07-19T16:49:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
@@ -1893,7 +2064,8 @@
 							],
 							"monthDays": [
 								1,
-								2
+								2,
+								3
 							]
 						}
 					}
@@ -1923,7 +2095,7 @@
 					"recurrence": {
 						"frequency": "Month",
 						"interval": 1,
-						"startTime": "2019-07-19T16:49:00.000Z",
+						"startTime": "2019-07-19T16:49:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
@@ -1934,7 +2106,8 @@
 							],
 							"monthDays": [
 								2,
-								3
+								3,
+								4
 							]
 						}
 					}
@@ -2041,7 +2214,7 @@
 					"recurrence": {
 						"frequency": "Week",
 						"interval": 1,
-						"startTime": "2020-04-21T23:55:00.000Z",
+						"startTime": "2020-04-21T23:55:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
@@ -2057,7 +2230,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_Recarga_Venta_Colombia')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Recarga Venta Dia Actual Ecuador')]",
@@ -2081,7 +2256,7 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2020-04-21T23:55:00.000Z",
+						"startTime": "2020-04-21T23:55:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
@@ -2118,7 +2293,7 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2020-04-21T23:55:00.000Z",
+						"startTime": "2020-04-21T23:55:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
@@ -2157,14 +2332,14 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2019-05-28T22:25:00.000Z",
+						"startTime": "2019-05-28T22:25:00Z",
 						"timeZone": "UTC",
 						"schedule": {
 							"minutes": [
 								0
 							],
 							"hours": [
-								3
+								4
 							]
 						}
 					}
