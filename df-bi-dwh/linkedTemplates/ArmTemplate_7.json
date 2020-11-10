@@ -1101,12 +1101,6 @@
 								]
 							},
 							{
-								"activity": "Carga DSA SG ESP",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
 								"activity": "Carga DSA SG Arg",
 								"dependencyConditions": [
 									"Completed"
@@ -1492,22 +1486,6 @@
 						}
 					},
 					{
-						"name": "Tiempo Espera",
-						"type": "Wait",
-						"dependsOn": [
-							{
-								"activity": "Finalizar Carga Venta",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": 3600
-						}
-					},
-					{
 						"name": "Carga Plantas Venta Embutser",
 						"type": "ExecutePipeline",
 						"dependsOn": [
@@ -1649,98 +1627,6 @@
 						}
 					},
 					{
-						"name": "Carga DSA SG ESP",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_SistemaGerente_Esp",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Carga Operacion Esp",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Info Sus Dim",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_Esp",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ESP",
-								"TipoCarga": "MANUAL"
-							}
-						}
-					},
-					{
-						"name": "Carga Auditoria Esp",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Operacion Esp",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Auditoria_Esp",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ESP",
-								"TipoCarga": "MANUAL"
-							}
-						}
-					},
-					{
-						"name": "Continuacion Carga Multipais",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Tiempo Espera",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_Carga_Multipais_Ext",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
 						"name": "Carga Operaciones POS Ecu",
 						"type": "ExecutePipeline",
 						"dependsOn": [
@@ -1835,6 +1721,120 @@
 								"TipoCarga": "AUTOMATICA"
 							}
 						}
+					},
+					{
+						"name": "Inicializar Carga Uyc",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Finalizar Carga Venta",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA USO CONSUMO ECU',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Carga Operacion UyC Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Carga Uyc",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_UyC_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Reescalar DWH 2",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion UyC Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW100c"
+							}
+						}
+					},
+					{
+						"name": "Finalizar Carga UyC",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Reescalar DWH 2",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA USO CONSUMO ECU'\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
 					}
 				],
 				"folder": {
@@ -1853,7 +1853,7 @@
 			"properties": {
 				"description": "Carga Espana",
 				"annotations": [],
-				"runtimeState": "Stopped",
+				"runtimeState": "Started",
 				"pipelines": [
 					{
 						"pipelineReference": {
