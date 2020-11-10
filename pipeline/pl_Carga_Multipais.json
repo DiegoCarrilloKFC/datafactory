@@ -689,26 +689,6 @@
 				}
 			},
 			{
-				"name": "Continuacion Carga Multipais",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Tiempo Espera Log",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_Carga_Multipais_Ext",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
 				"name": "Carga Operaciones POS Ecu",
 				"type": "ExecutePipeline",
 				"dependsOn": [
@@ -826,6 +806,86 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA USO CONSUMO ECU',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "Carga Operacion UyC Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Inicializar Carga Uyc",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_UyC_Ecu",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ECU",
+						"TipoCarga": "AUTOMATICA"
+					}
+				}
+			},
+			{
+				"name": "Reescalar DWH 2",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Operacion UyC Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_admin_Escalar_DWH",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"DWU": "DW100c"
+					}
+				}
+			},
+			{
+				"name": "Finalizar Carga UyC",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Reescalar DWH 2",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA USO CONSUMO ECU'\n\nSELECT 'ok' AS Resultado",
 						"partitionOption": "None"
 					},
 					"dataset": {
