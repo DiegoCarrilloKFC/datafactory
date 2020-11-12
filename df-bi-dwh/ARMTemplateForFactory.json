@@ -1778,7 +1778,7 @@
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
-								"activity": "Carga Operacion UyC Ecu",
+								"activity": "Tiempo Espera Log",
 								"dependencyConditions": [
 									"Completed"
 								]
@@ -1827,6 +1827,85 @@
 								"parameters": {}
 							},
 							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Verificar Proceso Cubos Venta",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion UyC Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Verificar Carga Venta').output.firstRow.Resultado, 'OK')",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Verificar Carga Venta",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "Espera",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlDWSource",
+											"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA-CAR-PLANTA' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "ds_dwh_general",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									}
+								},
+								{
+									"name": "Espera",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 180
+									}
+								}
+							],
+							"timeout": "00.12:00:00"
+						}
+					},
+					{
+						"name": "Tiempo Espera Log",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "Verificar Proceso Cubos Venta",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 800
 						}
 					}
 				],
