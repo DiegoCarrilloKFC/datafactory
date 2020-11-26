@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "df-bi-dwh"
 		},
+		"linked_domicilio_col_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linked_domicilio_col'"
+		},
 		"linked_mp_ecu_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linked_mp_ecu'"
@@ -44,6 +48,34 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/linked_domicilio_col')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Sistema Gerente Domicilio Colombia",
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SAZGERENTECOL\\DomicilioCol"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "Domicilio"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('linked_domicilio_col_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "IR-DomicilioCol",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/linked_mp_ecu')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -2318,6 +2350,53 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_DomicilioChl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_domicilio_chl",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": {
+							"value": "@dataset().cw_servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@dataset().cw_baseDatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "array"
+					},
+					"cw_tableName": {
+						"type": "string"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_Domicilio"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_DomicilioCol')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -2362,7 +2441,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linked_domicilio_col')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ds_DynamicsAxEcu')]",
@@ -2411,105 +2492,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_MaxpointEcu')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Dataset parametrizado Maxpoint Ecuador",
-				"linkedServiceName": {
-					"referenceName": "linked_mp_ecu",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"Servidor": {
-							"value": "@dataset().cw_servidor",
-							"type": "Expression"
-						},
-						"BaseDatos": {
-							"value": "@dataset().cw_baseDatos",
-							"type": "Expression"
-						}
-					}
-				},
-				"parameters": {
-					"cw_structure": {
-						"type": "Array"
-					},
-					"cw_tableName": {
-						"type": "String"
-					},
-					"cw_servidor": {
-						"type": "string"
-					},
-					"cw_baseDatos": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "dsa_Maxpoint"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"typeProperties": {
-					"tableName": {
-						"value": "@dataset().cw_tableName",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/linked_mp_ecu')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_Sharepoint')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "linked_sharepoint",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"Servidor": {
-							"value": "@dataset().cw_servidor",
-							"type": "Expression"
-						},
-						"BaseDatos": {
-							"value": "@dataset().cw_baseDatos",
-							"type": "Expression"
-						}
-					}
-				},
-				"parameters": {
-					"cw_structure": {
-						"type": "Array"
-					},
-					"cw_tableName": {
-						"type": "String"
-					},
-					"cw_servidor": {
-						"type": "string"
-					},
-					"cw_baseDatos": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "dwh_Sharepoint"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"typeProperties": {
-					"tableName": {
-						"value": "@dataset().cw_tableName",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/linked_sharepoint')]"
-			]
 		}
 	]
 }

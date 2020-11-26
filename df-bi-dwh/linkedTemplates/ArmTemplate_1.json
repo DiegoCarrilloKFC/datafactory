@@ -19,9 +19,9 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'linked_bi_dev'"
 		},
-		"linked_domicilio_col_connectionString": {
+		"linked_domicilio_chl_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'linked_domicilio_col'"
+			"metadata": "Secure string for 'connectionString' of 'linked_domicilio_chl'"
 		},
 		"linked_bi_dev_properties_typeProperties_userName": {
 			"type": "string",
@@ -3968,6 +3968,54 @@
 								},
 								"Procedimiento": {
 									"value": "usp_CargaAperturaLocal",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": "MANUAL",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "dim_InmuebleDomicilio",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_dim",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaInmuebleDomicilio",
 									"type": "String"
 								},
 								"TipoCarga": {
@@ -8849,28 +8897,27 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/linked_domicilio_col')]",
+			"name": "[concat(parameters('factoryName'), '/linked_domicilio_chl')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "Sistema Gerente Domicilio Colombia",
 				"parameters": {
 					"Servidor": {
 						"type": "string",
-						"defaultValue": "SAZGERENTECOL\\DomicilioCol"
+						"defaultValue": "192.168.148.110"
 					},
 					"BaseDatos": {
 						"type": "string",
-						"defaultValue": "Domicilio"
+						"defaultValue": "SqlGerenteDom"
 					}
 				},
 				"annotations": [],
 				"type": "SqlServer",
 				"typeProperties": {
-					"connectionString": "[parameters('linked_domicilio_col_connectionString')]"
+					"connectionString": "[parameters('linked_domicilio_chl_connectionString')]"
 				},
 				"connectVia": {
-					"referenceName": "IR-DomicilioCol",
+					"referenceName": "IR-DomicilioChl",
 					"type": "IntegrationRuntimeReference"
 				}
 			},
