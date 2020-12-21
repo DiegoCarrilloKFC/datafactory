@@ -92,8 +92,113 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "SqlServerTable1",
-						"type": "DatasetReference"
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "Almacen",
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
+			},
+			{
+				"name": "Cadena",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/CADENA",
+							"wildcardFileName": {
+								"value": "@Concat('CADENA_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[cadena]"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "MANDT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "mandt",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "WAREHOUSE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "warehouse",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "WAREHOUSENAME",
+									"type": "String"
+								},
+								"sink": {
+									"name": "warehousename",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PLANT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "plant",
+									"type": "String"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/CADENA"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "cadena",
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
 					}
 				]
 			}
