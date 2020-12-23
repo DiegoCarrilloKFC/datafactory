@@ -1,6 +1,107 @@
 {
 	"name": "pl_dsa_Sap_Ecu_Transaccional",
 	"properties": {
+		"activities": [
+			{
+				"name": "FacturaCompra",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/ALMACEN",
+							"wildcardFileName": {
+								"value": "@Concat('ALMACEN_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[Almacen]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/ALMACEN",
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "WAREHOUSE",
+									"type": "String"
+								},
+								{
+									"name": "WAREHOUSENAME",
+									"type": "String"
+								},
+								{
+									"name": "PLANT",
+									"type": "String"
+								}
+							]
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "dsa_ecu_sap.almacen",
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "String"
+								},
+								{
+									"name": "mandt",
+									"type": "String"
+								},
+								{
+									"name": "warehouse",
+									"type": "String"
+								},
+								{
+									"name": "warehousename",
+									"type": "String"
+								},
+								{
+									"name": "plant",
+									"type": "String"
+								}
+							],
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
+			}
+		],
 		"folder": {
 			"name": "dsa_Sap"
 		},
