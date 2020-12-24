@@ -199,6 +199,84 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "CanalDistribucion",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/CANALDISTRIBUCION",
+							"wildcardFileName": {
+								"value": "@Concat('CANALDISTRIBUCION_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap][canaldistribucion]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/CANALDISTRIBUCION",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "SEGMENT",
+									"type": "String"
+								},
+								{
+									"name": "SEGMENTNAME",
+									"type": "String"
+								}
+							]
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "dsa_ecu_sap.cadena",
+							"cw_structure": "[{\"name\":\"FECHACARGA\",\"type\":\"String\"}\n,{\"name\":\"MANDT\",\"type\":\"String\"}\n,{\"name\":\"LANGUAGE\",\"type\":\"String\"}\n,{\"name\":\"DISTRIBUTIONCHANNEL\",\"type\":\"String\"}\n,{\"name\":\"DISTRIBUTIONCHANNELNAME\",\"type\":\"String\"}",
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
 			}
 		],
 		"folder": {
