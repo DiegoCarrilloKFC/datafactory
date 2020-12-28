@@ -1773,9 +1773,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/GRUPOCOMPRA",
+							"wildcardFolderPath": "catalogo/GRUPOMATERIAL",
 							"wildcardFileName": {
-								"value": "@Concat('GRUPOCOMPRA_','*.txt')",
+								"value": "@Concat('GRUPOMATERIAL_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -1845,6 +1845,105 @@
 								},
 								{
 									"name": "MATERIALGROUPNAME",
+									"type": "String"
+								}
+							],
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
+			},
+			{
+				"name": "grupopreciocliente",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/GRUPOPRECIOCLIENTE",
+							"wildcardFileName": {
+								"value": "@Concat('GRUPOPRECIOCLIENTE_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[grupomaterial]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/GRUPOPRECIOCLIENTE",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERPRICEGROUP",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERPRICEGROUPNAME",
+									"type": "String"
+								}
+							]
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "[dsa_ecu_sap].[grupomaterial]",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERPRICEGROUP",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERPRICEGROUPNAME",
 									"type": "String"
 								}
 							],
