@@ -2150,6 +2150,109 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "JerarquiaMaterial",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/GRUPOVENTA",
+							"wildcardFileName": {
+								"value": "@Concat('GRUPOVENTA_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[grupoventa]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/JERARQUIAMATERIAL",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTHIERARCHY",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTHIERARCHYTEXT",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTHIERARCHYLEVEL",
+									"type": "String"
+								}
+							]
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "[dsa_ecu_sap].[grupoventa]",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "SALESGROUP",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "SALESGROUPNAME",
+									"type": "String"
+								}
+							],
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
 			}
 		],
 		"folder": {
