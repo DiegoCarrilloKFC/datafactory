@@ -1606,6 +1606,63 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "GrupoClienteVenta",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/GRUPOCLIENTEVENTA",
+							"wildcardFileName": {
+								"value": "@Concat('GRUPOCLIENTEVENTA_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[grupoclienteventa]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/GRUPOCLIENTEVENTA",
+							"cw_structure": "[{\"name\":\"FECHACARGA\",\"type\":\"String\"}\n\t,{\"name\":\"MANDT\",\"type\":\"String\"}\n\t,{\"name\":\"LANGUAGE\",\"type\":\"String\"}\n\t,{\"name\":\"SALESORGANIZATIONtype\":\"String\"}\n\t,{\"name\":\"DISTRIBUTIONCHANNEL\",\"type\":\"String\"}\n\t,{\"name\":\"DIVISION\",\"type\":\"String\"}\n\t,{\"name\":\"PARTNERFUNCTION\",\"type\":\"String\"}\n\t,{\"name\":\"BUSINESSPARTNER\",\"type\":\"String\"}\n\t,{\"name\":\"CUSTOMER\",\"type\":\"String\"}\n\t,{\"name\":\"BUSINESSPARTNERGROUPING\",\"type\":\"String\"}\n\t,{\"name\":\"BPCUSTOMERNUMBER\",\"type\":\"String\"}\n\t\t,{\"name\":\"PARTNERFUNCTIONNAME\",\"type\":\"String\"}]"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "[dsa_ecu_sap].[grupoclienteventa]",
+							"cw_structure": "[{\"name\":\"FECHACARGA\",\"type\":\"String\"}\n\t,{\"name\":\"MANDT\",\"type\":\"String\"}\n\t,{\"name\":\"LANGUAGE\",\"type\":\"String\"}\n\t,{\"name\":\"CUSTOMERGROUP\":\"String\"}\n\t,{\"name\":\"CUSTOMERGROUPNAME\",\"type\":\"String\"}]",
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
 			}
 		],
 		"folder": {
