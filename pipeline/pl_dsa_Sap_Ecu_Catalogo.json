@@ -3777,6 +3777,113 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "UnidadMaterial",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/UNIDADMATERIAL",
+							"wildcardFileName": {
+								"value": "@Concat('TIPOMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[tipomaterial]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/UNIDADMATERIAL",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALTYPE",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALTYPENAME",
+									"type": "String"
+								},
+								{
+									"name": "PRICE_CONTROL",
+									"type": "String"
+								}
+							]
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "[dsa_ecu_sap].[UNIDADMATERIAL]",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALTYPE",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALTYPENAME",
+									"type": "String"
+								},
+								{
+									"name": "PRICE_CONTROL",
+									"type": "String"
+								}
+							],
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
