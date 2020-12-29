@@ -783,6 +783,185 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "OrdenCompraCondicion",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "produccionplanta/ORDENCOMPRACONDICION",
+							"wildcardFileName": {
+								"value": "@Concat('ORDENCOMPRACONDICION','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[documentoentrega]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/ORDENCOMPRACONDICION",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "PURCHASEORDER",
+									"type": "String"
+								},
+								{
+									"name": "PURCHASEORDERITEM",
+									"type": "String"
+								},
+								{
+									"name": "CONDITIONAPPLICATION",
+									"type": "Strinf"
+								},
+								{
+									"name": "CONDITIONTYPE",
+									"type": "String"
+								},
+								{
+									"name": "CONDITIONBASEVALUE",
+									"type": "Decimal"
+								},
+								{
+									"name": "CONDITIONRATEVALUE",
+									"type": "Decimal"
+								},
+								{
+									"name": "CONDITIONCURRENCY",
+									"type": "String"
+								},
+								{
+									"name": "CONDITIONQUANTITY",
+									"type": "Decimal"
+								},
+								{
+									"name": "CONDITIONQUANTITYUNIT",
+									"type": "String"
+								},
+								{
+									"name": "TAXCODE",
+									"type": "String"
+								},
+								{
+									"name": "CONDITIONAMOUNT",
+									"type": "Decimal"
+								},
+								{
+									"name": "TRANSACTIONCURRENCY",
+									"type": "String"
+								},
+								{
+									"name": "PRICINGDATETIME",
+									"type": "String"
+								}
+							]
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "[dsa_ecu_sap].[documentoentrega]",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "PURCHASEORDER",
+									"type": "String"
+								},
+								{
+									"name": "PURCHASEORDERITEM",
+									"type": "String"
+								},
+								{
+									"name": "CONDITIONAPPLICATION",
+									"type": "Strinf"
+								},
+								{
+									"name": "CONDITIONTYPE",
+									"type": "String"
+								},
+								{
+									"name": "CONDITIONBASEVALUE",
+									"type": "Decimal"
+								},
+								{
+									"name": "CONDITIONRATEVALUE",
+									"type": "Decimal"
+								},
+								{
+									"name": "CONDITIONCURRENCY",
+									"type": "String"
+								},
+								{
+									"name": "CONDITIONQUANTITY",
+									"type": "Decimal"
+								},
+								{
+									"name": "CONDITIONQUANTITYUNIT",
+									"type": "String"
+								},
+								{
+									"name": "TAXCODE",
+									"type": "String"
+								},
+								{
+									"name": "CONDITIONAMOUNT",
+									"type": "Decimal"
+								},
+								{
+									"name": "TRANSACTIONCURRENCY",
+									"type": "String"
+								},
+								{
+									"name": "PRICINGDATETIME",
+									"type": "String"
+								}
+							],
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
 			}
 		],
 		"folder": {
