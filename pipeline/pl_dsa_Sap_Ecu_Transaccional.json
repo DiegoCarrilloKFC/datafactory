@@ -1450,6 +1450,63 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "EntradaDiario",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "contabilidadcar/ENTRADADIARIO",
+							"wildcardFileName": {
+								"value": "@Concat('ENTRADADIARIO_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[entradadiario]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "contabilidadcar/ENTRADADIARIO",
+							"cw_structure": "[{\"name\":\"FECHACARGA\",\"type\":\"String\"}\n,{\"name\":\"MANDT\",\"type\":\"String\"}\n,{\"name\":\"GLACCOUNT\",\"type\":\"String\"}\n,{\"name\":\"POSTINGDATE\",\"type\":\"String\"}\n,{\"name\":\"AMOUNTINCOMPANYCODECURRENCY\",\"type\":\"Decimal\"}\n,{\"name\":\"ACCOUNTINGDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"DOCUMENTITEMTEXT\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTINGDOCUMENTCATEGORY\",\"type\":\"String\"}\n,{\"name\":\"LEDGER\",\"type\":\"String\"}\n,{\"name\":\"COMPANYCODE\",\"type\":\"String\"}\n,{\"name\":\"FISCALPERIOD\",\"type\":\"Int16\"}\n,{\"name\":\"FISCALYEAR\",\"type\":\"Int16\"}\n,{\"name\":\"COSTCENTER\",\"type\":\"String\"}\n,{\"name\":\"PROFITCENTER\",\"type\":\"String\"}\n,{\"name\":\"SEGMENT\",\"type\":\"String\"}\n,{\"name\":\"COMPANYCODECURRENCY\",\"type\":\"String\"}\n,{\"name\":\"GLOBALCURRENCY\",\"type\":\"String\"}\n,{\"name\":\"AMOUNTINGLOBALCURRENCY\",\"type\":\"String\"}\n,{\"name\":\"QUANTITY\",\"type\":\"Decimal\"}\n,{\"name\":\"BASEUNIT\",\"type\":\"String\"}\n,{\"name\":\"COSTSOURCEUNIT\",\"type\":\"String\"}\n,{\"name\":\"DEBITCREDITCODE\",\"type\":\"String\"}\n,{\"name\":\"DOCUMENTDATE\",\"type\":\"String\"}\n,{\"name\":\"POSTINGKEY\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTINGDOCUMENTTYPE\",\"type\":\"Decimal\"}\n,{\"name\":\"MATERIAL\",\"type\":\"String\"}\n,{\"name\":\"PLANT\",\"type\":\"String\"}\n,{\"name\":\"SUPPLIER\",\"type\":\"String\"}\n,{\"name\":\"CUSTOMER\",\"type\":\"String\"}\n,{\"name\":\"FINANCIALACCOUNTTYPE\",\"type\":\"String\"}\n,{\"name\":\"LASTCHANGEDATETIME\",\"type\":\"String\"}\n,{\"name\":\"LEDGERGLLINEITEM\",\"type\":\"String\"}\n,{\"name\":\"LEDGERFISCALYEAR\",\"type\":\"String\"}\n,{\"name\":\"FINANCIALTRANSACTIONTYPE\",\"type\":\"String\"}\n,{\"name\":\"REFERENCEDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"REFERENCEDOCUMENTITEM\",\"type\":\"String\"}\n,{\"name\":\"ISREVERSAL\",\"type\":\"String\"}\n,{\"name\":\"ISREVERSED\",\"type\":\"String\"}\n,{\"name\":\"REVERSALREFERENCEDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"ISSETTLEMENT\",\"type\":\"String}\n,{\"name\":\"ISSETTLED\",\"type\":\"String\"}\n,{\"name\":\"SOURCEREFERENCEDOCUMENTTYPE\",\"type\":\"String\"}\n,{\"name\":\"PARTNERCOSTCENTER\",\"type\":\"String\"}\n,{\"name\":\"PARTNERPROFITCENTER\",\"type\":\"String\"}\n,{\"name\":\"BALANCETRANSACTIONCURRENCY\",\"type\":\"String\"}\n,{\"name\":\"AMOUNTINBALANCETRANSACCRCY\",\"type\":\"Decimal\"}\n,{\"name\":\"TRANSACTIONCURRENCY\",\"type\":\"String\"}\n,{\"name\":\"AMOUNTINTRANSACTIONCURRENCY\",\"type\":\"Decimal\"}\n,{\"name\":\"FIXEDQUANTITYE\",\"type\":\"Decimal\"}\n,{\"name\":\"VALUATIONQUANTITY\",\"type\":\"Decimal\"}\n,{\"name\":\"VALUATIONFIXEDQUANTITY\",\"type\":\"Decimal\"}\n,{\"name\":\"FISCALYEARVARIANT\",\"type\":\"String\"}\n,{\"name\":\"FISCALYEARPERIOD\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTINGDOCUMENTITEM\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTINGDOCCREATEDBYUSER\",\"type\":\"String\"}\n,{\"name\":\"CREATIONDATETIME\",\"type\":\"String\"}\n,{\"name\":\"CREATIONDATE\",\"type\":\"String\"}\n,{\"name\":\"GLACCOUNTTYPE\",\"type\":\"String\"}\n,{\"name\":\"INVOICEREFERENCE\",\"type\":\"String\"}\n,{\"name\":\"INVOICEITEMREFERENCE\",\"type\":\"String\"}\n,{\"name\":\"PURCHASINGDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"PURCHASINGDOCUMENTITEM\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTASSIGNMENTNUMBER\",\"type\":\"String\"}\n,{\"name\":\"SALESORDER\",\"type\":\"Int16\"}\n,{\"name\":\"SALESORDERITEM\",\"type\":\"String\"}\n,{\"name\":\"SALESDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"SALESDOCUMENTITEM\",\"type\":\"String\"}\n,{\"name\":\"PRODUCT\",\"type\":\"String\"}\n,{\"name\":\"TAXCODE\",\"type\":\"String\"}\n,{\"name\":\"HOUSEBANK\",\"type\":\"String\"}\n,{\"name\":\"HOUSEBANKACCOUNT\",\"type\":\"String\"}\n,{\"name\":\"COSTESTIMATE\",\"type\":\"String\"}\n,{\"name\":\"OFFSETTINGACCOUNT\",\"type\":\"String\"}\n,{\"name\":\"OFFSETTINGACCOUNTTYPE\",\"type\":\"String\"}\n,{\"name\":\"PARTNERCOMPANYCODE\",\"type\":\"String\"}\n,{\"name\":\"ORIGINCOSTCENTER\",\"type\":\"String\"}\n,{\"name\":\"ORIGINPROFITCENTER\",\"type\":\"String\"}\n,{\"name\":\"ORDERID\",\"type\":\"String\"}\n,{\"name\":\"ORDERCATEGORY\",\"type\":\"String\"}\n,{\"name\":\"PARTNERORDER\",\"type\":\"String\"}\n,{\"name\":\"PARTNERORDERCATEGORY\",\"type\":\"String\"}\n,{\"name\":\"BILLINGDOCUMENTTYPE\",\"type\":\"String\"}\n,{\"name\":\"SOLDMATERIAL\",\"type\":\"String\"}\n,{\"name\":\"SOLDPRODUCT\",\"type\":\"String\"}\n,{\"name\":\"MATERIALGROUP\",\"type\":\"String\"}]"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "[dsa_ecu_sap].[entradadiario]",
+							"cw_structure": "[{\"name\":\"FECHACARGA\",\"type\":\"String\"}\n,{\"name\":\"MANDT\",\"type\":\"String\"}\n,{\"name\":\"GLACCOUNT\",\"type\":\"String\"}\n,{\"name\":\"POSTINGDATE\",\"type\":\"String\"}\n,{\"name\":\"AMOUNTINCOMPANYCODECURRENCY\",\"type\":\"Decimal\"}\n,{\"name\":\"ACCOUNTINGDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"DOCUMENTITEMTEXT\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTINGDOCUMENTCATEGORY\",\"type\":\"String\"}\n,{\"name\":\"LEDGER\",\"type\":\"String\"}\n,{\"name\":\"COMPANYCODE\",\"type\":\"String\"}\n,{\"name\":\"FISCALPERIOD\",\"type\":\"Int16\"}\n,{\"name\":\"FISCALYEAR\",\"type\":\"Int16\"}\n,{\"name\":\"COSTCENTER\",\"type\":\"String\"}\n,{\"name\":\"PROFITCENTER\",\"type\":\"String\"}\n,{\"name\":\"SEGMENT\",\"type\":\"String\"}\n,{\"name\":\"COMPANYCODECURRENCY\",\"type\":\"String\"}\n,{\"name\":\"GLOBALCURRENCY\",\"type\":\"String\"}\n,{\"name\":\"AMOUNTINGLOBALCURRENCY\",\"type\":\"String\"}\n,{\"name\":\"QUANTITY\",\"type\":\"Decimal\"}\n,{\"name\":\"BASEUNIT\",\"type\":\"String\"}\n,{\"name\":\"COSTSOURCEUNIT\",\"type\":\"String\"}\n,{\"name\":\"DEBITCREDITCODE\",\"type\":\"String\"}\n,{\"name\":\"DOCUMENTDATE\",\"type\":\"String\"}\n,{\"name\":\"POSTINGKEY\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTINGDOCUMENTTYPE\",\"type\":\"Decimal\"}\n,{\"name\":\"MATERIAL\",\"type\":\"String\"}\n,{\"name\":\"PLANT\",\"type\":\"String\"}\n,{\"name\":\"SUPPLIER\",\"type\":\"String\"}\n,{\"name\":\"CUSTOMER\",\"type\":\"String\"}\n,{\"name\":\"FINANCIALACCOUNTTYPE\",\"type\":\"String\"}\n,{\"name\":\"LASTCHANGEDATETIME\",\"type\":\"String\"}\n,{\"name\":\"LEDGERGLLINEITEM\",\"type\":\"String\"}\n,{\"name\":\"LEDGERFISCALYEAR\",\"type\":\"String\"}\n,{\"name\":\"FINANCIALTRANSACTIONTYPE\",\"type\":\"String\"}\n,{\"name\":\"REFERENCEDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"REFERENCEDOCUMENTITEM\",\"type\":\"String\"}\n,{\"name\":\"ISREVERSAL\",\"type\":\"String\"}\n,{\"name\":\"ISREVERSED\",\"type\":\"String\"}\n,{\"name\":\"REVERSALREFERENCEDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"ISSETTLEMENT\",\"type\":\"String}\n,{\"name\":\"ISSETTLED\",\"type\":\"String\"}\n,{\"name\":\"SOURCEREFERENCEDOCUMENTTYPE\",\"type\":\"String\"}\n,{\"name\":\"PARTNERCOSTCENTER\",\"type\":\"String\"}\n,{\"name\":\"PARTNERPROFITCENTER\",\"type\":\"String\"}\n,{\"name\":\"BALANCETRANSACTIONCURRENCY\",\"type\":\"String\"}\n,{\"name\":\"AMOUNTINBALANCETRANSACCRCY\",\"type\":\"Decimal\"}\n,{\"name\":\"TRANSACTIONCURRENCY\",\"type\":\"String\"}\n,{\"name\":\"AMOUNTINTRANSACTIONCURRENCY\",\"type\":\"Decimal\"}\n,{\"name\":\"FIXEDQUANTITYE\",\"type\":\"Decimal\"}\n,{\"name\":\"VALUATIONQUANTITY\",\"type\":\"Decimal\"}\n,{\"name\":\"VALUATIONFIXEDQUANTITY\",\"type\":\"Decimal\"}\n,{\"name\":\"FISCALYEARVARIANT\",\"type\":\"String\"}\n,{\"name\":\"FISCALYEARPERIOD\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTINGDOCUMENTITEM\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTINGDOCCREATEDBYUSER\",\"type\":\"String\"}\n,{\"name\":\"CREATIONDATETIME\",\"type\":\"String\"}\n,{\"name\":\"CREATIONDATE\",\"type\":\"String\"}\n,{\"name\":\"GLACCOUNTTYPE\",\"type\":\"String\"}\n,{\"name\":\"INVOICEREFERENCE\",\"type\":\"String\"}\n,{\"name\":\"INVOICEITEMREFERENCE\",\"type\":\"String\"}\n,{\"name\":\"PURCHASINGDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"PURCHASINGDOCUMENTITEM\",\"type\":\"String\"}\n,{\"name\":\"ACCOUNTASSIGNMENTNUMBER\",\"type\":\"String\"}\n,{\"name\":\"SALESORDER\",\"type\":\"Int16\"}\n,{\"name\":\"SALESORDERITEM\",\"type\":\"String\"}\n,{\"name\":\"SALESDOCUMENT\",\"type\":\"String\"}\n,{\"name\":\"SALESDOCUMENTITEM\",\"type\":\"String\"}\n,{\"name\":\"PRODUCT\",\"type\":\"String\"}\n,{\"name\":\"TAXCODE\",\"type\":\"String\"}\n,{\"name\":\"HOUSEBANK\",\"type\":\"String\"}\n,{\"name\":\"HOUSEBANKACCOUNT\",\"type\":\"String\"}\n,{\"name\":\"COSTESTIMATE\",\"type\":\"String\"}\n,{\"name\":\"OFFSETTINGACCOUNT\",\"type\":\"String\"}\n,{\"name\":\"OFFSETTINGACCOUNTTYPE\",\"type\":\"String\"}\n,{\"name\":\"PARTNERCOMPANYCODE\",\"type\":\"String\"}\n,{\"name\":\"ORIGINCOSTCENTER\",\"type\":\"String\"}\n,{\"name\":\"ORIGINPROFITCENTER\",\"type\":\"String\"}\n,{\"name\":\"ORDERID\",\"type\":\"String\"}\n,{\"name\":\"ORDERCATEGORY\",\"type\":\"String\"}\n,{\"name\":\"PARTNERORDER\",\"type\":\"String\"}\n,{\"name\":\"PARTNERORDERCATEGORY\",\"type\":\"String\"}\n,{\"name\":\"BILLINGDOCUMENTTYPE\",\"type\":\"String\"}\n,{\"name\":\"SOLDMATERIAL\",\"type\":\"String\"}\n,{\"name\":\"SOLDPRODUCT\",\"type\":\"String\"}\n,{\"name\":\"MATERIALGROUP\",\"type\":\"String\"}]",
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
 			}
 		],
 		"folder": {
