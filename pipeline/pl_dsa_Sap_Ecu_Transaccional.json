@@ -1197,6 +1197,63 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "OrdenManofactura",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "produccionplanta/ORDENMANOFACTURA",
+							"wildcardFileName": {
+								"value": "@Concat('ORDENMANOFACTURA','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[ORDENMANOFACTURA]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/ORDENMANOFACTURA",
+							"cw_structure": "[{\"name\":\"FECHACARGA\",\"type\":\"String\"}\n,{\"name\":\"MANDT\",\"type\":\"String\"}\n,{\"name\":\"MANUFACTURINGORDER,\"type\":\"String\"}\n,{\"name\":\"MANUFACTURINGORDERCATEGORY\",\"type\":\"Int16\"}\n,{\"name\":\"MANUFACTURINGORDERTYPE\",\"type\":\"String\"}\n,{\"name\":\"MANUFACTURINGORDERTEXT\",\"type\":\"String\"}\n,{\"name\":\"ISCOMPLETELYDELIVERED,\"type\":\"String\"}\n,{\"name\":\"CREATIONDATE\",\"type\":\"String\"}--\n,{\"name\":\"CREATIONTIME\",\"type\":\"String\"}\n,{\"name\":\"CREATEDBYUSER\",\"type\":\"String\"}\n,{\"name\":\"LASTCHANGEDATE\",\"type\":\"String\"}\n,{\"name\":\"LASTCHANGETIME\",\"type\":\"String\"}\n,{\"name\":\"LASTCHANGEDBYUSER\",\"type\":\"String\"}\n,{\"name\":\"MATERIAL\",\"type\":\"String\"}\n,{\"name\":\"STORAGELOCATION\",\"type\":\"String\"}\n,{\"name\":\"CURRENCY\",\"type\":\"String\"}\n,{\"name\":\"PRODUCTIONPLANT\",\"type\":\"String\"}\n,{\"name\":\"PLANNINGPLANT\",\"type\":\"String\"}\n,{\"name\":\"PRODUCTIONVERSION\",\"type\":\"String\"}\n,{\"name\":\"RESERVATION\",\"type\":\"String\"}\n,{\"name\":\"INSPECTIONLOT\",\"type\":\"String\"}\n,{\"name\":\"COMPANYCODE\",\"type\":\"String\"}\n,{\"name\":\"PROFITCENTER\",\"type\":\"String\"}\n,{\"name\":\"COSTCENTER\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDSTARTDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDSTARTTIME\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDENDDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDENDTIME\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDRELEASEDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERACTUALSTARTDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERACTUALSTARTTIME\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERACTUALENDDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERACTUALRELEASEDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERITEMACTUALDELIVERYDATE\",\"type\":\"String\"}\n,{\"name\":\"PRODUCTIONUNIT\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERPLANNEDTOTALQTY\",\"type\":\"Decimal}\n,{\"name\":\"MFGORDERCONFIRMEDYIELDQTY\",\"type\":\"Decimal\"}\n,{\"name\":\"EXPECTEDDEVIATIONQUANTITY\",\"type\":\"Decimal\"}\n,{\"name\":\"ACTUALDELIVEREDQUANTITY\",\"type\":\"Decimal\"}]"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "[dsa_ecu_sap].[ORDENMANOFACTURA]",
+							"cw_structure": "[{\"name\":\"FECHACARGA\",\"type\":\"String\"}\n,{\"name\":\"MANDT\",\"type\":\"String\"}\n,{\"name\":\"MANUFACTURINGORDER,\"type\":\"String\"}\n,{\"name\":\"MANUFACTURINGORDERCATEGORY\",\"type\":\"Int16\"}\n,{\"name\":\"MANUFACTURINGORDERTYPE\",\"type\":\"String\"}\n,{\"name\":\"MANUFACTURINGORDERTEXT\",\"type\":\"String\"}\n,{\"name\":\"ISCOMPLETELYDELIVERED,\"type\":\"String\"}\n,{\"name\":\"CREATIONDATE\",\"type\":\"String\"}--\n,{\"name\":\"CREATIONTIME\",\"type\":\"String\"}\n,{\"name\":\"CREATEDBYUSER\",\"type\":\"String\"}\n,{\"name\":\"LASTCHANGEDATE\",\"type\":\"String\"}\n,{\"name\":\"LASTCHANGETIME\",\"type\":\"String\"}\n,{\"name\":\"LASTCHANGEDBYUSER\",\"type\":\"String\"}\n,{\"name\":\"MATERIAL\",\"type\":\"String\"}\n,{\"name\":\"STORAGELOCATION\",\"type\":\"String\"}\n,{\"name\":\"CURRENCY\",\"type\":\"String\"}\n,{\"name\":\"PRODUCTIONPLANT\",\"type\":\"String\"}\n,{\"name\":\"PLANNINGPLANT\",\"type\":\"String\"}\n,{\"name\":\"PRODUCTIONVERSION\",\"type\":\"String\"}\n,{\"name\":\"RESERVATION\",\"type\":\"String\"}\n,{\"name\":\"INSPECTIONLOT\",\"type\":\"String\"}\n,{\"name\":\"COMPANYCODE\",\"type\":\"String\"}\n,{\"name\":\"PROFITCENTER\",\"type\":\"String\"}\n,{\"name\":\"COSTCENTER\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDSTARTDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDSTARTTIME\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDENDDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDENDTIME\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERSCHEDULEDRELEASEDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERACTUALSTARTDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERACTUALSTARTTIME\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERACTUALENDDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERACTUALRELEASEDATE\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERITEMACTUALDELIVERYDATE\",\"type\":\"String\"}\n,{\"name\":\"PRODUCTIONUNIT\",\"type\":\"String\"}\n,{\"name\":\"MFGORDERPLANNEDTOTALQTY\",\"type\":\"Decimal}\n,{\"name\":\"MFGORDERCONFIRMEDYIELDQTY\",\"type\":\"Decimal\"}\n,{\"name\":\"EXPECTEDDEVIATIONQUANTITY\",\"type\":\"Decimal\"}\n,{\"name\":\"ACTUALDELIVEREDQUANTITY\",\"type\":\"Decimal\"}]",
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
 			}
 		],
 		"folder": {
