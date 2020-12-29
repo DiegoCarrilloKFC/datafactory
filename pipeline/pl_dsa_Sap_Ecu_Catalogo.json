@@ -3563,6 +3563,153 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "TipoCondicion",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/TIPOCONDICION",
+							"wildcardFileName": {
+								"value": "@Concat('TIPOCONDICION_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[tipocondicion]"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/TIPOCONDICION",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "COSTCENTER",
+									"type": "String"
+								},
+								{
+									"name": "PROFITCENTER",
+									"type": "String"
+								},
+								{
+									"name": "DISTRIBUTIONCHANNEL",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERGROUP",
+									"type": "String"
+								},
+								{
+									"name": "BPCUSTOMERNUMBER",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALPRICINGGROUP",
+									"type": "String"
+								},
+								{
+									"name": "CREATEDBYUSER",
+									"type": "String"
+								},
+								{
+									"name": "CREATIONDATE",
+									"type": "String"
+								},
+								{
+									"name": "CREATIONTIME",
+									"type": "String"
+								}
+							]
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh_test",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_tableName": "[dsa_ecu_sap].[tipocondicion]",
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "COSTCENTER",
+									"type": "String"
+								},
+								{
+									"name": "PROFITCENTER",
+									"type": "String"
+								},
+								{
+									"name": "DISTRIBUTIONCHANNEL",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERGROUP",
+									"type": "String"
+								},
+								{
+									"name": "BPCUSTOMERNUMBER",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALPRICINGGROUP",
+									"type": "String"
+								},
+								{
+									"name": "CREATEDBYUSER",
+									"type": "String"
+								},
+								{
+									"name": "CREATIONDATE",
+									"type": "String"
+								},
+								{
+									"name": "CREATIONTIME",
+									"type": "String"
+								}
+							],
+							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
+							"cw_baseDatos": "dwhSap"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
