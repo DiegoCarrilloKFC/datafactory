@@ -2237,8 +2237,15 @@
 						}
 					},
 					"sink": {
-						"type": "SqlServerSink",
-						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[statusfacturacompra]"
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[statusfacturacompra]",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						},
+						"disableMetricsCollection": false
 					},
 					"enableStaging": false
 				},
@@ -2253,10 +2260,9 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_dwh_test",
+						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_tableName": "[dsa_ecu_sap].[statusfacturacompra]",
 							"cw_structure": [
 								{
 									"name": "FECHACARGA",
@@ -2279,8 +2285,7 @@
 									"type": "String"
 								}
 							],
-							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
-							"cw_baseDatos": "dwhSap"
+							"cw_tableName": "[dsa_ecu_sap].[statusfacturacompra]"
 						}
 					}
 				]
