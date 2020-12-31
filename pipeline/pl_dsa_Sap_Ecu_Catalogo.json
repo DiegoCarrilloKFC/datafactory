@@ -1326,8 +1326,13 @@
 						}
 					},
 					"sink": {
-						"type": "SqlServerSink",
-						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[grupopreciocliente]"
+						"type": "SqlDWSink",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
 					},
 					"enableStaging": false
 				},
@@ -1342,35 +1347,8 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_dwh_test",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_tableName": "[dsa_ecu_sap].[grupopreciocliente]",
-							"cw_structure": [
-								{
-									"name": "FECHACARGA",
-									"type": "String"
-								},
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "CUSTOMERPRICEGROUP",
-									"type": "String"
-								},
-								{
-									"name": "LANGUAGE",
-									"type": "String"
-								},
-								{
-									"name": "CUSTOMERPRICEGROUPNAME",
-									"type": "String"
-								}
-							],
-							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
-							"cw_baseDatos": "dwhSap"
-						}
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference"
 					}
 				]
 			},
@@ -1403,8 +1381,9 @@
 						}
 					},
 					"sink": {
-						"type": "SqlServerSink",
-						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[grupopreciomaterial]"
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[grupopreciomaterial]",
+						"disableMetricsCollection": false
 					},
 					"enableStaging": false
 				},
@@ -1419,10 +1398,9 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_dwh_test",
+						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_tableName": "[dsa_ecu_sap].[grupopreciomaterial]",
 							"cw_structure": [
 								{
 									"name": "FECHACARGA",
@@ -1445,8 +1423,7 @@
 									"type": "String"
 								}
 							],
-							"cw_servidor": "SRV-BIDESA-DWH\\DWHTEST",
-							"cw_baseDatos": "dwhSap"
+							"cw_tableName": "[dsa_ecu_sap].[grupopreciomaterial]"
 						}
 					}
 				]
