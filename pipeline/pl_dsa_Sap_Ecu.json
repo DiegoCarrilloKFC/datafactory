@@ -1,0 +1,103 @@
+{
+	"name": "pl_dsa_Sap_Ecu",
+	"properties": {
+		"activities": [
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "Select Anio=year(getdate()),Mes=convert (char(2),getdate(),101),Dia=convert (char(2),getdate(),103)",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Catalogo",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Catalogo",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Transaccional",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Catalogo",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "dsa_Sap"
+		},
+		"annotations": []
+	}
+}
