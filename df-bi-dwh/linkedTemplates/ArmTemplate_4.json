@@ -13,6 +13,53 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteArg')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_sg_arg",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": {
+							"value": "@dataset().cw_servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@dataset().cw_baseDatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerente"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteChl')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -46092,7 +46139,7 @@
 						}
 					},
 					{
-						"name": "Catalogo",
+						"name": "Catalogo1",
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
@@ -46105,7 +46152,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "pl_dsa_Sap_Ecu_Catalogo",
+								"referenceName": "pl_dsa_Sap_Ecu_Catalogo_1",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
@@ -46121,14 +46168,6 @@
 								"Dia": {
 									"value": "@activity('Fecha Carga').output.firstRow.Dia",
 									"type": "Expression"
-								},
-								"FechaInicioBorrado": {
-									"value": "@activity('Fecha Carga').output.firstRow.FechaInicioBorrado",
-									"type": "Expression"
-								},
-								"FechaFinBorrado": {
-									"value": "@activity('Fecha Carga').output.firstRow.FechaFinBorrado",
-									"type": "Expression"
 								}
 							}
 						}
@@ -46138,9 +46177,15 @@
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
-								"activity": "Catalogo",
+								"activity": "Catalogo2",
 								"dependencyConditions": [
-									"Succeeded"
+									"Completed"
+								]
+							},
+							{
+								"activity": "Catalogo1",
+								"dependencyConditions": [
+									"Completed"
 								]
 							}
 						],
@@ -46166,232 +46211,44 @@
 								}
 							}
 						}
+					},
+					{
+						"name": "Catalogo2",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_Catalogo_2",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Anio": {
+									"value": "@activity('Fecha Carga').output.firstRow.Anio",
+									"type": "Expression"
+								},
+								"Mes": {
+									"value": "@activity('Fecha Carga').output.firstRow.Mes",
+									"type": "Expression"
+								},
+								"Dia": {
+									"value": "@activity('Fecha Carga').output.firstRow.Dia",
+									"type": "Expression"
+								}
+							}
+						}
 					}
 				],
 				"folder": {
 					"name": "dsa_Sap"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sip_Ecu_Catalogo')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Cuentas",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[prp].[Cuentas]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sip].[Cuentas]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,idCuenta,jerarquia,nombreCuenta,subCuenta,categoria,agrupadora,encargado,rubroGerente,accountNum,proposito,tipoTabla,modificable,datosTabla,GRD FROM prp.Cuentas",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sip].[Cuentas]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SipEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "idCuenta",
-											"type": "Int32"
-										},
-										{
-											"name": "jerarquia",
-											"type": "String"
-										},
-										{
-											"name": "nombreCuenta",
-											"type": "String"
-										},
-										{
-											"name": "subCuenta",
-											"type": "String"
-										},
-										{
-											"name": "categoria",
-											"type": "String"
-										},
-										{
-											"name": "agrupadora",
-											"type": "String"
-										},
-										{
-											"name": "encargado",
-											"type": "String"
-										},
-										{
-											"name": "rubroGerente",
-											"type": "String"
-										},
-										{
-											"name": "accountNum",
-											"type": "String"
-										},
-										{
-											"name": "proposito",
-											"type": "String"
-										},
-										{
-											"name": "tipoTabla",
-											"type": "String"
-										},
-										{
-											"name": "modificable",
-											"type": "String"
-										},
-										{
-											"name": "datosTabla",
-											"type": "String"
-										},
-										{
-											"name": "GRD",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[prp].[Cuentas]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "idCuenta",
-											"type": "Int32"
-										},
-										{
-											"name": "jerarquia",
-											"type": "String"
-										},
-										{
-											"name": "nombreCuenta",
-											"type": "String"
-										},
-										{
-											"name": "subCuenta",
-											"type": "String"
-										},
-										{
-											"name": "categoria",
-											"type": "String"
-										},
-										{
-											"name": "agrupadora",
-											"type": "String"
-										},
-										{
-											"name": "encargado",
-											"type": "String"
-										},
-										{
-											"name": "rubroGerente",
-											"type": "String"
-										},
-										{
-											"name": "accountNum",
-											"type": "String"
-										},
-										{
-											"name": "proposito",
-											"type": "String"
-										},
-										{
-											"name": "tipoTabla",
-											"type": "String"
-										},
-										{
-											"name": "modificable",
-											"type": "String"
-										},
-										{
-											"name": "datosTabla",
-											"type": "String"
-										},
-										{
-											"name": "GRD",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sip].[Cuentas]"
-								}
-							}
-						]
-					}
-				],
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "SAZCONTADB"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "Presupuestos"
-					}
-				},
-				"folder": {
-					"name": "dsa_SipEcu"
 				},
 				"annotations": []
 			},
