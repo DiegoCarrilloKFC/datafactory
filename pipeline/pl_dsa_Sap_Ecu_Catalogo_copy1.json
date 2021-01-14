@@ -1,0 +1,159 @@
+{
+	"name": "pl_dsa_Sap_Ecu_Catalogo_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Cadena",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/CADENA",
+							"wildcardFileName": {
+								"value": "@Concat('CADENA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table dsa_ecu_sap.cadena",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/CADENA"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "SEGMENT",
+									"type": "String"
+								},
+								{
+									"name": "SEGMENTNAME",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "dsa_ecu_sap.cadena"
+						}
+					}
+				]
+			},
+			{
+				"name": "Delete1_copy1",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "Cadena",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/CADENA/"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/catalogo/CADENA"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeStart": {
+							"value": "@pipeline().parameters.FechaInicioBorrado",
+							"type": "Expression"
+						},
+						"modifiedDatetimeEnd": {
+							"value": "@pipeline().parameters.FechaFinBorrado",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"parameters": {
+			"Anio": {
+				"type": "string",
+				"defaultValue": "2021"
+			},
+			"Mes": {
+				"type": "string",
+				"defaultValue": "01"
+			},
+			"Dia": {
+				"type": "string",
+				"defaultValue": "13"
+			},
+			"FechaInicioBorrado": {
+				"type": "string",
+				"defaultValue": "20210105"
+			},
+			"FechaFinBorrado": {
+				"type": "string",
+				"defaultValue": "20210105"
+			}
+		},
+		"folder": {
+			"name": "dsa_Sap"
+		},
+		"annotations": []
+	}
+}
