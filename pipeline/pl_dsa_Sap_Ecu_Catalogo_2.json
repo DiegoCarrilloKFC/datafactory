@@ -311,7 +311,7 @@
 				]
 			},
 			{
-				"name": "CategoriaMaterial",
+				"name": "MaterialVenta",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -328,9 +328,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/CATEGORIAMATERIAL",
+							"wildcardFolderPath": "catalogo/MATERIALVENTA",
 							"wildcardFileName": {
-								"value": "@Concat('CATEGORIAMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('MATERIALVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -340,7 +340,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table  [dsa_ecu_sap].[categoriamaterial]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[materialventa]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -350,7 +350,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CATEGORIAMATERIAL"
+							"cw_carpeta": "catalogo/MATERIALVENTA"
 						}
 					}
 				],
@@ -365,15 +365,27 @@
 									"type": "String"
 								},
 								{
-									"name": "LANGUAGE",
+									"name": "PRODUCT",
 									"type": "String"
 								},
 								{
-									"name": "MATERIALVALUATIONCLASS",
+									"name": "PRODUCTSALESORG",
 									"type": "String"
 								},
 								{
-									"name": "MATERIALUSABILITYPROFILENAME",
+									"name": "PRODUCTDISTRIBUTIONCHNL",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALPRICINGGROUP",
+									"type": "String"
+								},
+								{
+									"name": "SALESMEASUREUNIT",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTHIERARCHY",
 									"type": "String"
 								},
 								{
@@ -381,7 +393,7 @@
 									"type": "String"
 								}
 							],
-							"cw_tableName": "[dsa_ecu_sap].[categoriamaterial]"
+							"cw_tableName": "[dsa_ecu_sap].[materialventa]"
 						}
 					}
 				]
@@ -1909,7 +1921,7 @@
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "CategoriaMaterial",
+						"activity": "MaterialVenta",
 						"dependencyConditions": [
 							"Succeeded"
 						]
