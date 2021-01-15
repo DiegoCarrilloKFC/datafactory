@@ -103,7 +103,7 @@
 				]
 			},
 			{
-				"name": "Cadena",
+				"name": "Material",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -120,9 +120,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/CADENA",
+							"wildcardFolderPath": "catalogo/MATERIAL",
 							"wildcardFileName": {
-								"value": "@Concat('CADENA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('MATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -142,7 +142,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CADENA"
+							"cw_carpeta": "catalogo/MATERIAL"
 						}
 					}
 				],
@@ -1761,7 +1761,7 @@
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "Cadena",
+						"activity": "Material",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -2713,7 +2713,14 @@
 			{
 				"name": "DELETEJerarquiaMaterial_copy1",
 				"type": "Delete",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "JerarquiaMaterial_copy1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
