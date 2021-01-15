@@ -223,7 +223,7 @@
 				]
 			},
 			{
-				"name": "CanalDistribucion",
+				"name": "MaterialAlmacen",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -240,9 +240,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/CANALDISTRIBUCION",
+							"wildcardFolderPath": "catalogo/MATERIALALMACEN",
 							"wildcardFileName": {
-								"value": "@Concat('CANALDISTRIBUCION_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('MATERIALALMACEN_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -252,7 +252,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[canaldistribucion]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[materialalmacen]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -262,7 +262,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CANALDISTRIBUCION"
+							"cw_carpeta": "catalogo/MATERIALALMACEN"
 						}
 					}
 				],
@@ -277,23 +277,35 @@
 									"type": "String"
 								},
 								{
-									"name": "DISTRIBUTIONCHANNEL",
+									"name": "MATERIAL",
 									"type": "String"
 								},
 								{
-									"name": "LANGUAGE",
+									"name": "PLANT",
 									"type": "String"
 								},
 								{
-									"name": "DISTRIBUTIONCHANNELNAME",
+									"name": "WAREHOUSE",
 									"type": "String"
 								},
 								{
 									"name": "FECHACARGA",
 									"type": "String"
+								},
+								{
+									"name": "PROFITCENTER",
+									"type": "String"
+								},
+								{
+									"name": "PURCHASINGGROUP",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALVALUATIONCLASS",
+									"type": "String"
 								}
 							],
-							"cw_tableName": "[dsa_ecu_sap].[canaldistribucion]"
+							"cw_tableName": "[dsa_ecu_sap].[materialalmacen]"
 						}
 					}
 				]
@@ -1851,7 +1863,7 @@
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "CanalDistribucion",
+						"activity": "MaterialAlmacen",
 						"dependencyConditions": [
 							"Succeeded"
 						]
