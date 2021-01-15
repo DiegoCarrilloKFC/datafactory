@@ -52936,86 +52936,6 @@
 						]
 					},
 					{
-						"name": "JerarquiaMaterial",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/JERARQUIAMATERIAL",
-									"wildcardFileName": {
-										"value": "@Concat('JERARQUIAMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[jerarquiamaterial]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/JERARQUIAMATERIAL"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "MANDT",
-											"type": "String"
-										},
-										{
-											"name": "PRODUCTHIERARCHY",
-											"type": "String"
-										},
-										{
-											"name": "LANGUAGE",
-											"type": "String"
-										},
-										{
-											"name": "PRODUCTHIERARCHYTEXT",
-											"type": "String"
-										},
-										{
-											"name": "PRODUCTHIERARCHYLEVEL",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sap].[jerarquiamaterial]"
-								}
-							}
-						]
-					},
-					{
 						"name": "DeleteAlmacen",
 						"type": "Delete",
 						"dependsOn": [
@@ -53876,52 +53796,6 @@
 									"type": "LinkedServiceReference"
 								},
 								"path": "almacenamientosap/catalogo/GRUPOVENTA"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DELETEJerarquiaMaterial",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "JerarquiaMaterial",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/JERARQUIAMATERIAL"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/JERARQUIAMATERIAL"
 							},
 							"enableLogging": true,
 							"storeSettings": {
@@ -53969,7 +53843,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Almacen",
+						"name": "HomologacionEmbutser",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -53986,9 +53860,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/ALMACEN",
+									"wildcardFolderPath": "catalogo/HOMOLOGACIONEMBUTSER",
 									"wildcardFileName": {
-										"value": "@Concat('ALMACEN_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('HOMOLOGACIONEMBUTSER_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -53998,7 +53872,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table dsa_ecu_sap.almacen",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[HomologacionEmbutser]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -54008,7 +53882,7 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/ALMACEN"
+									"cw_carpeta": "catalogo/HOMOLOGACIONEMBUTSER"
 								}
 							}
 						],
@@ -54020,6 +53894,230 @@
 									"cw_structure": [
 										{
 											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "COSTCENTER",
+											"type": "String"
+										},
+										{
+											"name": "PROFITCENTER",
+											"type": "String"
+										},
+										{
+											"name": "DISTRIBUTIONCHANNEL",
+											"type": "String"
+										},
+										{
+											"name": "CUSTOMERGROUP",
+											"type": "String"
+										},
+										{
+											"name": "BPCUSTOMERNUMBER",
+											"type": "String"
+										},
+										{
+											"name": "MATERIALPRICINGGROUP",
+											"type": "String"
+										},
+										{
+											"name": "CREATEDBYUSER",
+											"type": "String"
+										},
+										{
+											"name": "CREATIONDATE",
+											"type": "String"
+										},
+										{
+											"name": "CREATIONTIME",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[HomologacionEmbutser]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Material",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/MATERIAL",
+									"wildcardFileName": {
+										"value": "@Concat('MATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[material]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIAL"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "MATERIAL",
+											"type": "String"
+										},
+										{
+											"name": "MATERIALNAME",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "CREATIONDATE",
+											"type": "String"
+										},
+										{
+											"name": "LASTCHANGEDATE",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTOLDID",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTTYPE",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTGROUP",
+											"type": "String"
+										},
+										{
+											"name": "BASEUNIT",
+											"type": "String"
+										},
+										{
+											"name": "NETWEIGHT",
+											"type": "Decimal"
+										},
+										{
+											"name": "WEIGHTUNIT",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										{
+											"name": "GROSSWEIGHT",
+											"type": "Decimal"
+										},
+										{
+											"name": "DIVISION",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTHIERARCHY",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[material]"
+								}
+							}
+						]
+					},
+					{
+						"name": "MaterialAlmacen",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/MATERIALALMACEN",
+									"wildcardFileName": {
+										"value": "@Concat('MATERIALALMACEN_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[materialalmacen]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIALALMACEN"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "MATERIAL",
 											"type": "String"
 										},
 										{
@@ -54031,249 +54129,29 @@
 											"type": "String"
 										},
 										{
-											"name": "WAREHOUSENAME",
-											"type": "String"
-										},
-										{
 											"name": "FECHACARGA",
 											"type": "String"
-										}
-									],
-									"cw_tableName": "dsa_ecu_sap.almacen"
-								}
-							}
-						]
-					},
-					{
-						"name": "Cadena",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/CADENA",
-									"wildcardFileName": {
-										"value": "@Concat('CADENA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table dsa_ecu_sap.cadena",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CADENA"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
+										},
 										{
-											"name": "MANDT",
+											"name": "PROFITCENTER",
 											"type": "String"
 										},
 										{
-											"name": "LANGUAGE",
-											"type": "String"
-										},
-										{
-											"name": "SEGMENT",
-											"type": "String"
-										},
-										{
-											"name": "SEGMENTNAME",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "dsa_ecu_sap.cadena"
-								}
-							}
-						]
-					},
-					{
-						"name": "CanalDistribucion",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/CANALDISTRIBUCION",
-									"wildcardFileName": {
-										"value": "@Concat('CANALDISTRIBUCION_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[canaldistribucion]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CANALDISTRIBUCION"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "MANDT",
-											"type": "String"
-										},
-										{
-											"name": "DISTRIBUTIONCHANNEL",
-											"type": "String"
-										},
-										{
-											"name": "LANGUAGE",
-											"type": "String"
-										},
-										{
-											"name": "DISTRIBUTIONCHANNELNAME",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sap].[canaldistribucion]"
-								}
-							}
-						]
-					},
-					{
-						"name": "CategoriaMaterial",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/CATEGORIAMATERIAL",
-									"wildcardFileName": {
-										"value": "@Concat('CATEGORIAMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table  [dsa_ecu_sap].[categoriamaterial]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CATEGORIAMATERIAL"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "MANDT",
-											"type": "String"
-										},
-										{
-											"name": "LANGUAGE",
+											"name": "PURCHASINGGROUP",
 											"type": "String"
 										},
 										{
 											"name": "MATERIALVALUATIONCLASS",
 											"type": "String"
-										},
-										{
-											"name": "MATERIALUSABILITYPROFILENAME",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[categoriamaterial]"
+									"cw_tableName": "[[dsa_ecu_sap].[materialalmacen]"
 								}
 							}
 						]
 					},
 					{
-						"name": "CebeEmpresa",
+						"name": "MaterialVenta",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -54290,9 +54168,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/CEBEEMPRESA",
+									"wildcardFolderPath": "catalogo/MATERIALVENTA",
 									"wildcardFileName": {
-										"value": "@Concat('CEBEEMPRESA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('MATERIALVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -54302,7 +54180,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table  [dsa_ecu_sap].[cebeempresa]",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[materialventa]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -54312,7 +54190,7 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/CEBEEMPRESA"
+									"cw_carpeta": "catalogo/MATERIALVENTA"
 								}
 							}
 						],
@@ -54327,11 +54205,27 @@
 											"type": "String"
 										},
 										{
-											"name": "PROFITCENTER",
+											"name": "PRODUCT",
 											"type": "String"
 										},
 										{
-											"name": "COMPANYCODE",
+											"name": "PRODUCTSALESORG",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTDISTRIBUTIONCHNL",
+											"type": "String"
+										},
+										{
+											"name": "MATERIALPRICINGGROUP",
+											"type": "String"
+										},
+										{
+											"name": "SALESMEASUREUNIT",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTHIERARCHY",
 											"type": "String"
 										},
 										{
@@ -54339,13 +54233,13 @@
 											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[cebeempresa]"
+									"cw_tableName": "[[dsa_ecu_sap].[materialventa]"
 								}
 							}
 						]
 					},
 					{
-						"name": "CentroBeneficio",
+						"name": "Planta",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -54362,9 +54256,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/CENTROBENEFICIO",
+									"wildcardFolderPath": "catalogo/PLANTA",
 									"wildcardFileName": {
-										"value": "@Concat('CENTROBENEFICIO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('PLANTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -54374,7 +54268,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table  [dsa_ecu_sap].[centrobeneficio]",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[planta]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -54384,299 +54278,7 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/CENTROBENEFICIO"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "MANDT",
-											"type": "String"
-										},
-										{
-											"name": "LANGUAGE",
-											"type": "String"
-										},
-										{
-											"name": "COUNTRY",
-											"type": "String"
-										},
-										{
-											"name": "SEGMENT",
-											"type": "String"
-										},
-										{
-											"name": "PROFITCENTER",
-											"type": "String"
-										},
-										{
-											"name": "PROFITCENTERNAME",
-											"type": "String"
-										},
-										{
-											"name": "PROFITCENTERLONGNAME",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sap].[centrobeneficio]"
-								}
-							}
-						]
-					},
-					{
-						"name": "CentroCosto",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/CENTROCOSTO",
-									"wildcardFileName": {
-										"value": "@Concat('CENTROCOSTO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table  [dsa_ecu_sap].[centrocosto]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CENTROCOSTO"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "MANDT",
-											"type": "String"
-										},
-										{
-											"name": "LANGUAGE",
-											"type": "String"
-										},
-										{
-											"name": "COUNTRY",
-											"type": "String"
-										},
-										{
-											"name": "COMPANYCODE",
-											"type": "String"
-										},
-										{
-											"name": "PROFITCENTER",
-											"type": "String"
-										},
-										{
-											"name": "COSTCENTER",
-											"type": "String"
-										},
-										{
-											"name": "COSTCENTERNAME",
-											"type": "String"
-										},
-										{
-											"name": "COSTCENTERDESCRIPTION",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
-										},
-										{
-											"name": "COSTCENTERCATEGORY",
-											"type": "String"
-										},
-										{
-											"name": "COSTCTRRESPONSIBLEPERSONNAME",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sap].[centrocosto]"
-								}
-							}
-						]
-					},
-					{
-						"name": "ClienteaAreaVenta",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/CLIENTEAREAVENTA",
-									"wildcardFileName": {
-										"value": "@Concat('CLIENTEAREAVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[clienteareaventa]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CLIENTEAREAVENTA"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "MANDT",
-											"type": "String"
-										},
-										{
-											"name": "CUSTOMER",
-											"type": "String"
-										},
-										{
-											"name": "SALESORGANIZATION",
-											"type": "String"
-										},
-										{
-											"name": "DISTRIBUTIONCHANNEL",
-											"type": "String"
-										},
-										{
-											"name": "DIVISION",
-											"type": "String"
-										},
-										{
-											"name": "SALESOFFICE",
-											"type": "String"
-										},
-										{
-											"name": "SALESGROUP",
-											"type": "String"
-										},
-										{
-											"name": "CURRENCY",
-											"type": "String"
-										},
-										{
-											"name": "PRICELISTTYPE",
-											"type": "String"
-										},
-										{
-											"name": "CUSTOMERGROUP",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
-										},
-										{
-											"name": "CUSTOMERPRICEGROUP",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sap].[clienteareaventa]"
-								}
-							}
-						]
-					},
-					{
-						"name": "ClienteEmpresaPlanta",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/CLIENTEEMPRESAPLANTA",
-									"wildcardFileName": {
-										"value": "@Concat('CLIENTEEMPRESAPLANTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[clienteempresaplanta]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CLIENTEEMPRESAPLANTA"
+									"cw_carpeta": "catalogo/PLANTA"
 								}
 							}
 						],
@@ -54695,15 +54297,11 @@
 											"type": "String"
 										},
 										{
-											"name": "CUSTOMER",
+											"name": "PLANTNAME",
 											"type": "String"
 										},
 										{
-											"name": "COMPANYCODE",
-											"type": "String"
-										},
-										{
-											"name": "CASHPLANNINGGROUP",
+											"name": "FACTORYCALENDAR",
 											"type": "String"
 										},
 										{
@@ -54711,13 +54309,13 @@
 											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[clienteempresaplanta]"
+									"cw_tableName": "[[dsa_ecu_sap].[planta]"
 								}
 							}
 						]
 					},
 					{
-						"name": "Clientes",
+						"name": "PlantaEmpresa",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -54734,9 +54332,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/CLIENTES",
+									"wildcardFolderPath": "catalogo/PLANTAEMPRESA",
 									"wildcardFileName": {
-										"value": "@Concat('CLIENTES_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('PLANTAEMPRESA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -54746,7 +54344,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[clientes]",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[plantaempresa]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -54756,7 +54354,7 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/CLIENTES"
+									"cw_carpeta": "catalogo/PLANTAEMPRESA"
 								}
 							}
 						],
@@ -54771,19 +54369,91 @@
 											"type": "String"
 										},
 										{
-											"name": "CUSTOMER",
+											"name": "FECHACARGA",
 											"type": "String"
 										},
 										{
-											"name": "CUSTOMERNAME",
+											"name": "COMPANYCODE",
 											"type": "String"
 										},
 										{
-											"name": "CUSTOMERFULLNAME",
+											"name": "PLANT",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[plantaempresa]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Proveedor",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/PROVEEDOR",
+									"wildcardFileName": {
+										"value": "@Concat('PROVEEDOR_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table  [dsa_ecu_sap].[proveedor]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PROVEEDOR"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
 											"type": "String"
 										},
 										{
-											"name": "CUSTOMERACCOUNTGROUP",
+											"name": "SUPPLIER",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIERACCOUNTGROUP",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIERNAME",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIERFULLNAME",
 											"type": "String"
 										},
 										{
@@ -54792,10 +54462,6 @@
 										},
 										{
 											"name": "BPTAXNUMBER",
-											"type": "String"
-										},
-										{
-											"name": "COUNTRY",
 											"type": "String"
 										},
 										{
@@ -54811,11 +54477,19 @@
 											"type": "String"
 										},
 										{
-											"name": "TELF1",
+											"name": "STREETNAME",
 											"type": "String"
 										},
 										{
-											"name": "STREETNAME",
+											"name": "COUNTRY",
+											"type": "String"
+										},
+										{
+											"name": "PHONENUMBER1",
+											"type": "String"
+										},
+										{
+											"name": "FAXNUMBER",
 											"type": "String"
 										},
 										{
@@ -54823,7 +54497,7 @@
 											"type": "String"
 										},
 										{
-											"name": "LANGUAGE",
+											"name": "SUPPLIERLANGUAGE",
 											"type": "String"
 										},
 										{
@@ -54839,13 +54513,13 @@
 											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[clientes]"
+									"cw_tableName": "[[dsa_ecu_sap].[proveedor]"
 								}
 							}
 						]
 					},
 					{
-						"name": "CuentasContables",
+						"name": "ProveedorEmpresaPlanta",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -54862,9 +54536,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/CUENTASCONTABLES",
+									"wildcardFolderPath": "catalogo/PROVEEDOREMPRESAPLANTA",
 									"wildcardFileName": {
-										"value": "@Concat('CUENTASCONTABLES_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('PROVEEDOREMPRESAPLANTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -54874,7 +54548,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[cuentascontables]",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[proveedorempresaplanta]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -54884,7 +54558,7 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/CUENTASCONTABLES"
+									"cw_carpeta": "catalogo/PROVEEDOREMPRESAPLANTA"
 								}
 							}
 						],
@@ -54899,87 +54573,11 @@
 											"type": "String"
 										},
 										{
-											"name": "GLACCOUNT",
+											"name": "PLANT",
 											"type": "String"
 										},
 										{
-											"name": "GLACCOUNTNAME",
-											"type": "String"
-										},
-										{
-											"name": "GLACCOUNTLONGNAME",
-											"type": "String"
-										},
-										{
-											"name": "LANGUAGE",
-											"type": "String"
-										},
-										{
-											"name": "LASTCHANGEDATETIME",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sap].[cuentascontables]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Empresa",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/EMPRESA",
-									"wildcardFileName": {
-										"value": "@Concat('EMPRESA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[empresa]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/EMPRESA"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "MANDT",
+											"name": "SUPPLIER",
 											"type": "String"
 										},
 										{
@@ -54987,15 +54585,75 @@
 											"type": "String"
 										},
 										{
-											"name": "COMPANYCODENAME",
+											"name": "CASHPLANNINGGROUP",
 											"type": "String"
 										},
 										{
-											"name": "COUNTRY",
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[proveedorempresaplanta]"
+								}
+							}
+						]
+					},
+					{
+						"name": "StatusFacturaCompra",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/STATUSFACTURACOMPRA",
+									"wildcardFileName": {
+										"value": "@Concat('STATUSFACTURACOMPRA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[statusfacturacompra]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSFACTURACOMPRA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
 											"type": "String"
 										},
 										{
-											"name": "CURRENCY",
+											"name": "SUPPLIERINVOICESTATUS",
 											"type": "String"
 										},
 										{
@@ -55003,25 +54661,21 @@
 											"type": "String"
 										},
 										{
+											"name": "SUPPLIERINVOICESTATUSDESC",
+											"type": "String"
+										},
+										{
 											"name": "FECHACARGA",
-											"type": "String"
-										},
-										{
-											"name": "RUC",
-											"type": "String"
-										},
-										{
-											"name": "COMPANYNAME",
 											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[empresa]"
+									"cw_tableName": "[[dsa_ecu_sap].[statusfacturacompra]"
 								}
 							}
 						]
 					},
 					{
-						"name": "FuncionInterlocutor",
+						"name": "StatusFacturaVenta",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -55038,9 +54692,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/FUNCIONINTERLOCUTOR",
+									"wildcardFolderPath": "catalogo/STATUSFACTURAVENTA",
 									"wildcardFileName": {
-										"value": "@Concat('FUNCIONINTERLOCUTOR_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('STATUSFACTURAVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -55050,7 +54704,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[funcioninterlocutor]",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[statusfacturaventa]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -55060,7 +54714,7 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/FUNCIONINTERLOCUTOR"
+									"cw_carpeta": "catalogo/STATUSFACTURAVENTA"
 								}
 							}
 						],
@@ -55075,107 +54729,7 @@
 											"type": "String"
 										},
 										{
-											"name": "SALESORGANIZATION",
-											"type": "String"
-										},
-										{
-											"name": "DISTRIBUTIONCHANNEL",
-											"type": "String"
-										},
-										{
-											"name": "DIVISION",
-											"type": "String"
-										},
-										{
-											"name": "PARTNERFUNCTION",
-											"type": "String"
-										},
-										{
-											"name": "BUSINESSPARTNER",
-											"type": "String"
-										},
-										{
-											"name": "CUSTOMER",
-											"type": "String"
-										},
-										{
-											"name": "BUSINESSPARTNERGROUPING",
-											"type": "String"
-										},
-										{
-											"name": "BPCUSTOMERNUMBER",
-											"type": "String"
-										},
-										{
-											"name": "PARTNERFUNCTIONNAME",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sap].[funcioninterlocutor]"
-								}
-							}
-						]
-					},
-					{
-						"name": "GrupoClienteVenta",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/GRUPOCLIENTEVENTA",
-									"wildcardFileName": {
-										"value": "@Concat('GRUPOCLIENTEVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[grupoclienteventa]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOCLIENTEVENTA"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "MANDT",
-											"type": "String"
-										},
-										{
-											"name": "CUSTOMERGROUP",
+											"name": "OVERALLBILLINGSTATUS",
 											"type": "String"
 										},
 										{
@@ -55183,7 +54737,7 @@
 											"type": "String"
 										},
 										{
-											"name": "CUSTOMERGROUPNAME",
+											"name": "OVERALLBILLINGSTATUSDESC",
 											"type": "String"
 										},
 										{
@@ -55191,13 +54745,13 @@
 											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[grupoclienteventa]"
+									"cw_tableName": "[[dsa_ecu_sap].[statusfacturaventa]"
 								}
 							}
 						]
 					},
 					{
-						"name": "GrupoCompra",
+						"name": "StatusOrdenCompra",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -55214,9 +54768,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/GRUPOCOMPRA",
+									"wildcardFolderPath": "catalogo/STATUSORDENCOMPRA",
 									"wildcardFileName": {
-										"value": "@Concat('GRUPOCOMPRA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('STATUSORDENCOMPRA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -55226,7 +54780,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[grupocompra]",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[statusordencompra]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -55236,7 +54790,7 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOCOMPRA"
+									"cw_carpeta": "catalogo/STATUSORDENCOMPRA"
 								}
 							}
 						],
@@ -55251,11 +54805,15 @@
 											"type": "String"
 										},
 										{
-											"name": "PURCHASINGGROUP",
+											"name": "PURCHASINGDOCUMENTSTATUS",
 											"type": "String"
 										},
 										{
-											"name": "PURCHASINGGROUPNAME",
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "PURCHASINGDOCUMENTSTATUSNAME",
 											"type": "String"
 										},
 										{
@@ -55263,13 +54821,13 @@
 											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[grupocompra]"
+									"cw_tableName": "[[dsa_ecu_sap].[statusordencompra]"
 								}
 							}
 						]
 					},
 					{
-						"name": "GrupoMaterial",
+						"name": "StatusProcesoVenta",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -55286,9 +54844,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/GRUPOMATERIAL",
+									"wildcardFolderPath": "catalogo/STATUSPROCESOVENTA",
 									"wildcardFileName": {
-										"value": "@Concat('GRUPOMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('STATUSPROCESOVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -55298,7 +54856,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[grupomaterial]",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[statusprocesoventa]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -55308,7 +54866,83 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOMATERIAL"
+									"cw_carpeta": "catalogo/STATUSPROCESOVENTA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "OVERALLSDPROCESSSTATUS",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "OVERALLSDPROCESSSTATUSDESC",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[statusprocesoventa]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TipoCondicion",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/TIPOCONDICION",
+									"wildcardFileName": {
+										"value": "@Concat('TIPOCONDICION_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[tipocondicion]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/TIPOCONDICION"
 								}
 							}
 						],
@@ -55327,25 +54961,29 @@
 											"type": "String"
 										},
 										{
-											"name": "MATERIALGROUP",
+											"name": "CONDITIONTYPE",
 											"type": "String"
 										},
 										{
-											"name": "MATERIALGROUPNAME",
+											"name": "CONDITIONTYPENAME",
 											"type": "String"
 										},
 										{
 											"name": "FECHACARGA",
 											"type": "String"
+										},
+										{
+											"name": "CONDITIONAPPLICATION",
+											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[grupomaterial]"
+									"cw_tableName": "[[dsa_ecu_sap].[tipocondicion]"
 								}
 							}
 						]
 					},
 					{
-						"name": "GrupoPrecioCliente",
+						"name": "TipoMaterial",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -55362,9 +55000,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/GRUPOPRECIOCLIENTE",
+									"wildcardFolderPath": "catalogo/TIPOMATERIAL",
 									"wildcardFileName": {
-										"value": "@Concat('GRUPOPRECIOCLIENTE_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('TIPOMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -55374,7 +55012,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[grupopreciocliente]",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[tipomaterial]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -55384,7 +55022,7 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOPRECIOCLIENTE"
+									"cw_carpeta": "catalogo/TIPOMATERIAL"
 								}
 							}
 						],
@@ -55399,7 +55037,7 @@
 											"type": "String"
 										},
 										{
-											"name": "CUSTOMERPRICEGROUP",
+											"name": "MATERIALTYPE",
 											"type": "String"
 										},
 										{
@@ -55407,21 +55045,25 @@
 											"type": "String"
 										},
 										{
-											"name": "CUSTOMERPRICEGROUPNAME",
+											"name": "MATERIALTYPENAME",
 											"type": "String"
 										},
 										{
 											"name": "FECHACARGA",
 											"type": "String"
+										},
+										{
+											"name": "PRICE_CONTROL",
+											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[grupopreciocliente]"
+									"cw_tableName": "[[dsa_ecu_sap].[tipomaterial]"
 								}
 							}
 						]
 					},
 					{
-						"name": "GrupoPrecioMaterial",
+						"name": "UnidadMaterial",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -55438,9 +55080,9 @@
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
 									"recursive": true,
-									"wildcardFolderPath": "catalogo/GRUPOPRECIOMATERIAL",
+									"wildcardFolderPath": "catalogo/UNIDADMATERIAL",
 									"wildcardFileName": {
-										"value": "@Concat('GRUPOPRECIOMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"value": "@Concat('UNIDADMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 										"type": "Expression"
 									}
 								},
@@ -55450,7 +55092,7 @@
 							},
 							"sink": {
 								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[grupopreciomaterial]",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[UNIDADMATERIAL]",
 								"disableMetricsCollection": false
 							},
 							"enableStaging": false
@@ -55460,7 +55102,7 @@
 								"referenceName": "ds_BlobSap",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOPRECIOMATERIAL"
+									"cw_carpeta": "catalogo/UNIDADMATERIAL"
 								}
 							}
 						],
@@ -55475,15 +55117,31 @@
 											"type": "String"
 										},
 										{
-											"name": "MATERIALPRICINGGROUP",
+											"name": "PRODUCT",
 											"type": "String"
 										},
 										{
-											"name": "LANGUAGE",
+											"name": "ALTERNATIVEUNIT",
 											"type": "String"
 										},
 										{
-											"name": "MATERIALPRICINGGROUPNAME",
+											"name": "QUANTITYNUMERATOR",
+											"type": "Decimal"
+										},
+										{
+											"name": "QUANTITYDENOMINATOR",
+											"type": "Decimal"
+										},
+										{
+											"name": "GROSSWEIGHT",
+											"type": "Decimal"
+										},
+										{
+											"name": "WEIGHTUNIT",
+											"type": "String"
+										},
+										{
+											"name": "ISACTIVEENTITY",
 											"type": "String"
 										},
 										{
@@ -55491,15 +55149,22 @@
 											"type": "String"
 										}
 									],
-									"cw_tableName": "[[dsa_ecu_sap].[grupopreciomaterial]"
+									"cw_tableName": "[[dsa_ecu_sap].[UNIDADMATERIAL]"
 								}
 							}
 						]
 					},
 					{
-						"name": "GrupoVenta",
-						"type": "Copy",
-						"dependsOn": [],
+						"name": "DeleteHomologacionEmbutser",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "HomologacionEmbutser",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -55509,68 +55174,675 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "catalogo/GRUPOVENTA",
-									"wildcardFileName": {
-										"value": "@Concat('GRUPOVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "truncate table [dsa_ecu_sap].[grupoventa]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOVENTA"
+									"cw_carpeta": "catalogo/HOMOLOGACIONEMBUTSER"
 								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/HOMOLOGACIONEMBUTSER"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteMaterial",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Material",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
 						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
 								"type": "DatasetReference",
 								"parameters": {
-									"cw_structure": [
-										{
-											"name": "MANDT",
-											"type": "String"
-										},
-										{
-											"name": "SALESGROUP",
-											"type": "String"
-										},
-										{
-											"name": "LANGUAGE",
-											"type": "String"
-										},
-										{
-											"name": "SALESGROUPNAME",
-											"type": "String"
-										},
-										{
-											"name": "FECHACARGA",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sap].[grupoventa]"
+									"cw_carpeta": "catalogo/MATERIAL"
 								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/MATERIAL"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
 							}
-						]
+						}
+					},
+					{
+						"name": "DeleteMaterialAlmacen",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "MaterialAlmacen",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIALALMACEN"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/MATERIALALMACEN"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteMaterialVenta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "MaterialVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIALVENTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/MATERIALVENTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeletePlanta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Planta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PLANTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/PLANTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeletePlantaEmpresa",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "PlantaEmpresa",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PLANTAEMPRESA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/PLANTAEMPRESA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteProveedor",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Proveedor",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PROVEEDOR"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/PROVEEDOR"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteProveedorEmpresaPlanta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "ProveedorEmpresaPlanta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PROVEEDOREMPRESAPLANTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/PROVEEDOREMPRESAPLANTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteStatusFacturaCompra",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "StatusFacturaCompra",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSFACTURACOMPRA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/STATUSFACTURACOMPRA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteStatusFacturaVenta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "StatusFacturaVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSFACTURAVENTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/STATUSFACTURAVENTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteStatusOrdenCompra",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "StatusOrdenCompra",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSORDENCOMPRA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/STATUSORDENCOMPRA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteStatusProcesoVenta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "StatusProcesoVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSPROCESOVENTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/STATUSPROCESOVENTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteTipoCondicion",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "TipoCondicion",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/TIPOCONDICION"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/TIPOCONDICION"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteTipoMaterial",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "TipoMaterial",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/TIPOMATERIAL"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/TIPOMATERIAL"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteUnidadMaterial",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "UnidadMaterial",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/UNIDADMATERIAL"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/UNIDADMATERIAL"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
 					},
 					{
 						"name": "JerarquiaMaterial",
@@ -55651,880 +55923,6 @@
 								}
 							}
 						]
-					},
-					{
-						"name": "DeleteAlmacen",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "Almacen",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/ALMACEN"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/ALMACEN"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteAlmacen_copy1",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "Cadena",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CADENA"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CADENA"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteCanalDistribucion",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "CanalDistribucion",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CANALDISTRIBUCION"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CANALDISTRIBUCION"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteCategoriaMaterial",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "CategoriaMaterial",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CATEGORIAMATERIAL"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CATEGORIAMATERIAL"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteCebeEmpresa",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "CebeEmpresa",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CEBEEMPRESA"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CEBEEMPRESA"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteCentroBeneficio",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "CentroBeneficio",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CENTROBENEFICIO"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CENTROBENEFICIO"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteCentroCosto",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "CentroCosto",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CENTROCOSTO"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CENTROCOSTO"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteClienteaAreaVenta",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "ClienteaAreaVenta",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CLIENTEAREAVENTA"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CLIENTEAREAVENTA"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteClienteEmpresaPlanta",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "ClienteEmpresaPlanta",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CLIENTEEMPRESAPLANTA"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CLIENTEEMPRESAPLANTA"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteClientes",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "Clientes",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CLIENTES"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CLIENTES"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteCuentasContables",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "CuentasContables",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/CUENTASCONTABLES"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/CUENTASCONTABLES"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteEmpresa",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "Empresa",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/EMPRESA"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/EMPRESA"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteFuncionInterlocutor",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "FuncionInterlocutor",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/FUNCIONINTERLOCUTOR"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/FUNCIONINTERLOCUTOR"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteGRUPOCLIENTEVENTA",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "GrupoClienteVenta",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOCLIENTEVENTA"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/GRUPOCLIENTEVENTA"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DeleteGrupoCompra",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "GrupoCompra",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOCOMPRA"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/GRUPOCOMPRA"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DELETEGRUPOMATERIAL",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "GrupoMaterial",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOMATERIAL"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/GRUPOMATERIAL"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DELETEGrupoPrecioCliente",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "GrupoPrecioCliente",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOPRECIOCLIENTE"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/GRUPOPRECIOCLIENTE"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DELETEGrupoPrecioMaterial",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "GrupoPrecioMaterial",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOPRECIOMATERIAL"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/GRUPOPRECIOMATERIAL"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "DELETEGrupoVenta",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "GrupoVenta",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "ds_BlobSap_Delete",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "catalogo/GRUPOVENTA"
-								}
-							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "almacenamientosap/catalogo/GRUPOVENTA"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"modifiedDatetimeEnd": {
-									"value": "@adddays(pipeline().TriggerTime,-7)",
-									"type": "Expression"
-								},
-								"enablePartitionDiscovery": false
-							}
-						}
 					},
 					{
 						"name": "DELETEJerarquiaMaterial",
