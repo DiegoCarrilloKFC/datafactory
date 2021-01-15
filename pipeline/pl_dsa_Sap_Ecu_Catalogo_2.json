@@ -399,7 +399,7 @@
 				]
 			},
 			{
-				"name": "CebeEmpresa",
+				"name": "Planta",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -416,9 +416,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/CEBEEMPRESA",
+							"wildcardFolderPath": "catalogo/PLANTA",
 							"wildcardFileName": {
-								"value": "@Concat('CEBEEMPRESA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('PLANTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -428,7 +428,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table  [dsa_ecu_sap].[cebeempresa]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[planta]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -438,7 +438,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CEBEEMPRESA"
+							"cw_carpeta": "catalogo/PLANTA"
 						}
 					}
 				],
@@ -453,11 +453,15 @@
 									"type": "String"
 								},
 								{
-									"name": "PROFITCENTER",
+									"name": "PLANT",
 									"type": "String"
 								},
 								{
-									"name": "COMPANYCODE",
+									"name": "PLANTNAME",
+									"type": "String"
+								},
+								{
+									"name": "FACTORYCALENDAR",
 									"type": "String"
 								},
 								{
@@ -465,7 +469,7 @@
 									"type": "String"
 								}
 							],
-							"cw_tableName": "[dsa_ecu_sap].[cebeempresa]"
+							"cw_tableName": "[dsa_ecu_sap].[planta]"
 						}
 					}
 				]
@@ -1967,7 +1971,7 @@
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "CebeEmpresa",
+						"activity": "Planta",
 						"dependencyConditions": [
 							"Succeeded"
 						]
