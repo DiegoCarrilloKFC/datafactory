@@ -2302,7 +2302,14 @@
 					{
 						"name": "dim_Proveedor",
 						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "dim_Empresa",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -2617,6 +2624,64 @@
 							"referenceName": "linked_dwh",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "dim_ClienteAx",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "dim_Empresa",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_dim",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaClienteAx",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"parameters": {
@@ -2784,57 +2849,6 @@
 								},
 								"Procedimiento": {
 									"value": "usp_CargaIncidenciaMarcacion",
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "dim_ClienteAx",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dwh_dim",
-									"type": "String"
-								},
-								"IDCadenaSistemaGerente": {
-									"value": {
-										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"Procedimiento": {
-									"value": "usp_CargaClienteAx",
 									"type": "String"
 								},
 								"TipoCarga": {
