@@ -4,7 +4,7 @@
 		"description": "Carga Información Operaciones",
 		"activities": [
 			{
-				"name": "ope_FacSgVentaDiaria",
+				"name": "EntradaDiarioHistorica",
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
@@ -68,107 +68,6 @@
 				}
 			},
 			{
-				"name": "ope_FacSgVentaAcumulada",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "ope_FacSgVentaDiaria",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[dwh_ecu_ope].[usp_CargaFacSgVentaAcumulada]",
-					"storedProcedureParameters": {
-						"FechaDesde": {
-							"value": {
-								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-								"type": "Expression"
-							},
-							"type": "DateTime"
-						},
-						"FechaHasta": {
-							"value": {
-								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-								"type": "Expression"
-							},
-							"type": "DateTime"
-						},
-						"IDCadenaSistemaGerente": {
-							"value": {
-								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
-								"type": "Expression"
-							},
-							"type": "Int32"
-						},
-						"Pais": {
-							"value": {
-								"value": "@pipeline().parameters.Pais",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"TipoCarga": {
-							"value": {
-								"value": "@pipeline().parameters.TipoCarga",
-								"type": "Expression"
-							},
-							"type": "String"
-						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "linked_dwh",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "Carga Info Suscripcion Venta",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "ope_FacSgVentaAcumulada",
-						"dependencyConditions": [
-							"Completed"
-						]
-					},
-					{
-						"activity": "ope_FacSgAuditoria",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 3,
-					"retryIntervalInSeconds": 300,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[admin_btc].[usp_CargaInfoSuscripcion_Recarga_Venta_Ecu]"
-				},
-				"linkedServiceName": {
-					"referenceName": "linked_sharepoint",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
-						"BaseDatos": "dw_dwh_suscripcion"
-					}
-				}
-			},
-			{
 				"name": "Fecha Carga",
 				"type": "Lookup",
 				"dependsOn": [],
@@ -208,70 +107,6 @@
 						"referenceName": "ds_dwh_general",
 						"type": "DatasetReference"
 					}
-				}
-			},
-			{
-				"name": "ope_FacSgAuditoria",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "Fecha Carga",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[dwh_ecu_ope].[usp_CargaFacSgAuditoria]",
-					"storedProcedureParameters": {
-						"FechaDesde": {
-							"value": {
-								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-								"type": "Expression"
-							},
-							"type": "DateTime"
-						},
-						"FechaHasta": {
-							"value": {
-								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-								"type": "Expression"
-							},
-							"type": "DateTime"
-						},
-						"IDCadenaSistemaGerente": {
-							"value": {
-								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
-								"type": "Expression"
-							},
-							"type": "Int32"
-						},
-						"Pais": {
-							"value": {
-								"value": "@pipeline().parameters.Pais",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"TipoCarga": {
-							"value": {
-								"value": "@pipeline().parameters.TipoCarga",
-								"type": "Expression"
-							},
-							"type": "String"
-						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "linked_dwh",
-					"type": "LinkedServiceReference"
 				}
 			}
 		],
