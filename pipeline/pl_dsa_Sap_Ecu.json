@@ -133,6 +133,40 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "TransaccionalHistorico",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Transaccional",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"folder": {
