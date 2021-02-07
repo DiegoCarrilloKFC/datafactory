@@ -1,0 +1,327 @@
+{
+	"name": "pl_dwh_Operaciones_Arg_copy1",
+	"properties": {
+		"description": "Carga Información Operaciones",
+		"activities": [
+			{
+				"name": "ope_FacSgVentaAgrupacion",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureParameters": {
+						"Esquema": {
+							"value": "dwh_arg_ope",
+							"type": "String"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Procedimiento": {
+							"value": "usp_CargaFacSgVentaAgrupacion",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "cubo_FacRegalia",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ope_FacSgVentaAgrupacion",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureParameters": {
+						"Esquema": {
+							"value": "dwh_arg_cubo",
+							"type": "String"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Procedimiento": {
+							"value": "usp_CargaFacRegalia",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ope_FacSgVentaAgrupacionAcumulada",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ope_FacSgVentaAgrupacion",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureParameters": {
+						"Esquema": {
+							"value": "dwh_arg_ope",
+							"type": "String"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Procedimiento": {
+							"value": "usp_CargaFacSgVentaAgrupacionAcumulada",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ope_FacSgUsoConsumo",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureParameters": {
+						"Esquema": {
+							"value": "dwh_arg_ope",
+							"type": "String"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Procedimiento": {
+							"value": "usp_CargaFacSgUsoConsumo",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ope_FacSgResumenOperacion",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ope_FacSgUsoConsumo",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureParameters": {
+						"Esquema": {
+							"value": "dwh_arg_ope",
+							"type": "String"
+						},
+						"IDCadenaSistemaGerente": {
+							"value": {
+								"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Procedimiento": {
+							"value": "usp_CargaFacSgResumenOperacion",
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Carga Info Sus Costos",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ope_FacSgResumenOperacion",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Proceso": "COSTOS_ARG",
+						"SP": "admin_btc.usp_CargaInfoSuscripcion_Costos_Arg"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"IDCadenaSistemaGerente": {
+				"type": "String",
+				"defaultValue": "0"
+			},
+			"Pais": {
+				"type": "String",
+				"defaultValue": "ARG"
+			},
+			"TipoCarga": {
+				"type": "String",
+				"defaultValue": "MANUAL"
+			}
+		},
+		"folder": {
+			"name": "dwh_OperacionesArg"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
