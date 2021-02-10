@@ -29,7 +29,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Art_Bodega,Cod_Bodega,Cod_Articulo,Cantidad_Disponible,Minimo,Maximo,Costo_Compra,Costo_Inventario,Estado,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.ArticuloBodega WHERE Cod_Bodega IS NOT NULL",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -204,7 +205,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Audit,Cod_Restaurante,Cod_Usuario,Fecha_Audit,Modulo,Descripcion,Accion,YEAR(Fecha_Audit) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.AuditTrans WHERE Fecha_Audit >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Audit < DATEADD(DAY,2,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -363,7 +365,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Marcacion,Fecha,Cod_Restaurante,Estado,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.CabeceraMarcacion WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -498,7 +501,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Pedido,Cod_Estado,Cod_Restaurante,Cod_Proveedor,Fecha_Pedido,Fecha_Recepcion,Relacionado,Tipo,YEAR(Fecha_Pedido) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.CabPedidos WHERE Fecha_Pedido >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Pedido < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -665,7 +669,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Num_CajaChica,Cod_Rubros,Cod_Restaurante,Fecha,Descripcion,Total,Estado,Cod_Proveedor,Cod_Cajero,Cod_SubRubros,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.CajaChica WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -848,7 +853,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Cierre,Cod_Restaurante,Fecha,Iva,Servicios,Venta_Neta,Venta_Bruta,Transacciones,Tipo,Estado,Importado,Sobrante,Total_Tarjetas,Total_Credito,Total_Debito,Total_Alimento,Total_Ticket,TPVP_CAutomatico,TIVA_CAutomatico,Cant_CAutomatico,Estado_Pixel,VentaCero,Compensacion,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.CierreCajas WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -1135,7 +1141,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,cch.Cod_CierreChica,cch.Cod_Cierre,cch.Cod_Restaurante,cch.Cod_Cajero,cch.Desde,cch.Hasta,cch.Total,cch.Estado,cch.Importado,YEAR(ccj.Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.CierreChica cch  INNER JOIN dbo.CierreCajas ccj ON cch.Cod_Cierre = ccj.Cod_Cierre WHERE ccj.Fecha >= '@{pipeline().parameters.FechaDesde}' AND ccj.Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -1284,261 +1291,6 @@
 				]
 			},
 			{
-				"name": "Consolidado_DomicilioTiempos",
-				"type": "Copy",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 3,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [
-					{
-						"name": "Source",
-						"value": "[dbo].[Consolidado_DomicilioTiempos]"
-					},
-					{
-						"name": "Destination",
-						"value": "[dsa_ecu_sg].[Consolidado_DomicilioTiempos]"
-					}
-				],
-				"typeProperties": {
-					"source": {
-						"type": "SqlServerSource",
-						"sqlReaderQuery": {
-							"value": "SELECT GETDATE() AS FechaCarga,Factura,Cod_Telefono,Cliente,Cod_ZipCode,Motorizado,Despachador,Total,Hora,Asignada,Llegada,HoraC,AsignadaC,LlegadaC,Fecha,Cod_Restaurante,CreacionC,Creacion,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region,Tipo_Pedido,dispositivo FROM dbo.Consolidado_DomicilioTiempos WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
-							"type": "Expression"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"writeBatchSize": 10000,
-						"allowPolyBase": true,
-						"polyBaseSettings": {
-							"rejectValue": 0,
-							"rejectType": "value",
-							"useTypeDefault": true
-						}
-					},
-					"enableStaging": true,
-					"stagingSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "contenedor"
-					}
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_SistemaGerenteEcu",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "FechaCarga",
-									"type": "DateTime"
-								},
-								{
-									"name": "Factura",
-									"type": "Int64"
-								},
-								{
-									"name": "Cod_Telefono",
-									"type": "Int32"
-								},
-								{
-									"name": "Cliente",
-									"type": "String"
-								},
-								{
-									"name": "Cod_ZipCode",
-									"type": "String"
-								},
-								{
-									"name": "Motorizado",
-									"type": "String"
-								},
-								{
-									"name": "Despachador",
-									"type": "String"
-								},
-								{
-									"name": "Total",
-									"type": "Double"
-								},
-								{
-									"name": "Hora",
-									"type": "Int32"
-								},
-								{
-									"name": "Asignada",
-									"type": "Int32"
-								},
-								{
-									"name": "Llegada",
-									"type": "Int32"
-								},
-								{
-									"name": "HoraC",
-									"type": "Int32"
-								},
-								{
-									"name": "AsignadaC",
-									"type": "Int32"
-								},
-								{
-									"name": "LlegadaC",
-									"type": "Int32"
-								},
-								{
-									"name": "Fecha",
-									"type": "DateTime"
-								},
-								{
-									"name": "Cod_Restaurante",
-									"type": "Int32"
-								},
-								{
-									"name": "CreacionC",
-									"type": "Int32"
-								},
-								{
-									"name": "Creacion",
-									"type": "Int32"
-								},
-								{
-									"name": "Anio",
-									"type": "Int32"
-								},
-								{
-									"name": "Region",
-									"type": "String"
-								},
-								{
-									"name": "Tipo_Pedido",
-									"type": "String"
-								},
-								{
-									"name": "dispositivo",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dbo].[Consolidado_DomicilioTiempos]",
-							"cw_servidor": {
-								"value": "@pipeline().parameters.Servidor",
-								"type": "Expression"
-							},
-							"cw_baseDatos": {
-								"value": "@pipeline().parameters.BaseDatos",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "FechaCarga",
-									"type": "DateTime"
-								},
-								{
-									"name": "Factura",
-									"type": "Int64"
-								},
-								{
-									"name": "Cod_Telefono",
-									"type": "Int32"
-								},
-								{
-									"name": "Cliente",
-									"type": "String"
-								},
-								{
-									"name": "Cod_ZipCode",
-									"type": "String"
-								},
-								{
-									"name": "Motorizado",
-									"type": "String"
-								},
-								{
-									"name": "Despachador",
-									"type": "String"
-								},
-								{
-									"name": "Total",
-									"type": "Double"
-								},
-								{
-									"name": "Hora",
-									"type": "Int32"
-								},
-								{
-									"name": "Asignada",
-									"type": "Int32"
-								},
-								{
-									"name": "Llegada",
-									"type": "Int32"
-								},
-								{
-									"name": "HoraC",
-									"type": "Int32"
-								},
-								{
-									"name": "AsignadaC",
-									"type": "Int32"
-								},
-								{
-									"name": "LlegadaC",
-									"type": "Int32"
-								},
-								{
-									"name": "Fecha",
-									"type": "DateTime"
-								},
-								{
-									"name": "Cod_Restaurante",
-									"type": "Int32"
-								},
-								{
-									"name": "CreacionC",
-									"type": "Int32"
-								},
-								{
-									"name": "Creacion",
-									"type": "Int32"
-								},
-								{
-									"name": "Anio",
-									"type": "Int32"
-								},
-								{
-									"name": "Region",
-									"type": "String"
-								},
-								{
-									"name": "Tipo_Pedido",
-									"type": "String"
-								},
-								{
-									"name": "dispositivo",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sg].[Consolidado_DomicilioTiempos]"
-						}
-					}
-				]
-			},
-			{
 				"name": "CuponCliente",
 				"type": "Copy",
 				"dependsOn": [],
@@ -1565,7 +1317,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_CuponCliente,Cod_Cadena,Cod_Canje,Cod_Cliente,Nombre_Cupon,Descripcion,Iniciales,Total,Estado,Fecha,Fecha_Caducidad,Locales,Nombre_Alterno,Num_Factura,Tipo,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.CuponCliente",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -1788,7 +1541,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Cupon,Cod_CuponCliente,Cod_Cadena,Num_Cupon,Estado,Estado_Impr,Fisico_Cupon,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Cupones",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -1947,7 +1701,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Deposito,Num_Papeleta,Cod_CtaBanco,Cod_Restaurante,Fecha,Fecha_Cierre,Efectivo_Banco,Monedas_Tevcol,Num_Cheques,Valor_Cheques,Estado,Fecha_Acreditacion,Estado_Acreditacion,Fecha_Juliana,YEAR(Fecha_Cierre) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Depositos WHERE Fecha_Cierre >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Cierre < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -2162,7 +1917,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,dsol.Cod_Solicitud,dsol.Cod_Detalle_Solicitud,dsol.Cantidad,dsol.Nombre,dsol.Mensaje,dsol.Cod_Canje,dsol.Estado,YEAR(sol.Fecha_Emision) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Detalle_Solicitud dsol INNER JOIN dbo.Solicitud sol ON dsol.Cod_Solicitud=sol.Cod_Solicitud WHERE '@{pipeline().parameters.Region}' = 'QUITO' AND YEAR('@{pipeline().parameters.FechaHasta}') = YEAR(GETDATE()-1)",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -2321,7 +2077,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,det.Cod_DetPedido,det.Cod_Pedido,det.Cod_Art_Bodega,det.Cantidad_Item,det.Costo_Pedido,YEAR(cab.Fecha_Pedido) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.DetPedidos det INNER JOIN dbo.CabPedidos cab ON cab.Cod_Pedido=det.Cod_Pedido WHERE cab.Fecha_Pedido >= '@{pipeline().parameters.FechaDesde}' AND cab.Fecha_Pedido < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -2464,7 +2221,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Cajero,Cod_Cierre,Num_Anticipo,Num_CCC,Cta_Axapta,Cod_Cupon,Cod_Deposito,Cod_FormaPago,Cod_Restaurante,Num_CajaChica,Fecha,Valor,Num_Trans,Cod_Cliente,Recap,Cupon_Automatico,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.DinTrans WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -2695,7 +2453,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Mes,Anio,Estado,Cod_Estado,Cod_Restaurante,Fecha_Creacion,'@{pipeline().parameters.Region}' AS Region FROM dbo.Estado_PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -2838,7 +2597,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Restaurante,Cod_Tienda,Descripcion,Caja,Num_Transaccion,Venta_Neta,Total,Comprobante_Inicial,Comprobante_Final,Fecha,Estado,Tipo_Documento,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Factura_Electronica WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -3037,7 +2797,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Gasto,Cod_Restaurante,Cod_Rubros,Cod_Proveedor,Fecha,Cta_Axapta,Num_Factura,Subtotal,Iva,Porcen_Iva,Total,Descripcion,Estado,DiarioAX,Ruta,Cod_Tipo_Gastos,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.GastosGenerales WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -3268,7 +3029,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Restaurante,Cod_Usuario,Fecha_Log,Modulo,Descripcion,Accion,Cod_Personal,Fecha_Proceso,Entrada1,Salida1,Entrada2,Salida2,Total,Horas_25,Horas_50,Horas_100,Horas_Normales,Horas_Reales,Cod_Detalle_Plantilla,Cod_Horario,Fecha,Horas_50_sin_autorizar,Horas_100_sin_autorizar,Cod_Usuario_Autoriza1,Autoriza1,Cod_Usuario_Autoriza2,Autoriza2,Codigo_Atraso,Incidencia_kp,Recupera_Atraso,Minuto_Atraso,Tiempo_Atraso,Tiempo_Atraso_Horas,Proceso_Atraso,Minuto_Atraso_sin_justificar,Tiempo_Atraso_sin_justificar,Tiempo_Atraso_Horas_sin_justificar,Horario_Asignado,Sub_Codigo_Atraso,YEAR(Fecha_Proceso) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Log_Marcacion_Hora_Extra WHERE Fecha_Proceso >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Proceso < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -3683,7 +3445,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Personal,Cod_Marcacion,Fecha,Entrada1,Salida1,Entrada2,Salida2,Estado,Total,Cod_Restaurante_A,Num_Marcacion,Modificado,Cod_Motivo_Marcacion,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Marcacion WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -3890,7 +3653,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Personal,Fecha,Cod_Restaurante,Horas_25,Horas_50,Horas_100,Horas_Normales,Horas_Reales,Cod_Horario,Cod_Detalle_Plantilla,Cod_Usuario,Cod_Usuario_Autoriza1,Autoriza1,Horas_50_sin_autorizar,Horas_100_sin_autorizar,Cod_Usuario_Autoriza2,Autoriza2,Campo1,Campo2,Campo3,Campo4,Campo5,Codigo_Atraso,Incidencia_kp,Recupera_Atraso,Minuto_Atraso,Tiempo_Atraso,Tiempo_Atraso_Horas,Proceso_Atraso,Minuto_Atraso_sin_justificar,Tiempo_Atraso_sin_justificar,Tiempo_Atraso_Horas_sin_justificar,Entrada1,Horario_Asignado,Total_Suma_Marcacion,Sub_Codigo_Atraso,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Marcacion_Hora_Extra WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -4281,7 +4045,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_MixCab,Cod_Restaurante,Fecha,Estado,Cod_Mov_Inv,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.MixCab WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -4424,7 +4189,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,mtra.Cod_MixCab,mtra.Cod_Plu,mtra.Cantidad,mtra.PrecioB,mtra.TotalB,mtra.PrecioN,mtra.TotalN,mtra.Costo,mtra.Porcentual_Mix,mtra.Porcentual_Costo,mtra.Contribucion,YEAR(mcab.Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.MixTrans mtra INNER JOIN dbo.MixCab mcab ON mcab.cod_mixCab = mtra.Cod_MixCab WHERE mcab.Fecha >= '@{pipeline().parameters.FechaDesde}' AND mcab.Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -4615,7 +4381,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Mov_Inv,Cod_Bodega,Cod_Proveedor,Cod_Restaurante,Cod_Contraparte,Cod_TipMovInv,Fecha_Creacion,Comentario,Estado,FacturaNumero,Relacionado,DiarioAX,Ruta,YEAR(Fecha_Creacion) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.MovInv WHERE Fecha_Creacion >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Creacion < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -4822,7 +4589,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Novedad,Cod_Personal,Cod_Marcacion,Fecha,Cod_Restaurante,Cod_TipoNovedad,Estado,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Novedad WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -4981,7 +4749,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Cupon,Cod_Plu,Cantidad,Estado,Tipo,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.PlusCupones",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -5124,7 +4893,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Num_Ticket,Fecha,Cod_ClientePV,Cod_Cajero,Cod_Plu,Cod_Restaurante,Cantidad,Valor,Num_Trans,Valor_Regalias,Fecha_Creacion,Descripcion,Cod_MixCab,Cupon_Automatico,VentaCero,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region,cod_medio FROM dbo.PlusTrans WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -5355,7 +5125,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Porcentuales,Descripcion,Estado,Orden_Porcentual,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Porcentuales",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -5490,7 +5261,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Porcentuales_Res,Cod_Restaurante,Cod_Porcentuales,Cod_Multiple,Valor,Cod_Grupo,Estado,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Porcentuales_Restaurante",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -5649,7 +5421,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Estado,Grupo,Descripcion,Valor,Porcentaje,Nivel,Orden,Fecha_Creacion,Mes,Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -5824,7 +5597,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Solicitud,Cod_Cliente,Fecha_Emision,Fecha_Facturacion,Fecha_Vigencia,Solicitante,Responsable,Cod_Cadena,Cod_Region,Estado,Logo,Observacion,Num_Factura,Descripcion_Local,Reimpresion,YEAR(Fecha_Emision) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Solicitud WHERE '@{pipeline().parameters.Region}' = 'QUITO' AND YEAR('@{pipeline().parameters.FechaHasta}') = YEAR(GETDATE()-1)",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -6047,7 +5821,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Detalle_Solicitud,Cod_Cupon,Estado,Cod_Restaurante,Fecha_Vigencia,Incrementa,Fecha_Canjeado,Cod_Detalle_Reimpresion,Precio,Iva,YEAR(Fecha_Canjeado) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Solicitud_Cupon WHERE '@{pipeline().parameters.Region}' = 'QUITO' AND YEAR('@{pipeline().parameters.FechaHasta}') = YEAR(GETDATE()-1)",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -6230,7 +6005,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,sub.Cod_Plu,sub.Precio,sub.IVA,sub.Neto,sub.Cantidad,sub.Cod_Detalle_Solicitud,sub.Bruto,YEAR(Fecha_Emision) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.Subdetalle_Solicitud sub INNER JOIN dbo.Detalle_Solicitud det ON det.Cod_Detalle_Solicitud = sub.Cod_Detalle_Solicitud INNER JOIN dbo.Solicitud sol ON sol.Cod_Solicitud = det.Cod_Solicitud WHERE '@{pipeline().parameters.Region}' = 'QUITO' AND YEAR('@{pipeline().parameters.FechaHasta}') = YEAR(GETDATE()-1)",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -6389,7 +6165,8 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,Cod_Toma_Fisica,Cod_Restaurante,Num_MovInv,Fecha,Tipo_Toma,Cod_Bodega,Estado,Todo_Art,YEAR(Fecha) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.TomaFisica WHERE Fecha >= DATEADD(DAY,-2,'@{pipeline().parameters.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}') AND YEAR(Fecha) = YEAR('@{pipeline().parameters.FechaDesde}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
