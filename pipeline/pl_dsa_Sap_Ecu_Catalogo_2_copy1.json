@@ -101,6 +101,134 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "Clientes",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/CLIENTES",
+							"wildcardFileName": {
+								"value": "@Concat('CLIENTES_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[clientes]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/CLIENTES"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMER",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERNAME",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERFULLNAME",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERACCOUNTGROUP",
+									"type": "String"
+								},
+								{
+									"name": "BPTAXTYPE",
+									"type": "String"
+								},
+								{
+									"name": "BPTAXNUMBER",
+									"type": "String"
+								},
+								{
+									"name": "COUNTRY",
+									"type": "String"
+								},
+								{
+									"name": "ORGANIZATIONBPNAME1",
+									"type": "String"
+								},
+								{
+									"name": "ORGANIZATIONBPNAME2",
+									"type": "String"
+								},
+								{
+									"name": "CITYNAME",
+									"type": "String"
+								},
+								{
+									"name": "TELF1",
+									"type": "String"
+								},
+								{
+									"name": "STREETNAME",
+									"type": "String"
+								},
+								{
+									"name": "SORTFIELD",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "BUSINESSTYPE",
+									"type": "String"
+								},
+								{
+									"name": "INDUSTRYTYPE",
+									"type": "String"
+								},
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sap].[clientes]"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
