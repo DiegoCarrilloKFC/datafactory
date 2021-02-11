@@ -229,6 +229,186 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "ClienteEmpresaPlanta",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/CLIENTEEMPRESAPLANTA",
+							"wildcardFileName": {
+								"value": "@Concat('CLIENTEEMPRESAPLANTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[clienteempresaplanta]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/CLIENTEEMPRESAPLANTA"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "PLANT",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMER",
+									"type": "String"
+								},
+								{
+									"name": "COMPANYCODE",
+									"type": "String"
+								},
+								{
+									"name": "CASHPLANNINGGROUP",
+									"type": "String"
+								},
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sap].[clienteempresaplanta]"
+						}
+					}
+				]
+			},
+			{
+				"name": "FuncionInterlocutor",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/FUNCIONINTERLOCUTOR",
+							"wildcardFileName": {
+								"value": "@Concat('FUNCIONINTERLOCUTOR_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[funcioninterlocutor]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/FUNCIONINTERLOCUTOR"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "SALESORGANIZATION",
+									"type": "String"
+								},
+								{
+									"name": "DISTRIBUTIONCHANNEL",
+									"type": "String"
+								},
+								{
+									"name": "DIVISION",
+									"type": "String"
+								},
+								{
+									"name": "PARTNERFUNCTION",
+									"type": "String"
+								},
+								{
+									"name": "BUSINESSPARTNER",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMER",
+									"type": "String"
+								},
+								{
+									"name": "BUSINESSPARTNERGROUPING",
+									"type": "String"
+								},
+								{
+									"name": "BPCUSTOMERNUMBER",
+									"type": "String"
+								},
+								{
+									"name": "PARTNERFUNCTIONNAME",
+									"type": "String"
+								},
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sap].[funcioninterlocutor]"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
