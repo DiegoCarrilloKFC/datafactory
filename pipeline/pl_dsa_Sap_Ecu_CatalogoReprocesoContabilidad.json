@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Empresa",
+				"name": "CuentasContables",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -20,9 +20,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/EMPRESA",
+							"wildcardFolderPath": "catalogo/CUENTASCONTABLES",
 							"wildcardFileName": {
-								"value": "@Concat('EMPRESA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('CUENTASCONTABLES_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -32,7 +32,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[empresa]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[cuentascontables]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -42,7 +42,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/EMPRESA"
+							"cw_carpeta": "catalogo/CUENTASCONTABLES"
 						}
 					}
 				],
@@ -57,19 +57,15 @@
 									"type": "String"
 								},
 								{
-									"name": "COMPANYCODE",
+									"name": "GLACCOUNT",
 									"type": "String"
 								},
 								{
-									"name": "COMPANYCODENAME",
+									"name": "GLACCOUNTNAME",
 									"type": "String"
 								},
 								{
-									"name": "COUNTRY",
-									"type": "String"
-								},
-								{
-									"name": "CURRENCY",
+									"name": "GLACCOUNTLONGNAME",
 									"type": "String"
 								},
 								{
@@ -77,29 +73,25 @@
 									"type": "String"
 								},
 								{
+									"name": "LASTCHANGEDATETIME",
+									"type": "String"
+								},
+								{
 									"name": "FECHACARGA",
-									"type": "String"
-								},
-								{
-									"name": "RUC",
-									"type": "String"
-								},
-								{
-									"name": "COMPANYNAME",
 									"type": "String"
 								}
 							],
-							"cw_tableName": "[dsa_ecu_sap].[empresa]"
+							"cw_tableName": "[dsa_ecu_sap].[cuentascontables]"
 						}
 					}
 				]
 			},
 			{
-				"name": "DeleteEmpresa",
+				"name": "DeleteCuentasContables",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "Empresa",
+						"activity": "CuentasContables",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -118,7 +110,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/EMPRESA"
+							"cw_carpeta": "catalogo/CUENTASCONTABLES"
 						}
 					},
 					"logStorageSettings": {
@@ -126,7 +118,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/EMPRESA"
+						"path": "almacenamientosap/catalogo/CUENTASCONTABLES"
 					},
 					"enableLogging": true,
 					"storeSettings": {
