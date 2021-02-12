@@ -1,0 +1,2342 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "df-bi-dwh"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "Select Anio=year(dateadd(hh,-5,getdate()))\n,Mes=convert (char(2),dateadd(hh,-5,getdate()),101)\n,Dia=convert (char(2),dateadd(hh,-5,getdate()),103)",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Catalogo1",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_Catalogo_1",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Anio": {
+									"value": "@activity('Fecha Carga').output.firstRow.Anio",
+									"type": "Expression"
+								},
+								"Mes": {
+									"value": "@activity('Fecha Carga').output.firstRow.Mes",
+									"type": "Expression"
+								},
+								"Dia": {
+									"value": "@activity('Fecha Carga').output.firstRow.Dia",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Transaccional",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Catalogo2",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Catalogo1",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_Transaccional",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Anio": {
+									"value": "@activity('Fecha Carga').output.firstRow.Anio",
+									"type": "Expression"
+								},
+								"Mes": {
+									"value": "@activity('Fecha Carga').output.firstRow.Mes",
+									"type": "Expression"
+								},
+								"Dia": {
+									"value": "@activity('Fecha Carga').output.firstRow.Dia",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Catalogo2",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_Catalogo_2",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Anio": {
+									"value": "@activity('Fecha Carga').output.firstRow.Anio",
+									"type": "Expression"
+								},
+								"Mes": {
+									"value": "@activity('Fecha Carga').output.firstRow.Mes",
+									"type": "Expression"
+								},
+								"Dia": {
+									"value": "@activity('Fecha Carga').output.firstRow.Dia",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "TransaccionalHistorico",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Transaccional",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_Transaccional_Historico",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					}
+				],
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_CatalogoReprocesoContabilidad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CuentasContables",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "DeleteCuentasContables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/CUENTASCONTABLES",
+									"wildcardFileName": {
+										"value": "@Concat('CUENTASCONTABLES_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[cuentascontables]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/CUENTASCONTABLES"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "GLACCOUNT",
+											"type": "String"
+										},
+										{
+											"name": "GLACCOUNTNAME",
+											"type": "String"
+										},
+										{
+											"name": "GLACCOUNTLONGNAME",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "LASTCHANGEDATETIME",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[cuentascontables]"
+								}
+							}
+						]
+					},
+					{
+						"name": "DeleteCuentasContables",
+						"type": "Delete",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/CUENTASCONTABLES"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/CUENTASCONTABLES"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-0)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					}
+				],
+				"parameters": {
+					"Anio": {
+						"type": "string",
+						"defaultValue": "2021"
+					},
+					"Mes": {
+						"type": "string",
+						"defaultValue": "01"
+					},
+					"Dia": {
+						"type": "string",
+						"defaultValue": "13"
+					}
+				},
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_ReprocesoContabildiad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "Select Anio=year(dateadd(hh,-5,getdate()))\n,Mes=convert (char(2),dateadd(hh,-5,getdate()),101)\n,Dia=convert (char(2),dateadd(hh,-5,getdate()),103)",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "CatalogoReproceso",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_CatalogoReprocesoContabilidad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Anio": {
+									"value": "@activity('Fecha Carga').output.firstRow.Anio",
+									"type": "Expression"
+								},
+								"Mes": {
+									"value": "@activity('Fecha Carga').output.firstRow.Mes",
+									"type": "Expression"
+								},
+								"Dia": {
+									"value": "@activity('Fecha Carga').output.firstRow.Dia",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "TransaccionalReproceso",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "CatalogoReproceso",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_TransaccionalReprocesoContabilidad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Anio": {
+									"value": "@activity('Fecha Carga').output.firstRow.Anio",
+									"type": "Expression"
+								},
+								"Mes": {
+									"value": "@activity('Fecha Carga').output.firstRow.Mes",
+									"type": "Expression"
+								},
+								"Dia": {
+									"value": "@activity('Fecha Carga').output.firstRow.Dia",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "TransaccionalHistoricoReproceso",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "TransaccionalReproceso",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_Transaccional_HistoricoReprocesoContabilidad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					}
+				],
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sap_Ecu_CatalogoReprocesoContabilidad')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sap_Ecu_TransaccionalReprocesoContabilidad')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sap_Ecu_Transaccional_HistoricoReprocesoContabilidad')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_TransaccionalReprocesoContabilidad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DeleteEntradaDiario",
+						"type": "Delete",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "contabilidadcar/ENTRADADIARIO"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/contabilidadcar/ENTRADADIARIO"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,0)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "EntradaDiario",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "DeleteEntradaDiario",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "contabilidadcar/ENTRADADIARIO",
+									"wildcardFileName": {
+										"value": "@Concat('ENTRADADIARIO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[entradadiario]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FECHACARGA"
+										}
+									},
+									{
+										"source": {
+											"name": "MANDT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MANDT"
+										}
+									},
+									{
+										"source": {
+											"name": "GLACCOUNT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "GLACCOUNT"
+										}
+									},
+									{
+										"source": {
+											"name": "POSTINGDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "POSTINGDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "AMOUNTINCOMPANYCODECURRENCY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "AMOUNTINCOMPANYCODECURRENCY"
+										}
+									},
+									{
+										"source": {
+											"name": "ACCOUNTINGDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ACCOUNTINGDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "DOCUMENTITEMTEXT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DOCUMENTITEMTEXT"
+										}
+									},
+									{
+										"source": {
+											"name": "ACCOUNTINGDOCUMENTCATEGORY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ACCOUNTINGDOCUMENTCATEGORY"
+										}
+									},
+									{
+										"source": {
+											"name": "LEDGER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "LEDGER"
+										}
+									},
+									{
+										"source": {
+											"name": "COMPANYCODE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "COMPANYCODE"
+										}
+									},
+									{
+										"source": {
+											"name": "FISCALPERIOD",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "FISCALPERIOD"
+										}
+									},
+									{
+										"source": {
+											"name": "FISCALYEAR",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "FISCALYEAR"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "COSTCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "PROFITCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PROFITCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "SEGMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SEGMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "COMPANYCODECURRENCY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "COMPANYCODECURRENCY"
+										}
+									},
+									{
+										"source": {
+											"name": "GLOBALCURRENCY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "GLOBALCURRENCY"
+										}
+									},
+									{
+										"source": {
+											"name": "AMOUNTINGLOBALCURRENCY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "AMOUNTINGLOBALCURRENCY"
+										}
+									},
+									{
+										"source": {
+											"name": "QUANTITY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "QUANTITY"
+										}
+									},
+									{
+										"source": {
+											"name": "BASEUNIT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BASEUNIT"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTSOURCEUNIT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "COSTSOURCEUNIT"
+										}
+									},
+									{
+										"source": {
+											"name": "DEBITCREDITCODE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DEBITCREDITCODE"
+										}
+									},
+									{
+										"source": {
+											"name": "DOCUMENTDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DOCUMENTDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "POSTINGKEY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "POSTINGKEY"
+										}
+									},
+									{
+										"source": {
+											"name": "ACCOUNTINGDOCUMENTTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ACCOUNTINGDOCUMENTTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "MATERIAL",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MATERIAL"
+										}
+									},
+									{
+										"source": {
+											"name": "PLANT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PLANT"
+										}
+									},
+									{
+										"source": {
+											"name": "SUPPLIER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SUPPLIER"
+										}
+									},
+									{
+										"source": {
+											"name": "CUSTOMER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CUSTOMER"
+										}
+									},
+									{
+										"source": {
+											"name": "FINANCIALACCOUNTTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FINANCIALACCOUNTTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "LASTCHANGEDATETIME",
+											"type": "String"
+										},
+										"sink": {
+											"name": "LASTCHANGEDATETIME"
+										}
+									},
+									{
+										"source": {
+											"name": "LEDGERGLLINEITEM",
+											"type": "String"
+										},
+										"sink": {
+											"name": "LEDGERGLLINEITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "LEDGERFISCALYEAR",
+											"type": "String"
+										},
+										"sink": {
+											"name": "LEDGERFISCALYEAR"
+										}
+									},
+									{
+										"source": {
+											"name": "FINANCIALTRANSACTIONTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FINANCIALTRANSACTIONTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "REFERENCEDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "REFERENCEDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "REFERENCEDOCUMENTITEM",
+											"type": "String"
+										},
+										"sink": {
+											"name": "REFERENCEDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "ISREVERSAL",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ISREVERSAL"
+										}
+									},
+									{
+										"source": {
+											"name": "ISREVERSED",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ISREVERSED"
+										}
+									},
+									{
+										"source": {
+											"name": "REVERSALREFERENCEDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "REVERSALREFERENCEDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "ISSETTLEMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ISSETTLEMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "ISSETTLED",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ISSETTLED"
+										}
+									},
+									{
+										"source": {
+											"name": "SOURCEREFERENCEDOCUMENTTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SOURCEREFERENCEDOCUMENTTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "PARTNERCOSTCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PARTNERCOSTCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "PARTNERPROFITCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PARTNERPROFITCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "BALANCETRANSACTIONCURRENCY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BALANCETRANSACTIONCURRENCY"
+										}
+									},
+									{
+										"source": {
+											"name": "AMOUNTINBALANCETRANSACCRCY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "AMOUNTINBALANCETRANSACCRCY"
+										}
+									},
+									{
+										"source": {
+											"name": "TRANSACTIONCURRENCY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TRANSACTIONCURRENCY"
+										}
+									},
+									{
+										"source": {
+											"name": "AMOUNTINTRANSACTIONCURRENCY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "AMOUNTINTRANSACTIONCURRENCY"
+										}
+									},
+									{
+										"source": {
+											"name": "FIXEDQUANTITY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "FIXEDQUANTITY"
+										}
+									},
+									{
+										"source": {
+											"name": "VALUATIONQUANTITY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "VALUATIONQUANTITY"
+										}
+									},
+									{
+										"source": {
+											"name": "VALUATIONFIXEDQUANTITY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "VALUATIONFIXEDQUANTITY"
+										}
+									},
+									{
+										"source": {
+											"name": "FISCALYEARVARIANT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FISCALYEARVARIANT"
+										}
+									},
+									{
+										"source": {
+											"name": "FISCALYEARPERIOD",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FISCALYEARPERIOD"
+										}
+									},
+									{
+										"source": {
+											"name": "ACCOUNTINGDOCUMENTITEM",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ACCOUNTINGDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "ACCOUNTINGDOCCREATEDBYUSER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ACCOUNTINGDOCCREATEDBYUSER"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATIONDATETIME",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATIONDATETIME"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATIONDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATIONDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "GLACCOUNTTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "GLACCOUNTTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "INVOICEREFERENCE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "INVOICEREFERENCE"
+										}
+									},
+									{
+										"source": {
+											"name": "INVOICEITEMREFERENCE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "INVOICEITEMREFERENCE"
+										}
+									},
+									{
+										"source": {
+											"name": "PURCHASINGDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PURCHASINGDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "PURCHASINGDOCUMENTITEM",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PURCHASINGDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "ACCOUNTASSIGNMENTNUMBER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ACCOUNTASSIGNMENTNUMBER"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESORDER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESORDER"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESORDERITEM",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESORDERITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESDOCUMENTITEM",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "PRODUCT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PRODUCT"
+										}
+									},
+									{
+										"source": {
+											"name": "TAXCODE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TAXCODE"
+										}
+									},
+									{
+										"source": {
+											"name": "HOUSEBANK",
+											"type": "String"
+										},
+										"sink": {
+											"name": "HOUSEBANK"
+										}
+									},
+									{
+										"source": {
+											"name": "HOUSEBANKACCOUNT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "HOUSEBANKACCOUNT"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTESTIMATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "COSTESTIMATE"
+										}
+									},
+									{
+										"source": {
+											"name": "OFFSETTINGACCOUNT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "OFFSETTINGACCOUNT"
+										}
+									},
+									{
+										"source": {
+											"name": "OFFSETTINGACCOUNTTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "OFFSETTINGACCOUNTTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "PARTNERCOMPANYCODE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PARTNERCOMPANYCODE"
+										}
+									},
+									{
+										"source": {
+											"name": "ORIGINCOSTCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ORIGINCOSTCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "ORIGINPROFITCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ORIGINPROFITCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "ORDERID",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ORDERID"
+										}
+									},
+									{
+										"source": {
+											"name": "ORDERCATEGORY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ORDERCATEGORY"
+										}
+									},
+									{
+										"source": {
+											"name": "PARTNERORDER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PARTNERORDER"
+										}
+									},
+									{
+										"source": {
+											"name": "PARTNERORDERCATEGORY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PARTNERORDERCATEGORY"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGDOCUMENTTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLINGDOCUMENTTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "SOLDMATERIAL",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SOLDMATERIAL"
+										}
+									},
+									{
+										"source": {
+											"name": "SOLDPRODUCT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SOLDPRODUCT"
+										}
+									},
+									{
+										"source": {
+											"name": "MATERIALGROUP",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MATERIALGROUP"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "contabilidadcar/ENTRADADIARIO"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sap_entradadiario",
+								"type": "DatasetReference"
+							}
+						]
+					}
+				],
+				"parameters": {
+					"Anio": {
+						"type": "string",
+						"defaultValue": "2020"
+					},
+					"Mes": {
+						"type": "string",
+						"defaultValue": "12"
+					},
+					"Dia": {
+						"type": "string",
+						"defaultValue": "08"
+					}
+				},
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_Transaccional_HistoricoReprocesoContabilidad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Sap",
+				"activities": [
+					{
+						"name": "EntradaDiarioHistorica",
+						"description": "",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaEntradaDiarioHistorico]",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": "0"
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": null
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": null
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": null
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Carga Transaccional",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Truncar Transaccional",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Fecha Carga').output.firstRow.AnioFechaInicio, activity('Fecha Carga').output.firstRow.AnioFechaFin)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Carga Anterior",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "Carga Actual_",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Carga Anterior",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"ServidorQuito": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+												"type": "Expression"
+											},
+											"ServidorGuayaquil": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+												"type": "Expression"
+											},
+											"BaseDatosQuito": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+												"type": "Expression"
+											},
+											"BaseDatosGuayaquil": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+												"type": "Expression"
+											},
+											"RegionQuito": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual1",
+												"type": "Expression"
+											},
+											"RegionGuayaquil": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual2",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Carga Actual",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Truncar Transaccional",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Obtener Servidores",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "TRUNCATE TABLE [dsa_ecu_sg].[Estado_PyG]\nTRUNCATE TABLE [dsa_ecu_sg].[PyG]\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Obtener Servidores",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
+								"storedProcedureParameters": {
+									"CodigoETL": {
+										"type": "String",
+										"value": "BD-SG-ECU"
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+											"type": "Expression"
+										}
+									},
+									"FechaHastaActual": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+											"type": "Expression"
+										}
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					}
+				],
+				"folder": {
+					"name": "dsa_SistemaGerenteEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Estado_PyG",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Estado_PyG]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[Estado_PyG]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Mes,Anio,Estado,Cod_Estado,Cod_Restaurante,Fecha_Creacion,'@{pipeline().parameters.Region}' AS Region FROM dbo.Estado_PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Mes",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[Estado_PyG]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Mes",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[Estado_PyG]"
+								}
+							}
+						]
+					},
+					{
+						"name": "PyG",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[PyG]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[PyG]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Estado,Grupo,Descripcion,Valor,Porcentaje,Nivel,Orden,Fecha_Creacion,Mes,Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "String"
+										},
+										{
+											"name": "Grupo",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Nivel",
+											"type": "Int32"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Mes",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[PyG]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "String"
+										},
+										{
+											"name": "Grupo",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Nivel",
+											"type": "Int32"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Mes",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[PyG]"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SAZGERENTEDBUIO"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "SQLGerente_19"
+					},
+					"FechaDesde": {
+						"type": "string"
+					},
+					"FechaHasta": {
+						"type": "string"
+					},
+					"Region": {
+						"type": "string",
+						"defaultValue": "QUITO"
+					}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerenteEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Contabilidad_Ecu_Reproceso')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "conta_FacPyG",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_conta",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPyG",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cubo_FacPyGContabilidad",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "conta_FacPyG",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPyGContabilidad",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cubo_usp_CargaFacPyGUniforme",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "cubo_FacPyGContabilidad",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPyGUniforme",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "Int",
+						"defaultValue": 0
+					},
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_CAREcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Recarga Embutser Ecuador')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Recarga Embutser Ecuador",
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl_Recarga_Embutser_Ecuador",
+							"type": "PipelineReference"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Week",
+						"interval": 1,
+						"startTime": "2019-07-19T16:36:00Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								15
+							],
+							"hours": [
+								18
+							],
+							"weekDays": [
+								"Monday"
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

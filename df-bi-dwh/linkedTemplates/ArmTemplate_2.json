@@ -31,10 +31,6 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"connectionString\"de \"linked_mp_ecu\""
 		},
-		"linked_sg_arg_connectionString": {
-			"type": "secureString",
-			"metadata": "Cadena protegida para \"connectionString\"de \"linked_sg_arg\""
-		},
 		"linked_bi_dev_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "kfc\\viviana.socasi"
@@ -44,6 +40,25 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_dwh_master')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataset no parametrizado DWH\n",
+				"linkedServiceName": {
+					"referenceName": "linked_master",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dwh_General"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ds_sap_DocumentoEntrega')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
@@ -1769,34 +1784,6 @@
 				},
 				"connectVia": {
 					"referenceName": "IR-MaxpointEcu",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/linked_sg_arg')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Conexión dinámica Sistema Gerente Argentina",
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "SAZGERENTEDB-AR"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "SqlGerente_19"
-					}
-				},
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('linked_sg_arg_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "IR-SistemaGerenteArgV2",
 					"type": "IntegrationRuntimeReference"
 				}
 			},
