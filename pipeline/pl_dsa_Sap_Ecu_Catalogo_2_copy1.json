@@ -101,6 +101,110 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "ClienteaAreaVenta",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/CLIENTEAREAVENTA",
+							"wildcardFileName": {
+								"value": "@Concat('CLIENTEAREAVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[clienteareaventa]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/CLIENTEAREAVENTA"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMER",
+									"type": "String"
+								},
+								{
+									"name": "SALESORGANIZATION",
+									"type": "String"
+								},
+								{
+									"name": "DISTRIBUTIONCHANNEL",
+									"type": "String"
+								},
+								{
+									"name": "DIVISION",
+									"type": "String"
+								},
+								{
+									"name": "SALESOFFICE",
+									"type": "String"
+								},
+								{
+									"name": "SALESGROUP",
+									"type": "String"
+								},
+								{
+									"name": "CURRENCY",
+									"type": "String"
+								},
+								{
+									"name": "PRICELISTTYPE",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERGROUP",
+									"type": "String"
+								},
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "CUSTOMERPRICEGROUP",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sap].[clienteareaventa]"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
