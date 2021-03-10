@@ -23,14 +23,6 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"connectionString\"de \"linked_domicilio_chl\""
 		},
-		"linked_domicilio_col_connectionString": {
-			"type": "secureString",
-			"metadata": "Cadena protegida para \"connectionString\"de \"linked_domicilio_col\""
-		},
-		"linked_mp_ecu_connectionString": {
-			"type": "secureString",
-			"metadata": "Cadena protegida para \"connectionString\"de \"linked_mp_ecu\""
-		},
 		"linked_bi_dev_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "kfc\\viviana.socasi"
@@ -40,6 +32,57 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_dwh')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataset parametrizado DWH\n",
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "dwh_General"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_dwh_general')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataset no parametrizado DWH\n",
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dwh_General"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ds_dwh_master')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
@@ -1728,62 +1771,6 @@
 				},
 				"connectVia": {
 					"referenceName": "IR-DomicilioChl",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/linked_domicilio_col')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Sistema Gerente Domicilio Colombia",
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "SAZGERENTECOL\\DomicilioCol"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "Domicilio"
-					}
-				},
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('linked_domicilio_col_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "IR-DomicilioCol",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/linked_mp_ecu')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Conexión dinámica centralizador Maxpoint Ecuador",
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "SRVV-ZEUS"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "MAXPOINT_DISTRIB_19"
-					}
-				},
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('linked_mp_ecu_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "IR-MaxpointEcu",
 					"type": "IntegrationRuntimeReference"
 				}
 			},
