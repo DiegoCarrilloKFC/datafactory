@@ -35,7 +35,8 @@
 								"type": "DateTime",
 								"value": null
 							}
-						}
+						},
+						"partitionOption": "None"
 					},
 					"dataset": {
 						"referenceName": "ds_dwh_general",
@@ -85,7 +86,8 @@
 									"type": "Expression"
 								}
 							}
-						}
+						},
+						"partitionOption": "None"
 					},
 					"dataset": {
 						"referenceName": "ds_dwh_general",
@@ -115,7 +117,8 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlDWSource",
-						"sqlReaderQuery": "TRUNCATE TABLE [dsa_ecu_sg].[Costos_Historicos]\nTRUNCATE TABLE [dsa_ecu_sg].[InvMovimiento]\n\nSELECT 'ok' AS Resultado"
+						"sqlReaderQuery": "TRUNCATE TABLE [dsa_ecu_sg].[Costos_Historicos]\nTRUNCATE TABLE [dsa_ecu_sg].[InvMovimiento]\n\nSELECT 'ok' AS Resultado",
+						"partitionOption": "None"
 					},
 					"dataset": {
 						"referenceName": "ds_dwh_general",
@@ -169,7 +172,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionAnterior1}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior}') AND YEAR(Fecha) = YEAR('@{activity('Fecha Carga').output.firstRow.FechaDesde}')",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -360,7 +364,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionAnterior1}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior}') AND inv.Tipo_Mov!=6",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -582,7 +587,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionAnterior2}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior}') AND YEAR(Fecha) = YEAR('@{activity('Fecha Carga').output.firstRow.FechaDesde}')",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -780,7 +786,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionAnterior2}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior}') AND inv.Tipo_Mov!=6",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -1002,7 +1009,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual1}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND YEAR(Fecha) = YEAR('@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}')",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -1200,7 +1208,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual1}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND inv.Tipo_Mov!=6",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -1422,7 +1431,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual2}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND YEAR(Fecha) = YEAR('@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}')",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -1620,7 +1630,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual2}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND inv.Tipo_Mov!=6",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -1837,7 +1848,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual1}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND YEAR(Fecha) = YEAR('@{activity('Fecha Carga').output.firstRow.FechaDesde}')",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -2028,7 +2040,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual1}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND inv.Tipo_Mov!=6",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -2250,7 +2263,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,Cod_CostHist,Cod_Toma_Fisica,Cod_Art_Bodega,Costo,Fecha,Estado,Cod_Articulo,Cantidad,Tipo,Cod_Restaurante,Cod_Bodega,YEAR(Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual2}' AS Region FROM dbo.Costos_Historicos WHERE Fecha >= DATEADD(DAY,-2,'@{activity('Fecha Carga').output.firstRow.FechaDesde}') AND Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND YEAR(Fecha) = YEAR('@{activity('Fecha Carga').output.firstRow.FechaDesde}')",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
@@ -2448,7 +2462,8 @@
 									"sqlReaderQuery": {
 										"value": "SELECT GETDATE() AS FechaCarga,inv.Cod_Restaurante,inv.Cod_Art_Bodega,inv.Cod_Unidad,inv.Valor,inv.Cantidad,inv.Cod_Grupo,inv.Costo,inv.Tipo_Mov,inv.Cod_Mov_Inv,inv.Fecha,mov.Fecha_Creacion,CASE WHEN mov.Cod_TipMovInv = 3 AND inv.Valor < 0 THEN -3 ELSE mov.Cod_TipMovInv END AS Cod_TipMovInv,mov.Estado,mov.Cod_Proveedor,YEAR(inv.Fecha) AS Anio,'@{activity('Obtener Servidores').output.firstRow.RegionActual2}' AS Region FROM dbo.InvMovimiento inv INNER JOIN dbo.MovInv mov ON inv.Cod_Mov_Inv = mov.Cod_Mov_Inv WHERE inv.Fecha >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND inv.Fecha < DATEADD(DAY,1,'@{activity('Fecha Carga').output.firstRow.FechaHasta}') AND inv.Tipo_Mov!=6",
 										"type": "Expression"
-									}
+									},
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "SqlDWSink",
