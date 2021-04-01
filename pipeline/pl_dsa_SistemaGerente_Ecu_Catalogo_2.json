@@ -1979,6 +1979,194 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "MedioMenu",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[MedioMenu]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_sg].[MedioMenu]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT GETDATE(), Cod_Menu, Descripcion, Estado FROM dbo.MedioMenu",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[MedioMenu]",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_SistemaGerenteEcu",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_Menu",
+									"type": "Int32"
+								},
+								{
+									"name": "Descripcion",
+									"type": "String"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dbo].[MedioMenu]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.ServidorQuito",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatosQuito",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_Menu",
+									"type": "Int32"
+								},
+								{
+									"name": "Descripcion",
+									"type": "String"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sg].[MedioMenu]"
+						}
+					}
+				]
+			},
+			{
+				"name": "CanalMenuMedio",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[CanalMenuMedio]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_sg].[CanalMenuMedio]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT GETDATE(), Cod_MedioCanalMenu, Cod_Canal, Cod_Menu, Cod_Medio, Sistema, Estado\nFROM dbo.CanalMenuMedio",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[CanalMenuMedio]",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_SistemaGerenteEcu",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": "[{\"name\":\"FechaCarga\",\"type\"a:\"DateTime\"},{\"name\":\"Cod_MedioCanalMenu\",\"type\":\"Int32\"},{\"name\":\"Cod_Canal\",\"type\":\"Int32\"},{\"name\":\"Cod_Menu\",\"type\":\"Int32\"},{\"name\":\"Cod_Medio\",\"type\":\"Int32\"},{\"name\":\"Sistema\",\"type\":\"String\"},{\"name\":\"Estado\",\"type\":\"Int32\"}]",
+							"cw_tableName": "[dbo].[CanalMenuMedio]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.ServidorQuito",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatosQuito",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": "[{\"name\":\"FechaCarga\",\"type\"a:\"DateTime\"},{\"name\":\"Cod_MedioCanalMenu\",\"type\":\"Int32\"},{\"name\":\"Cod_Canal\",\"type\":\"Int32\"},{\"name\":\"Cod_Menu\",\"type\":\"Int32\"},{\"name\":\"Cod_Medio\",\"type\":\"Int32\"},{\"name\":\"Sistema\",\"type\":\"String\"},{\"name\":\"Estado\",\"type\":\"Int32\"}]",
+							"cw_tableName": "[dsa_ecu_sg].[CanalMenuMedio]"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
