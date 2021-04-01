@@ -1,0 +1,55 @@
+{
+	"name": "pl_Carga_Multipais_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Carga Operacion Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Venta Acumulada Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_Ecu",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ECU",
+						"TipoCarga": "MANUAL"
+					}
+				}
+			},
+			{
+				"name": "Carga Venta Acumulada Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_Venta_Acum_Ecu",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ECU",
+						"TipoCarga": "MANUAL"
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Carga_dwh_Triggers"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
