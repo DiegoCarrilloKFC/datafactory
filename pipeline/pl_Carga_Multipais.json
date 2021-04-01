@@ -837,61 +837,6 @@
 				}
 			},
 			{
-				"name": "Reescalar DWH 2",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Tiempo Espera Log",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_admin_Escalar_DWH",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"DWU": "DW100c"
-					}
-				}
-			},
-			{
-				"name": "Finalizar Carga UyC",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "Reescalar DWH 2",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA USO CONSUMO ECU'\n\nSELECT 'ok' AS Resultado",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					},
-					"firstRowOnly": true
-				}
-			},
-			{
 				"name": "Verificar Proceso Cubos Venta",
 				"type": "Until",
 				"dependsOn": [
@@ -1063,6 +1008,26 @@
 						"Pais": "ECU",
 						"TipoCarga": "AUTOMATICA"
 					}
+				}
+			},
+			{
+				"name": "Carga Multipais Ext",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Tiempo Espera Log",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_Carga_Multipais_Ext",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
 				}
 			}
 		],

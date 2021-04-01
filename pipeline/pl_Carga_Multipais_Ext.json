@@ -3,6 +3,22 @@
 	"properties": {
 		"activities": [
 			{
+				"name": "Reescalar DWH 2",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_admin_Escalar_DWH",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"DWU": "DW100c"
+					}
+				}
+			},
+			{
 				"name": "Finalizar Carga UyC",
 				"type": "Lookup",
 				"dependsOn": [
@@ -32,157 +48,6 @@
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": true
-				}
-			},
-			{
-				"name": "Verificar Proceso Cubos Venta",
-				"type": "Until",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"expression": {
-						"value": "@equals(activity('Verificar Carga Venta').output.firstRow.Resultado, 'OK')",
-						"type": "Expression"
-					},
-					"activities": [
-						{
-							"name": "Verificar Carga Venta",
-							"type": "Lookup",
-							"dependsOn": [
-								{
-									"activity": "Espera",
-									"dependencyConditions": [
-										"Completed"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "SqlDWSource",
-									"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA-CAR-PLANTA' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado",
-									"partitionOption": "None"
-								},
-								"dataset": {
-									"referenceName": "ds_dwh_general",
-									"type": "DatasetReference"
-								}
-							}
-						},
-						{
-							"name": "Espera",
-							"type": "Wait",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"waitTimeInSeconds": 180
-							}
-						}
-					],
-					"timeout": "00.12:00:00"
-				}
-			},
-			{
-				"name": "Carga Operacion UyC Ecu",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Inicializar Carga Uyc",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_dwh_Operaciones_UyC_Ecu",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"IDCadenaSistemaGerente": "0",
-						"Pais": "ECU",
-						"TipoCarga": "AUTOMATICA"
-					}
-				}
-			},
-			{
-				"name": "Inicializar Carga Uyc",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "Tiempo Espera Log",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA USO CONSUMO ECU',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					},
-					"firstRowOnly": true
-				}
-			},
-			{
-				"name": "Tiempo Espera Log",
-				"type": "Wait",
-				"dependsOn": [
-					{
-						"activity": "Verificar Proceso Cubos Venta",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"waitTimeInSeconds": 300
-				}
-			},
-			{
-				"name": "Reescalar DWH 2",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Carga Operacion UyC Ecu",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_admin_Escalar_DWH",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"DWU": "DW100c"
-					}
 				}
 			}
 		],
