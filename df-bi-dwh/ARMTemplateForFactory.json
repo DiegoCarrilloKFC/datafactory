@@ -1932,7 +1932,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlDWSource",
-								"sqlReaderQuery": "TRUNCATE TABLE [dsa_ecu_sg].[Consolidado_DomicilioTiempos]\n\n--RANGO DE FECHAS\nDECLARE @FechaDesde DATETIME = CAST(GETDATE()-30 AS DATE)\nDECLARE @FechaHasta DATETIME = CAST(GETDATE() AS DATE)\n\n--INSERTAR DATOS\nINSERT INTO [dsa_ecu_sg].[Consolidado_DomicilioTiempos] \nSELECT\n\t'20210322',\n\tCAST(SUBSTRING(Final.cod_factura,6,14)AS INT)AS Factura,\n\tFinal.cod_telefono,\n\tCliente,\n\tCod_ZipCode,\n\tMotorizado,\n\tDespachador,\n\ttotal,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS Hora,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignada,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS Llegada,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS HoraC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignadaC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS LlegadaC,\n\tfinal.fecha,\n\tfinal.Cod_Restaurante,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS CreacionC,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS Creacion,\n\tYEAR(Fecha_Factura) AS Anio,\n\t'' AS Region,\n\tCASE WHEN fac.Cod_AppMovil is null THEN isnull(fac.Medio,'Llamada') ELSE isnull(fac.Medio,'App') END  AS Tipo_Pedido,\n\tCASE WHEN Dispositivo is null THEN '-' ELSE Dispositivo END Dispositivo\nFROM\n\t(\n\t\tSELECT\n\t\t\tCodigoCentroCosto,\n\t\t\tCod_Restaurante,\n\t\t\tfecha,\n\t\t\tcod_factura,\n\t\t\tcod_telefono,\n\t\t\tCliente,\n\t\t\tCod_ZipCode,\n\t\t\tMotorizado,\n\t\t\tDespachador,\n\t\t\ttotal,\n\t\t\tFecha_Factura,\n\t\t\tFecha_Creacion,\n\t\t\t[3] AS ASignada,\n\t\t\t[1] AS Llegada\n\t\tFROM\n\t\t\t( \n\t\t\tSELECT\n\t\t\t\tper.CodigoCentroCosto,\n\t\t\t\tper.fecha,\n\t\t\t\tfd.cod_factura,\n\t\t\t\tfd.cod_telefono,\n\t\t\t\t(cl.Nombres+SPACE(1)+cl.Apellidos) AS Cliente,\n\t\t\t\tInm.Cod_ZipCode,\n\t\t\t\t(mo.Nombres+SPACE(1)+mo.Apellidos) AS Motorizado,\n\t\t\t\tUPPER(us.Usuario) AS Despachador,\n\t\t\t\tfd.TotalBruto AS total,\n\t\t\t\tfd.fecha AS Fecha_Factura,\n\t\t\t\tfm.fecha AS tiempos,\n\t\t\t\tfm.cod_estado,\n\t\t\t\tfd.Fecha_Creacion,\n\t\t\t\tper.Cod_Restaurante\t\t\t\t\n\t\t\t\tFROM pos_ecu_domi.factura_domicilio AS fd\n\t\t\t\t\tINNER JOIN pos_ecu_domi.periodo AS per ON fd.cod_periodo = per.cod_periodo and fd.CodigoCentroCosto = per.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Cliente_Domicilio AS cl ON fd.Cod_Cliente_Domicilio = cl.Cod_Cliente_Domicilio and cl.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Telefonos AS tl ON fd.Cod_Telefono = tl.Cod_Telefono and tl.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Inmueble AS Inm ON tl.Cod_inmueble = Inm.Cod_inmueble and inm.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Factura_Motorolo AS fm ON fd.cod_factura = fm.cod_factura and fm.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Motorolos AS mo ON fm.Cod_Motorolo = mo.Cod_Motorolo and mo.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tleft JOIN pos_ecu_domi.Users AS us ON fd.cod_usuario = us.cod_usuario\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Restaurante AS res ON per.Cod_Restaurante  = res.Cod_Restaurante\n\t\t\t\t\tWHERE fd.Estado = 4 AND fm.Cod_estado = 1 or fm.Cod_estado = 3 AND per.Fecha >= @FechaDesde and per.Fecha < @FechaHasta\n\t\t\t\t) dom\n\t\tPIVOT (MAX(Tiempos) FOR cod_estado in ([1] ,[3]) ) AS pv) Final\n\t\tINNER JOIN pos_ecu_domi.Factura_Domicilio fac ON Final.Cod_factura = fac.Cod_Factura AND fac.CodigoCentroCosto = final.CodigoCentroCosto\n\t\tWHERE ASignada IS NOT NULL\nUNION ALL\nSELECT \n\t'20210316',\n\tCAST(SUBSTRING(Final.cod_factura,6,14)AS INT)AS Factura,\n\t0 as cod_telefono,\n\tSUBSTRING(Cliente,1,150),\n\tSUBSTRING(Cod_ZipCode,1,15),\n\tSUBSTRING(Motorizado,1,150),\n\tSUBSTRING(Despachador,1,20),\n\ttotal,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS Hora,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignada,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS Llegada,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS HoraC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignadaC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS LlegadaC,\n\tfinal.fecha,\n\tfinal.Cod_Restaurante,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS CreacionC,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS Creacion,\n\tYEAR(Fecha_Factura) AS Anio,\n\t'' AS Region,\n\t'' AS Tipo_Pedido, --CASE WHEN fac.Cod_AppMovil is null THEN isnull(fac.Medio,'Llamada') ELSE isnull(fac.Medio,'App') END  AS Tipo_Pedido,\n\t'' AS Dispositivo --CASE WHEN Dispositivo is null THEN '-' ELSE Dispositivo END Dispositivo\nFROM\n\t(\n\t\tSELECT\n\t\t\tCodigoCentroCosto,\n\t\t\tCod_Restaurante,\n\t\t\tfecha,\n\t\t\tcod_factura,\n\t\t\tcod_telefono,\n\t\t\tCliente,\n\t\t\tCod_ZipCode,\n\t\t\tMotorizado,\n\t\t\tDespachador,\n\t\t\ttotal,\n\t\t\tFecha_Factura,\n\t\t\tFecha_Creacion,\n\t\t\t[EN CAMINO] AS ASignada,\n\t\t\t[ENTREGADO] AS Llegada\n\t\tFROM\n\t\t\t( \n\t\t\tSELECT \n\t\t\t\tper.CodigoCentroCosto,\n\t\t\t\tper.prd_fechaapertura AS Fecha,\n\t\t\t\tfd.cfac_id AS cod_factura,\n\t\t\t\tcl.cli_telefono AS cod_telefono,\n\t\t\t\t(cl.cli_nombres+SPACE(1)+cl.cli_apellidos) AS Cliente,\n\t\t\t\tISNULL(ca.cod_ZipCode,'') AS Cod_ZipCode,\n\t\t\t\t'' AS Motorizado,--(mo.Nombres+SPACE(1)+mo.Apellidos) AS Motorizado,\n\t\t\t\tUPPER(us.usr_descripcion) AS Despachador,\n\t\t\t\tfd.cfac_total AS total,\n\t\t\t\tfd.cfac_fechacreacion AS Fecha_Factura,\n\t\t\t\tea.fecha AS tiempos,\n\t\t\t\tea.estado,\n\t\t\t\tfd.cfac_fechacreacion AS Fecha_Creacion,\n\t\t\t\tfd.rst_id AS Cod_Restaurante\t\t\t\n\t\t\t\tFROM pos_ecu_mp.Cabecera_Factura AS fd\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Periodo AS per ON fd.IDPeriodo = per.IDPeriodo and fd.CodigoCentroCosto = per.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Cliente AS cl ON fd.IDCliente = cl.IDCliente and cl.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Cabecera_App ca ON fd.cfac_id = ca.cfac_id and ca.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Estado_Pedido_App AS ea ON ea.codigo_app = ca.codigo_app and ea.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\t--INNER JOIN pos_ecu_mp.Motorolo AS mo ON ca.IDMotorolo = mo.IDMotorolo and mo.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tleft JOIN pos_ecu_mp.Users_Pos AS us ON fd.IDUsersPos = us.IDUsersPos\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Status st ON fd.IDStatus = st.IDStatus AND fd.IDStatus = '5E039503-85CF-E511-80C6-000D3A3261F3'\n\t\t\t\t\tWHERE ea.estado IN ('ENTREGADO','EN CAMINO') AND cast(per.prd_fechaapertura as date) >= @FechaDesde AND cast(per.prd_fechaapertura as date) < @FechaHasta\n\t\t\t\t) dom\n\t\tPIVOT (MAX(Tiempos) FOR estado in ([ENTREGADO] ,[EN CAMINO]) ) AS pv) Final\n\t\tINNER JOIN pos_ecu_mp.Cabecera_Factura fac ON Final.Cod_factura = fac.cfac_id AND fac.CodigoCentroCosto = final.CodigoCentroCosto\n\t\tWHERE ASignada IS NOT NULL\n\n--ACTUALIZAR REGIONES\nUPDATE [dsa_ecu_sg].[Consolidado_DomicilioTiempos]\nSET [dsa_ecu_sg].[Consolidado_DomicilioTiempos].Region = dwh_dim.centrocosto.RegionOperacion\nFROM dwh_dim.centrocosto \nWHERE [dsa_ecu_sg].[Consolidado_DomicilioTiempos].cod_restaurante = dwh_dim.centrocosto.idcentrocostosg and dwh_dim.centrocosto.idcentrocostosg > 0 and dwh_dim.centrocosto.pais = 'ecu'\n\nexec dwh_dim.usp_CargaCabeceraDomicilio 'ECU', 'MANUAL'\nEXEC dwh_ecu_domi.usp_CargaFacSgProductividadDomicilio @FechaDesde ,@FechaHasta, 0, 'ECU', 'MANUAL'\n\nSELECT 'ok' AS Resultado",
+								"sqlReaderQuery": "TRUNCATE TABLE [dsa_ecu_sg].[Consolidado_DomicilioTiempos]\n\n--RANGO DE FECHAS\nDECLARE @FechaDesde DATETIME = CAST(GETDATE()-30 AS DATE)\nDECLARE @FechaHasta DATETIME = CAST(GETDATE() AS DATE)\n\n--INSERTAR DATOS\nINSERT INTO [dsa_ecu_sg].[Consolidado_DomicilioTiempos] \nSELECT\n\t'20210322',\n\tCAST(SUBSTRING(Final.cod_factura,6,14)AS INT)AS Factura,\n\tFinal.cod_telefono,\n\tCliente,\n\tCod_ZipCode,\n\tMotorizado,\n\tDespachador,\n\ttotal,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS Hora,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignada,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS Llegada,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS HoraC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignadaC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS LlegadaC,\n\tfinal.fecha,\n\tfinal.Cod_Restaurante,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS CreacionC,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS Creacion,\n\tYEAR(Fecha_Factura) AS Anio,\n\t'' AS Region,\n\tCASE WHEN fac.Cod_AppMovil is null THEN isnull(fac.Medio,'Llamada') ELSE isnull(fac.Medio,'App') END  AS Tipo_Pedido,\n\tCASE WHEN Dispositivo is null THEN '-' ELSE Dispositivo END Dispositivo\nFROM\n\t(\n\t\tSELECT\n\t\t\tCodigoCentroCosto,\n\t\t\tCod_Restaurante,\n\t\t\tfecha,\n\t\t\tcod_factura,\n\t\t\tcod_telefono,\n\t\t\tCliente,\n\t\t\tCod_ZipCode,\n\t\t\tMotorizado,\n\t\t\tDespachador,\n\t\t\ttotal,\n\t\t\tFecha_Factura,\n\t\t\tFecha_Creacion,\n\t\t\t[3] AS ASignada,\n\t\t\t[1] AS Llegada\n\t\tFROM\n\t\t\t( \n\t\t\tSELECT\n\t\t\t\tper.CodigoCentroCosto,\n\t\t\t\tper.fecha,\n\t\t\t\tfd.cod_factura,\n\t\t\t\tfd.cod_telefono,\n\t\t\t\t(cl.Nombres+SPACE(1)+cl.Apellidos) AS Cliente,\n\t\t\t\tInm.Cod_ZipCode,\n\t\t\t\t(mo.Nombres+SPACE(1)+mo.Apellidos) AS Motorizado,\n\t\t\t\tUPPER(us.Usuario) AS Despachador,\n\t\t\t\tfd.TotalBruto AS total,\n\t\t\t\tfd.fecha AS Fecha_Factura,\n\t\t\t\tfm.fecha AS tiempos,\n\t\t\t\tfm.cod_estado,\n\t\t\t\tfd.Fecha_Creacion,\n\t\t\t\tper.Cod_Restaurante\t\t\t\t\n\t\t\t\tFROM pos_ecu_domi.factura_domicilio AS fd\n\t\t\t\t\tINNER JOIN pos_ecu_domi.periodo AS per ON fd.cod_periodo = per.cod_periodo and fd.CodigoCentroCosto = per.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Cliente_Domicilio AS cl ON fd.Cod_Cliente_Domicilio = cl.Cod_Cliente_Domicilio and cl.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Telefonos AS tl ON fd.Cod_Telefono = tl.Cod_Telefono and tl.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Inmueble AS Inm ON tl.Cod_inmueble = Inm.Cod_inmueble and inm.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Factura_Motorolo AS fm ON fd.cod_factura = fm.cod_factura and fm.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Motorolos AS mo ON fm.Cod_Motorolo = mo.Cod_Motorolo and mo.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tleft JOIN pos_ecu_domi.Users AS us ON fd.cod_usuario = us.cod_usuario\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Restaurante AS res ON per.Cod_Restaurante  = res.Cod_Restaurante\n\t\t\t\t\tWHERE fd.Estado = 4 AND fm.Cod_estado = 1 or fm.Cod_estado = 3 AND per.Fecha >= @FechaDesde and per.Fecha < @FechaHasta\n\t\t\t\t) dom\n\t\tPIVOT (MAX(Tiempos) FOR cod_estado in ([1] ,[3]) ) AS pv) Final\n\t\tINNER JOIN pos_ecu_domi.Factura_Domicilio fac ON Final.Cod_factura = fac.Cod_Factura AND fac.CodigoCentroCosto = final.CodigoCentroCosto\n\t\tWHERE ASignada IS NOT NULL\nUNION ALL\nSELECT \n\t'20210316',\n\tCAST(SUBSTRING(Final.cod_factura,6,14)AS INT)AS Factura,\n\t0 as cod_telefono,\n\tSUBSTRING(Cliente,1,150),\n\tSUBSTRING(Cod_ZipCode,1,15),\n\tSUBSTRING(Motorizado,1,150),\n\tSUBSTRING(Despachador,1,20),\n\ttotal,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS Hora,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignada,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS Llegada,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS HoraC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignadaC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS LlegadaC,\n\tfinal.fecha,\n\tfinal.Cod_Restaurante,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS CreacionC,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS Creacion,\n\tYEAR(Fecha_Factura) AS Anio,\n\t'' AS Region,\n\t'' AS Tipo_Pedido, --CASE WHEN fac.Cod_AppMovil is null THEN isnull(fac.Medio,'Llamada') ELSE isnull(fac.Medio,'App') END  AS Tipo_Pedido,\n\t'' AS Dispositivo --CASE WHEN Dispositivo is null THEN '-' ELSE Dispositivo END Dispositivo\nFROM\n\t(\n\t\tSELECT\n\t\t\tCodigoCentroCosto,\n\t\t\tCod_Restaurante,\n\t\t\tfecha,\n\t\t\tcod_factura,\n\t\t\tcod_telefono,\n\t\t\tCliente,\n\t\t\tCod_ZipCode,\n\t\t\tMotorizado,\n\t\t\tDespachador,\n\t\t\ttotal,\n\t\t\tFecha_Factura,\n\t\t\tCASE WHEN ban=1 THEN Fecha_Factura ELSE [PENDIENTE] END AS Fecha_Creacion,\n\t\t\t[EN CAMINO] AS ASignada,\n\t\t\t[ENTREGADO] AS Llegada\n\t\tFROM\n\t\t\t( \n\t\t\tSELECT \n\t\t\t\tper.CodigoCentroCosto,\n\t\t\t\tper.prd_fechaapertura AS Fecha,\n\t\t\t\tfd.cfac_id AS cod_factura,\n\t\t\t\tcl.cli_telefono AS cod_telefono,\n\t\t\t\t(cl.cli_nombres+SPACE(1)+cl.cli_apellidos) AS Cliente,\n\t\t\t\tISNULL(ca.cod_ZipCode,'') AS Cod_ZipCode,\n\t\t\t\t'' AS Motorizado,--(mo.Nombres+SPACE(1)+mo.Apellidos) AS Motorizado,\n\t\t\t\tUPPER(us.usr_descripcion) AS Despachador,\n\t\t\t\tfd.cfac_total AS total,\n\t\t\t\tfd.cfac_fechacreacion AS Fecha_Factura,\n\t\t\t\tCASE WHEN fd.Cabecera_FacturaVarchar2='Llamada' THEN 1 ELSE 0 END AS ban,\n\t\t\t\tea.fecha AS tiempos,\n\t\t\t\tea.estado,\n\t\t\t\tfd.rst_id AS Cod_Restaurante\t\t\t\n\t\t\t\tFROM pos_ecu_mp.Cabecera_Factura AS fd\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Periodo AS per ON fd.IDPeriodo = per.IDPeriodo and fd.CodigoCentroCosto = per.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Cliente AS cl ON fd.IDCliente = cl.IDCliente and cl.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Cabecera_App ca ON fd.cfac_id = ca.cfac_id and ca.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Estado_Pedido_App AS ea ON ea.codigo_app = ca.codigo_app and ea.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\t--INNER JOIN pos_ecu_mp.Motorolo AS mo ON ca.IDMotorolo = mo.IDMotorolo and mo.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tleft JOIN pos_ecu_mp.Users_Pos AS us ON fd.IDUsersPos = us.IDUsersPos\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Status st ON fd.IDStatus = st.IDStatus AND fd.IDStatus = '5E039503-85CF-E511-80C6-000D3A3261F3'\n\t\t\t\t\tWHERE ea.estado IN ('ENTREGADO','EN CAMINO','PENDIENTE') AND cast(per.prd_fechaapertura as date) >= @FechaDesde AND cast(per.prd_fechaapertura as date) < @FechaHasta\n\t\t\t\t) dom\n\t\tPIVOT (MAX(Tiempos) FOR estado in ([ENTREGADO] ,[EN CAMINO],[PENDIENTE]) ) AS pv) Final\n\t\tINNER JOIN pos_ecu_mp.Cabecera_Factura fac ON Final.Cod_factura = fac.cfac_id AND fac.CodigoCentroCosto = final.CodigoCentroCosto\n\t\tWHERE ASignada IS NOT NULL\n\n--ACTUALIZAR REGIONES\nUPDATE [dsa_ecu_sg].[Consolidado_DomicilioTiempos]\nSET [dsa_ecu_sg].[Consolidado_DomicilioTiempos].Region = dwh_dim.centrocosto.RegionOperacion\nFROM dwh_dim.centrocosto \nWHERE [dsa_ecu_sg].[Consolidado_DomicilioTiempos].cod_restaurante = dwh_dim.centrocosto.idcentrocostosg and dwh_dim.centrocosto.idcentrocostosg > 0 and dwh_dim.centrocosto.pais = 'ecu'\n\nexec dwh_dim.usp_CargaCabeceraDomicilio 'ECU', 'MANUAL'\nEXEC dwh_ecu_domi.usp_CargaFacSgProductividadDomicilio @FechaDesde ,@FechaHasta, 0, 'ECU', 'MANUAL'\n\nSELECT 'ok' AS Resultado",
 								"partitionOption": "None"
 							},
 							"dataset": {
@@ -110736,2020 +110736,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_Catalogo_2')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Rubros",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Rubros]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[Rubros]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Rubros,Cod_Grupo,Cta_Axapta,Descripcion,Tipo,Estado,OrdenPyG FROM dbo.Rubros",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[Rubros]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Rubros",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Grupo",
-											"type": "Int32"
-										},
-										{
-											"name": "Cta_Axapta",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Tipo",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "OrdenPyG",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Rubros]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Rubros",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Grupo",
-											"type": "Int32"
-										},
-										{
-											"name": "Cta_Axapta",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Tipo",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "OrdenPyG",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[Rubros]"
-								}
-							}
-						]
-					},
-					{
-						"name": "SubRecet",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[SubRecet]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[SubRecet]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Subrecet,Cod_Cadena,Tipo_Subreceta,Costo,Descripcion,Num_Subreceta,Unidad_Receta,Unidad_Compra,Unidad_Inventario,Estado FROM dbo.SubRecet",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[SubRecet]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Subrecet",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Cadena",
-											"type": "Int32"
-										},
-										{
-											"name": "Tipo_Subreceta",
-											"type": "String"
-										},
-										{
-											"name": "Costo",
-											"type": "Double"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Num_Subreceta",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Receta",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Compra",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Inventario",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[SubRecet]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Subrecet",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Cadena",
-											"type": "Int32"
-										},
-										{
-											"name": "Tipo_Subreceta",
-											"type": "String"
-										},
-										{
-											"name": "Costo",
-											"type": "Double"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Num_Subreceta",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Receta",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Compra",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Inventario",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[SubRecet]"
-								}
-							}
-						]
-					},
-					{
-						"name": "SubrecetaToma",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[SubrecetaToma]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[SubrecetaToma]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Cadena,Cod_Subreceta FROM dbo.SubrecetaToma",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[SubrecetaToma]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Cadena",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Subreceta",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[SubrecetaToma]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Cadena",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Subreceta",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[SubrecetaToma]"
-								}
-							}
-						]
-					},
-					{
-						"name": "SubRecetaTrans",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[SubRecetaTrans]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[SubRecetaTrans]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_SubReceta_Trans,Cod_Subrecet,Cod_Articulo,Cod_Articulo_Sub,Cantidad,Estado,NumSubreceta FROM dbo.SubRecetaTrans",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[SubRecetaTrans]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_SubReceta_Trans",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Subrecet",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Articulo",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Articulo_Sub",
-											"type": "Int32"
-										},
-										{
-											"name": "Cantidad",
-											"type": "Double"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "NumSubreceta",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[SubRecetaTrans]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_SubReceta_Trans",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Subrecet",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Articulo",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Articulo_Sub",
-											"type": "Int32"
-										},
-										{
-											"name": "Cantidad",
-											"type": "Double"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "NumSubreceta",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[SubRecetaTrans]"
-								}
-							}
-						]
-					},
-					{
-						"name": "SubRubros",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[SubRubros]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[SubRubros]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Id_SubRubros,Cod_Rubros,Descripcion,Cod_SubRubros,Estado FROM dbo.SubRubros",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[SubRubros]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Id_SubRubros",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Rubros",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Cod_SubRubros",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[SubRubros]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Id_SubRubros",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Rubros",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Cod_SubRubros",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[SubRubros]"
-								}
-							}
-						]
-					},
-					{
-						"name": "TipoCCC",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[TipoCCC]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[TipoCCC]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Canje,Descripcion,Estado FROM dbo.TipoCCC",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoCCC]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Canje",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[TipoCCC]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Canje",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[TipoCCC]"
-								}
-							}
-						]
-					},
-					{
-						"name": "TipoFormaPago",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[TipoFormaPago]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[TipoFormaPago]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_TipoF,Descripcion,Estado,Cod_Pais FROM dbo.TipoFormaPago",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoFormaPago]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipoF",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Pais",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[TipoFormaPago]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipoF",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Pais",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[TipoFormaPago]"
-								}
-							}
-						]
-					},
-					{
-						"name": "TipoMov",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[TipoMov]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[TipoMov]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_TipMovInv,Inicial_Secuencia,Descripcion,Estado,Tipo FROM dbo.TipoMov",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoMov]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipMovInv",
-											"type": "Int32"
-										},
-										{
-											"name": "Inicial_Secuencia",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Tipo",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[TipoMov]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipMovInv",
-											"type": "Int32"
-										},
-										{
-											"name": "Inicial_Secuencia",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Tipo",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[TipoMov]"
-								}
-							}
-						]
-					},
-					{
-						"name": "TipoNovedad",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[TipoNovedad]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[TipoNovedad]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_TipoNovedad,Descripcion,Estado FROM dbo.TipoNovedad",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoNovedad]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipoNovedad",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[TipoNovedad]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipoNovedad",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[TipoNovedad]"
-								}
-							}
-						]
-					},
-					{
-						"name": "TipoRestaurante",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[TipoRestaurante]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[TipoRestaurante]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_TipoRestaurante,Nombre,Estado FROM dbo.TipoRestaurante",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoRestaurante]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipoRestaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Nombre",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[TipoRestaurante]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_TipoRestaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Nombre",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[TipoRestaurante]"
-								}
-							}
-						]
-					},
-					{
-						"name": "TiposCuenta",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[TiposCuenta]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[TiposCuenta]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Tipo,Descripcion,Modulo,Estado FROM dbo.TiposCuenta",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TiposCuenta]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Tipo",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Modulo",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[TiposCuenta]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Tipo",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Modulo",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[TiposCuenta]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Ubicacion",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Ubicacion]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[Ubicacion]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Ubicacion,Descripcion,Estado FROM dbo.Ubicacion",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[Ubicacion]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Ubicacion",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Ubicacion]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Ubicacion",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[Ubicacion]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Users",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Users]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[Users]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Usuario,Cod_Perfil,Usuario,Clave,Iniciales,Descripcion,Fecha_creacion,Estado,Cedula,Tipo_Documento FROM dbo.Users",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[Users]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Usuario",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Perfil",
-											"type": "Int32"
-										},
-										{
-											"name": "Usuario",
-											"type": "String"
-										},
-										{
-											"name": "Clave",
-											"type": "Byte[]"
-										},
-										{
-											"name": "Iniciales",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Fecha_creacion",
-											"type": "DateTime"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cedula",
-											"type": "String"
-										},
-										{
-											"name": "Tipo_Documento",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Users]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Usuario",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Perfil",
-											"type": "Int32"
-										},
-										{
-											"name": "Usuario",
-											"type": "String"
-										},
-										{
-											"name": "Clave",
-											"type": "Byte[]"
-										},
-										{
-											"name": "Iniciales",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Fecha_creacion",
-											"type": "DateTime"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cedula",
-											"type": "String"
-										},
-										{
-											"name": "Tipo_Documento",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[Users]"
-								}
-							}
-						]
-					},
-					{
-						"name": "MedioVenta",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[MedioVenta]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[MedioVenta]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() FechaCarga,cod_medio,descripcion,Domicilio,URL_estados,cod_tipomedio FROM dbo.MedioVenta",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[MedioVenta]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "cod_medio",
-											"type": "Int32"
-										},
-										{
-											"name": "descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Domicilio",
-											"type": "Int32"
-										},
-										{
-											"name": "URL_estados",
-											"type": "String"
-										},
-										{
-											"name": "cod_tipomedio",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[MedioVenta]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosQuito",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "cod_medio",
-											"type": "Int32"
-										},
-										{
-											"name": "descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Domicilio",
-											"type": "Int32"
-										},
-										{
-											"name": "URL_estados",
-											"type": "String"
-										},
-										{
-											"name": "cod_tipomedio",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[MedioVenta]"
-								}
-							}
-						]
-					},
-					{
-						"name": "ST_GrupoTarjeta",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dsa_ecu_sg].[ST_Transaccional]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[ST_Transaccional]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": {
-									"value": "select GETDATE() AS FechaCarga,id_grupo_tarjeta, Descripcion\nfrom dbo.ST_Grupo_Tarjeta",
-									"type": "Expression"
-								},
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[ST_Grupo_Tarjeta]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "id_grupo_tarjeta",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[ST_Grupo_Tarjeta]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": "GerenteNacional_21"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "id_grupo_tarjeta",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[ST_Grupo_Tarjeta]"
-								}
-							}
-						]
-					},
-					{
-						"name": "ST_OrigenTransaccion",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dsa_ecu_sg].[ST_Transaccional]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[ST_Transaccional]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": {
-									"value": "select GETDATE() AS FechaCarga,id_origen, Descripcion\nfrom dbo.ST_Origen_Transaccion",
-									"type": "Expression"
-								},
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE dsa_ecu_sg.[ST_Origen_Transaccion] ",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "id_origen",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[ST_Origen_Transaccion]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.ServidorQuito",
-										"type": "Expression"
-									},
-									"cw_baseDatos": "GerenteNacional_21"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "id_origen",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[ST_Origen_Transaccion]"
-								}
-							}
-						]
-					}
-				],
-				"parameters": {
-					"ServidorQuito": {
-						"type": "string",
-						"defaultValue": "SAZGERENTEDBUIO"
-					},
-					"BaseDatosQuito": {
-						"type": "string",
-						"defaultValue": "SQLGerente_19"
-					},
-					"ServidorGuayaquil": {
-						"type": "string",
-						"defaultValue": "SAZGERENTEDBUIO"
-					},
-					"BaseDatosGuayaquil": {
-						"type": "string",
-						"defaultValue": "SQLGerente_19"
-					}
-				},
-				"folder": {
-					"name": "dsa_SistemaGerenteEcu"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_SistemaGerenteEcu')]",
-				"[concat(variables('factoryId'), '/datasets/ds_dwh')]",
-				"[concat(variables('factoryId'), '/linkedServices/linked_storage')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidad')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -147984,6 +145970,159 @@
 							"referenceName": "linked_dwh",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "dim_MedioVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_dim",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaMedioVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "dim_MenuVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_dim",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaMenuVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "dim_CanalMenuMedio",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_dim",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaCanalMenuMedio",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"parameters": {
@@ -155083,6 +153222,261 @@
 							"referenceName": "linked_dwh",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "ope_FacPosVentaHoraAcumulada_App",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPosVentaHoraAcumulada_App",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_FacSgVentaAcumulada_App",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacSgVentaAcumulada_App",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_FacSgVentaMix_App",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacSgVentaMix_App",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_FacSgVentaDiaria_App",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacSgVentaDiaria_App",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_FacPosVentaHora_App",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPosVentaHora_App",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"parameters": {
@@ -156661,6 +155055,400 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/linked_dwh')]",
+				"[concat(variables('factoryId'), '/linkedServices/linked_dwh_xl')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Info_Suscripcion_Proceso')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Operaciones_Venta_Acum_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Operaciones",
+				"activities": [
+					{
+						"name": "ope_FacSgVentaDiaria",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "ope_FacMpVentaKiosko",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacSgVentaDiaria2017",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh_xl",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_FacSgVentaAcumulada",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "ope_FacSgVentaDiaria",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacSgVentaAcumulada",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh_xl",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_FacSgCajaChica",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacSgCajaChica",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh_xl",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_FacSgPresupuestoCch",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacSgPresupuestoCch",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh_xl",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_FacSgAuditoria",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacSgAuditoria",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh_xl",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Carga Info Sus Venta",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ope_FacSgVentaAcumulada",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "ope_FacSgAuditoria",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "ope_FacSgPresupuestoCch",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "ope_FacSgCajaChica",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Proceso": "VENTA_ECU",
+								"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Ecu"
+							}
+						}
+					},
+					{
+						"name": "ope_FacMpVentaKiosko",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacMpVentaKiosko",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh_xl",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "String",
+						"defaultValue": "0"
+					},
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_OperacionesEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/linked_dwh_xl')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Info_Suscripcion_Proceso')]"
 			]
@@ -164030,397 +162818,2263 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pl_dwh_Operaciones_Venta_Acum_Ecu')]",
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_Catalogo_2')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "Carga Información Operaciones",
 				"activities": [
 					{
-						"name": "ope_FacSgVentaDiaria",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
+						"name": "Rubros",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
 							{
-								"activity": "ope_FacMpVentaKiosko",
-								"dependencyConditions": [
-									"Completed"
-								]
+								"name": "Source",
+								"value": "[[dbo].[Rubros]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[Rubros]"
 							}
 						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
 						"typeProperties": {
-							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dwh_ecu_ope",
-									"type": "String"
-								},
-								"IDCadenaSistemaGerente": {
-									"value": {
-										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"Procedimiento": {
-									"value": "usp_CargaFacSgVentaDiaria2017",
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Rubros,Cod_Grupo,Cta_Axapta,Descripcion,Tipo,Estado,OrdenPyG FROM dbo.Rubros",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[Rubros]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
 								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
 							}
 						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh_xl",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "ope_FacSgVentaAcumulada",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
+						"inputs": [
 							{
-								"activity": "ope_FacSgVentaDiaria",
-								"dependencyConditions": [
-									"Succeeded"
-								]
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Rubros",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Grupo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cta_Axapta",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Tipo",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "OrdenPyG",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Rubros]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
 							}
 						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dwh_ecu_ope",
-									"type": "String"
-								},
-								"IDCadenaSistemaGerente": {
-									"value": {
-										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"Procedimiento": {
-									"value": "usp_CargaFacSgVentaAcumulada",
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Rubros",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Grupo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cta_Axapta",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Tipo",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "OrdenPyG",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[Rubros]"
 								}
 							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh_xl",
-							"type": "LinkedServiceReference"
-						}
+						]
 					},
 					{
-						"name": "ope_FacSgCajaChica",
-						"type": "SqlServerStoredProcedure",
+						"name": "SubRecet",
+						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
-							"retry": 0,
+							"retry": 3,
 							"retryIntervalInSeconds": 30,
 							"secureOutput": false,
 							"secureInput": false
 						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dwh_ecu_ope",
-									"type": "String"
-								},
-								"IDCadenaSistemaGerente": {
-									"value": {
-										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"Procedimiento": {
-									"value": "usp_CargaFacSgCajaChica",
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh_xl",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "ope_FacSgPresupuestoCch",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dwh_ecu_ope",
-									"type": "String"
-								},
-								"IDCadenaSistemaGerente": {
-									"value": {
-										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"Procedimiento": {
-									"value": "usp_CargaFacSgPresupuestoCch",
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh_xl",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "ope_FacSgAuditoria",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dwh_ecu_ope",
-									"type": "String"
-								},
-								"IDCadenaSistemaGerente": {
-									"value": {
-										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"Procedimiento": {
-									"value": "usp_CargaFacSgAuditoria",
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh_xl",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Carga Info Sus Venta",
-						"type": "ExecutePipeline",
-						"dependsOn": [
+						"userProperties": [
 							{
-								"activity": "ope_FacSgVentaAcumulada",
-								"dependencyConditions": [
-									"Completed"
-								]
+								"name": "Source",
+								"value": "[[dbo].[SubRecet]"
 							},
 							{
-								"activity": "ope_FacSgAuditoria",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "ope_FacSgPresupuestoCch",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "ope_FacSgCajaChica",
-								"dependencyConditions": [
-									"Completed"
-								]
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[SubRecet]"
 							}
 						],
-						"userProperties": [],
 						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
-								"type": "PipelineReference"
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Subrecet,Cod_Cadena,Tipo_Subreceta,Costo,Descripcion,Num_Subreceta,Unidad_Receta,Unidad_Compra,Unidad_Inventario,Estado FROM dbo.SubRecet",
+								"partitionOption": "None"
 							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Proceso": "VENTA_ECU",
-								"SP": "admin_btc.usp_CargaInfoSuscripcion_Venta_Ecu"
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[SubRecet]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
 							}
-						}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Subrecet",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Tipo_Subreceta",
+											"type": "String"
+										},
+										{
+											"name": "Costo",
+											"type": "Double"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Num_Subreceta",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Receta",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Compra",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Inventario",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[SubRecet]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Subrecet",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Tipo_Subreceta",
+											"type": "String"
+										},
+										{
+											"name": "Costo",
+											"type": "Double"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Num_Subreceta",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Receta",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Compra",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Inventario",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[SubRecet]"
+								}
+							}
+						]
 					},
 					{
-						"name": "ope_FacMpVentaKiosko",
-						"type": "SqlServerStoredProcedure",
+						"name": "SubrecetaToma",
+						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
-							"retry": 0,
+							"retry": 3,
 							"retryIntervalInSeconds": 30,
 							"secureOutput": false,
 							"secureInput": false
 						},
-						"userProperties": [],
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[SubrecetaToma]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[SubrecetaToma]"
+							}
+						],
 						"typeProperties": {
-							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dwh_ecu_ope",
-									"type": "String"
-								},
-								"IDCadenaSistemaGerente": {
-									"value": {
-										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"Procedimiento": {
-									"value": "usp_CargaFacMpVentaKiosko",
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Cadena,Cod_Subreceta FROM dbo.SubrecetaToma",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[SubrecetaToma]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
 								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
 							}
 						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh_xl",
-							"type": "LinkedServiceReference"
-						}
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Subreceta",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[SubrecetaToma]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Subreceta",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[SubrecetaToma]"
+								}
+							}
+						]
+					},
+					{
+						"name": "SubRecetaTrans",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[SubRecetaTrans]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[SubRecetaTrans]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_SubReceta_Trans,Cod_Subrecet,Cod_Articulo,Cod_Articulo_Sub,Cantidad,Estado,NumSubreceta FROM dbo.SubRecetaTrans",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[SubRecetaTrans]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_SubReceta_Trans",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Subrecet",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Articulo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Articulo_Sub",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "NumSubreceta",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[SubRecetaTrans]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_SubReceta_Trans",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Subrecet",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Articulo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Articulo_Sub",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "NumSubreceta",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[SubRecetaTrans]"
+								}
+							}
+						]
+					},
+					{
+						"name": "SubRubros",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[SubRubros]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[SubRubros]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Id_SubRubros,Cod_Rubros,Descripcion,Cod_SubRubros,Estado FROM dbo.SubRubros",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[SubRubros]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Id_SubRubros",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Rubros",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Cod_SubRubros",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[SubRubros]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Id_SubRubros",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Rubros",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Cod_SubRubros",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[SubRubros]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TipoCCC",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[TipoCCC]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[TipoCCC]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Canje,Descripcion,Estado FROM dbo.TipoCCC",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoCCC]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Canje",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[TipoCCC]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Canje",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[TipoCCC]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TipoFormaPago",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[TipoFormaPago]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[TipoFormaPago]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_TipoF,Descripcion,Estado,Cod_Pais FROM dbo.TipoFormaPago",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoFormaPago]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipoF",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Pais",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[TipoFormaPago]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipoF",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Pais",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[TipoFormaPago]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TipoMov",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[TipoMov]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[TipoMov]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_TipMovInv,Inicial_Secuencia,Descripcion,Estado,Tipo FROM dbo.TipoMov",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoMov]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipMovInv",
+											"type": "Int32"
+										},
+										{
+											"name": "Inicial_Secuencia",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Tipo",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[TipoMov]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipMovInv",
+											"type": "Int32"
+										},
+										{
+											"name": "Inicial_Secuencia",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Tipo",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[TipoMov]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TipoNovedad",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[TipoNovedad]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[TipoNovedad]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_TipoNovedad,Descripcion,Estado FROM dbo.TipoNovedad",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoNovedad]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipoNovedad",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[TipoNovedad]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipoNovedad",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[TipoNovedad]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TipoRestaurante",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[TipoRestaurante]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[TipoRestaurante]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_TipoRestaurante,Nombre,Estado FROM dbo.TipoRestaurante",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TipoRestaurante]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipoRestaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[TipoRestaurante]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipoRestaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[TipoRestaurante]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TiposCuenta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[TiposCuenta]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[TiposCuenta]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Tipo,Descripcion,Modulo,Estado FROM dbo.TiposCuenta",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[TiposCuenta]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Tipo",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Modulo",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[TiposCuenta]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Tipo",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Modulo",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[TiposCuenta]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Ubicacion",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Ubicacion]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[Ubicacion]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Ubicacion,Descripcion,Estado FROM dbo.Ubicacion",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[Ubicacion]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Ubicacion",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Ubicacion]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Ubicacion",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[Ubicacion]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Users",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Users]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[Users]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Usuario,Cod_Perfil,Usuario,Clave,Iniciales,Descripcion,Fecha_creacion,Estado,Cedula,Tipo_Documento FROM dbo.Users",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[Users]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Perfil",
+											"type": "Int32"
+										},
+										{
+											"name": "Usuario",
+											"type": "String"
+										},
+										{
+											"name": "Clave",
+											"type": "Byte[]"
+										},
+										{
+											"name": "Iniciales",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cedula",
+											"type": "String"
+										},
+										{
+											"name": "Tipo_Documento",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Users]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Perfil",
+											"type": "Int32"
+										},
+										{
+											"name": "Usuario",
+											"type": "String"
+										},
+										{
+											"name": "Clave",
+											"type": "Byte[]"
+										},
+										{
+											"name": "Iniciales",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cedula",
+											"type": "String"
+										},
+										{
+											"name": "Tipo_Documento",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[Users]"
+								}
+							}
+						]
+					},
+					{
+						"name": "MedioVenta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[MedioVenta]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[MedioVenta]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() FechaCarga,cod_medio,descripcion,Domicilio,URL_estados,cod_tipomedio FROM dbo.MedioVenta",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[MedioVenta]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_medio",
+											"type": "Int32"
+										},
+										{
+											"name": "descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Domicilio",
+											"type": "Int32"
+										},
+										{
+											"name": "URL_estados",
+											"type": "String"
+										},
+										{
+											"name": "cod_tipomedio",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[MedioVenta]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "cod_medio",
+											"type": "Int32"
+										},
+										{
+											"name": "descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Domicilio",
+											"type": "Int32"
+										},
+										{
+											"name": "URL_estados",
+											"type": "String"
+										},
+										{
+											"name": "cod_tipomedio",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[MedioVenta]"
+								}
+							}
+						]
+					},
+					{
+						"name": "ST_GrupoTarjeta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dsa_ecu_sg].[ST_Transaccional]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[ST_Transaccional]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "select GETDATE() AS FechaCarga,id_grupo_tarjeta, Descripcion\nfrom dbo.ST_Grupo_Tarjeta",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[ST_Grupo_Tarjeta]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "id_grupo_tarjeta",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[ST_Grupo_Tarjeta]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": "GerenteNacional_21"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "id_grupo_tarjeta",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[ST_Grupo_Tarjeta]"
+								}
+							}
+						]
+					},
+					{
+						"name": "ST_OrigenTransaccion",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dsa_ecu_sg].[ST_Transaccional]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[ST_Transaccional]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "select GETDATE() AS FechaCarga,id_origen, Descripcion\nfrom dbo.ST_Origen_Transaccion",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE dsa_ecu_sg.[ST_Origen_Transaccion] ",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "id_origen",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[ST_Origen_Transaccion]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": "GerenteNacional_21"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "id_origen",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[ST_Origen_Transaccion]"
+								}
+							}
+						]
+					},
+					{
+						"name": "MedioMenu",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[MedioMenu]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[MedioMenu]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() FechaCarga, Cod_Menu, Descripcion, Estado FROM dbo.MedioMenu",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[MedioMenu]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Menu",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[MedioMenu]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Menu",
+											"type": "Int32"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[MedioMenu]"
+								}
+							}
+						]
+					},
+					{
+						"name": "CanalMenuMedio",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[CanalMenuMedio]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[CanalMenuMedio]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() FechaCarga, Cod_MedioCanalMenu, Cod_Canal, Cod_Menu, Cod_Medio, Sistema, Estado\nFROM dbo.CanalMenuMedio",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[CanalMenuMedio]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_MedioCanalMenu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Canal",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Menu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Medio",
+											"type": "Int32"
+										},
+										{
+											"name": "Sistema",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[CanalMenuMedio]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_MedioCanalMenu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Canal",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Menu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Medio",
+											"type": "Int32"
+										},
+										{
+											"name": "Sistema",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[CanalMenuMedio]"
+								}
+							}
+						]
 					}
 				],
 				"parameters": {
-					"IDCadenaSistemaGerente": {
-						"type": "String",
-						"defaultValue": "0"
+					"ServidorQuito": {
+						"type": "string",
+						"defaultValue": "SAZGERENTEDBUIO"
 					},
-					"Pais": {
-						"type": "String",
-						"defaultValue": "ECU"
+					"BaseDatosQuito": {
+						"type": "string",
+						"defaultValue": "SQLGerente_19"
 					},
-					"TipoCarga": {
-						"type": "String",
-						"defaultValue": "MANUAL"
+					"ServidorGuayaquil": {
+						"type": "string",
+						"defaultValue": "SAZGERENTEDBUIO"
+					},
+					"BaseDatosGuayaquil": {
+						"type": "string",
+						"defaultValue": "SQLGerente_19"
 					}
 				},
 				"folder": {
-					"name": "dwh_OperacionesEcu"
+					"name": "dsa_SistemaGerenteEcu"
 				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/linked_dwh_xl')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Info_Suscripcion_Proceso')]"
+				"[concat(variables('factoryId'), '/datasets/ds_SistemaGerenteEcu')]",
+				"[concat(variables('factoryId'), '/datasets/ds_dwh')]",
+				"[concat(variables('factoryId'), '/linkedServices/linked_storage')]"
 			]
 		}
 	]
