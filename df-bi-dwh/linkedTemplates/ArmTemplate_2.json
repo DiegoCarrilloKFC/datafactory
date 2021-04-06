@@ -10,24 +10,61 @@
 		"linked_ax_ecu_connectionString": {
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"connectionString\"de \"linked_ax_ecu\""
-		},
-		"linked_bi_dev_connectionString": {
-			"type": "secureString",
-			"metadata": "Cadena protegida para \"connectionString\"de \"linked_bi_dev\""
-		},
-		"linked_bi_dev_password": {
-			"type": "secureString",
-			"metadata": "Cadena protegida para \"password\"de \"linked_bi_dev\""
-		},
-		"linked_bi_dev_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "kfc\\viviana.socasi"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteEcu')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_sg_ecu",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": {
+							"value": "@dataset().cw_servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@dataset().cw_baseDatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerente"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "",
+					"table": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteEcu2')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
@@ -1414,39 +1451,6 @@
 				},
 				"connectVia": {
 					"referenceName": "IR-DynamicsAxEcu",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/linked_bi_dev')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Conexión ambiente de desarrollo",
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "SRV-BIDESA-DWH\\DWHTEST"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "dwhSap"
-					}
-				},
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('linked_bi_dev_connectionString')]",
-					"userName": "[parameters('linked_bi_dev_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('linked_bi_dev_password')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "IR-BI-Desarrollo",
 					"type": "IntegrationRuntimeReference"
 				}
 			},
