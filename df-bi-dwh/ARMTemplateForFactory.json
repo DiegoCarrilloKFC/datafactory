@@ -53370,6 +53370,10 @@
 										{
 											"name": "COSTCTRRESPONSIBLEPERSONNAME",
 											"type": "String"
+										},
+										{
+											"name": "COSTCENTERSTANDARDHIERAREA",
+											"type": "String"
 										}
 									],
 									"cw_tableName": "[[dsa_ecu_sap].[centrocosto]"
@@ -57451,6 +57455,262 @@
 								"enablePartitionDiscovery": false
 							}
 						}
+					},
+					{
+						"name": "UnidadMedida",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/UNIDADMEDIDA",
+									"wildcardFileName": {
+										"value": "@Concat('UNIDADMEDIDA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[unidadmedida]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/UNIDADMEDIDA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_UNIT",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_UNIT_COM",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_UNIT_TEC",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_UNIT_SHORT",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_TEXT_LARGE",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[unidadmedida]"
+								}
+							}
+						]
+					},
+					{
+						"name": "DELETEUnidadMedida",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "UnidadMedida",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/UNIDADMEDIDA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/UNIDADMEDIDA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "Division",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/DIVISION",
+									"wildcardFileName": {
+										"value": "@Concat('DIVISION_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[division]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/DIVISION"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "DIVISION",
+											"type": "String"
+										},
+										{
+											"name": "DESCRIPTION",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[division]"
+								}
+							}
+						]
+					},
+					{
+						"name": "DELETEDivision",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Division",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/DIVISION"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/DIVISION"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
 					}
 				],
 				"parameters": {
@@ -58051,399 +58311,7 @@
 								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[PedidoVenta]",
 								"disableMetricsCollection": false
 							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"mappings": [
-									{
-										"source": {
-											"name": "FECHACARGA",
-											"type": "String"
-										},
-										"sink": {
-											"name": "FECHACARGA"
-										}
-									},
-									{
-										"source": {
-											"name": "MANDT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "MANDT"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESDOCUMENT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESDOCUMENT"
-										}
-									},
-									{
-										"source": {
-											"name": "SDDOCUMENTCATEGORY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SDDOCUMENTCATEGORY"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESDOCUMENTTYPE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESDOCUMENTTYPE"
-										}
-									},
-									{
-										"source": {
-											"name": "CREATEDBYUSER",
-											"type": "String"
-										},
-										"sink": {
-											"name": "CREATEDBYUSER"
-										}
-									},
-									{
-										"source": {
-											"name": "LASTCHANGEDBYUSER",
-											"type": "String"
-										},
-										"sink": {
-											"name": "LASTCHANGEDBYUSER"
-										}
-									},
-									{
-										"source": {
-											"name": "CREATIONDATE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "CREATIONDATE"
-										}
-									},
-									{
-										"source": {
-											"name": "CREATIONTIME",
-											"type": "String"
-										},
-										"sink": {
-											"name": "CREATIONTIME"
-										}
-									},
-									{
-										"source": {
-											"name": "LASTCHANGEDATE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "LASTCHANGEDATE"
-										}
-									},
-									{
-										"source": {
-											"name": "LASTCHANGEDATETIME",
-											"type": "String"
-										},
-										"sink": {
-											"name": "LASTCHANGEDATETIME"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESORGANIZATION",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESORGANIZATION"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESGROUP",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESGROUP"
-										}
-									},
-									{
-										"source": {
-											"name": "SOLDTOPARTY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SOLDTOPARTY"
-										}
-									},
-									{
-										"source": {
-											"name": "CUSTOMERGROUP",
-											"type": "String"
-										},
-										"sink": {
-											"name": "CUSTOMERGROUP"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESDOCUMENTDATE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESDOCUMENTDATE"
-										}
-									},
-									{
-										"source": {
-											"name": "PURCHASEORDERBYCUSTOMER",
-											"type": "String"
-										},
-										"sink": {
-											"name": "PURCHASEORDERBYCUSTOMER"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGCOMPANYCODE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLINGCOMPANYCODE"
-										}
-									},
-									{
-										"source": {
-											"name": "PAYMENTMETHOD",
-											"type": "String"
-										},
-										"sink": {
-											"name": "PAYMENTMETHOD"
-										}
-									},
-									{
-										"source": {
-											"name": "OVERALLSDPROCESSSTATUS",
-											"type": "String"
-										},
-										"sink": {
-											"name": "OVERALLSDPROCESSSTATUS"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESDOCUMENTITEM",
-											"type": "Int16"
-										},
-										"sink": {
-											"name": "SALESDOCUMENTITEM"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESDOCUMENTITEMCATEGORY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESDOCUMENTITEMCATEGORY"
-										}
-									},
-									{
-										"source": {
-											"name": "MATERIAL",
-											"type": "String"
-										},
-										"sink": {
-											"name": "MATERIAL"
-										}
-									},
-									{
-										"source": {
-											"name": "MATERIALGROUP",
-											"type": "String"
-										},
-										"sink": {
-											"name": "MATERIALGROUP"
-										}
-									},
-									{
-										"source": {
-											"name": "ORDERQUANTITY",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "ORDERQUANTITY"
-										}
-									},
-									{
-										"source": {
-											"name": "ORDERQUANTITYUNIT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "ORDERQUANTITYUNIT"
-										}
-									},
-									{
-										"source": {
-											"name": "BASEUNIT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BASEUNIT"
-										}
-									},
-									{
-										"source": {
-											"name": "REQUESTEDQUANTITY",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "REQUESTEDQUANTITY"
-										}
-									},
-									{
-										"source": {
-											"name": "REQUESTEDQUANTITYUNIT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "REQUESTEDQUANTITYUNIT"
-										}
-									},
-									{
-										"source": {
-											"name": "REQUESTEDQUANTITYINBASEUNIT",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "REQUESTEDQUANTITYINBASEUNIT"
-										}
-									},
-									{
-										"source": {
-											"name": "NETAMOUNT",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "NETAMOUNT"
-										}
-									},
-									{
-										"source": {
-											"name": "TRANSACTIONCURRENCY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "TRANSACTIONCURRENCY"
-										}
-									},
-									{
-										"source": {
-											"name": "NETPRICEAMOUNT",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "NETPRICEAMOUNT"
-										}
-									},
-									{
-										"source": {
-											"name": "NETPRICEQUANTITY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "NETPRICEQUANTITY"
-										}
-									},
-									{
-										"source": {
-											"name": "NETPRICEQUANTITYUNIT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "NETPRICEQUANTITYUNIT"
-										}
-									},
-									{
-										"source": {
-											"name": "COSTAMOUNT",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "COSTAMOUNT"
-										}
-									},
-									{
-										"source": {
-											"name": "PLANT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "PLANT"
-										}
-									},
-									{
-										"source": {
-											"name": "ORIGINALPLANT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "ORIGINALPLANT"
-										}
-									},
-									{
-										"source": {
-											"name": "STORAGELOCATION",
-											"type": "String"
-										},
-										"sink": {
-											"name": "STORAGELOCATION"
-										}
-									},
-									{
-										"source": {
-											"name": "DELIVERYGROUP",
-											"type": "Int32"
-										},
-										"sink": {
-											"name": "DELIVERYGROUP"
-										}
-									},
-									{
-										"source": {
-											"name": "PROFITCENTER",
-											"type": "String"
-										},
-										"sink": {
-											"name": "PROFITCENTER"
-										}
-									},
-									{
-										"source": {
-											"name": "TOTALDELIVERYSTATUS",
-											"type": "String"
-										},
-										"sink": {
-											"name": "TOTALDELIVERYSTATUS"
-										}
-									},
-									{
-										"source": {
-											"name": "DELIVERYSTATUS",
-											"type": "String"
-										},
-										"sink": {
-											"name": "DELIVERYSTATUS"
-										}
-									}
-								]
-							}
+							"enableStaging": false
 						},
 						"inputs": [
 							{
@@ -148616,6 +148484,57 @@
 							"referenceName": "linked_dwh",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "dim_CargaDenominacionProyecto",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_dim",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaDenominacionProyecto",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"parameters": {
@@ -163773,180 +163692,6 @@
 				},
 				"annotations": [],
 				"type": "AzureSqlDWTable",
-				"structure": [
-					{
-						"name": "FECHACARGA",
-						"type": "String"
-					},
-					{
-						"name": "MANDT",
-						"type": "String"
-					},
-					{
-						"name": "SALESDOCUMENT",
-						"type": "String"
-					},
-					{
-						"name": "SDDOCUMENTCATEGORY",
-						"type": "String"
-					},
-					{
-						"name": "SALESDOCUMENTTYPE",
-						"type": "String"
-					},
-					{
-						"name": "CREATEDBYUSER",
-						"type": "String"
-					},
-					{
-						"name": "LASTCHANGEDBYUSER",
-						"type": "String"
-					},
-					{
-						"name": "CREATIONDATE",
-						"type": "String"
-					},
-					{
-						"name": "CREATIONTIME",
-						"type": "String"
-					},
-					{
-						"name": "LASTCHANGEDATE",
-						"type": "String"
-					},
-					{
-						"name": "LASTCHANGEDATETIME",
-						"type": "String"
-					},
-					{
-						"name": "SALESORGANIZATION",
-						"type": "String"
-					},
-					{
-						"name": "SALESGROUP",
-						"type": "String"
-					},
-					{
-						"name": "SOLDTOPARTY",
-						"type": "String"
-					},
-					{
-						"name": "CUSTOMERGROUP",
-						"type": "String"
-					},
-					{
-						"name": "SALESDOCUMENTDATE",
-						"type": "String"
-					},
-					{
-						"name": "PURCHASEORDERBYCUSTOMER",
-						"type": "String"
-					},
-					{
-						"name": "BILLINGCOMPANYCODE",
-						"type": "String"
-					},
-					{
-						"name": "PAYMENTMETHOD",
-						"type": "String"
-					},
-					{
-						"name": "OVERALLSDPROCESSSTATUS",
-						"type": "String"
-					},
-					{
-						"name": "SALESDOCUMENTITEM",
-						"type": "Int32"
-					},
-					{
-						"name": "SALESDOCUMENTITEMCATEGORY",
-						"type": "String"
-					},
-					{
-						"name": "MATERIAL",
-						"type": "String"
-					},
-					{
-						"name": "MATERIALGROUP",
-						"type": "String"
-					},
-					{
-						"name": "ORDERQUANTITY",
-						"type": "Decimal"
-					},
-					{
-						"name": "ORDERQUANTITYUNIT",
-						"type": "String"
-					},
-					{
-						"name": "BASEUNIT",
-						"type": "String"
-					},
-					{
-						"name": "REQUESTEDQUANTITY",
-						"type": "Decimal"
-					},
-					{
-						"name": "REQUESTEDQUANTITYUNIT",
-						"type": "String"
-					},
-					{
-						"name": "REQUESTEDQUANTITYINBASEUNIT",
-						"type": "Decimal"
-					},
-					{
-						"name": "NETAMOUNT",
-						"type": "Decimal"
-					},
-					{
-						"name": "TRANSACTIONCURRENCY",
-						"type": "String"
-					},
-					{
-						"name": "NETPRICEAMOUNT",
-						"type": "Decimal"
-					},
-					{
-						"name": "NETPRICEQUANTITY",
-						"type": "String"
-					},
-					{
-						"name": "NETPRICEQUANTITYUNIT",
-						"type": "String"
-					},
-					{
-						"name": "COSTAMOUNT",
-						"type": "Decimal"
-					},
-					{
-						"name": "PLANT",
-						"type": "String"
-					},
-					{
-						"name": "ORIGINALPLANT",
-						"type": "String"
-					},
-					{
-						"name": "STORAGELOCATION",
-						"type": "String"
-					},
-					{
-						"name": "DELIVERYGROUP",
-						"type": "Int32"
-					},
-					{
-						"name": "PROFITCENTER",
-						"type": "String"
-					},
-					{
-						"name": "TOTALDELIVERYSTATUS",
-						"type": "String"
-					},
-					{
-						"name": "DELIVERYSTATUS",
-						"type": "String"
-					}
-				],
 				"typeProperties": {
 					"tableName": "[[dsa_ecu_sap].[PedidoVenta]"
 				}
