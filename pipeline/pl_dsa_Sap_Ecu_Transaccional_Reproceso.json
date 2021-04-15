@@ -20,6 +20,7 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
+							"modifiedDatetimeStart": "2021-04-15T11:00:00.000Z",
 							"wildcardFolderPath": "reproceso/contabilidad",
 							"wildcardFileName": {
 								"value": "@Concat('ENTRADADIARIO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
@@ -54,8 +55,8 @@
 				]
 			},
 			{
-				"name": "Delete1",
-				"type": "Delete",
+				"name": "Copy data1",
+				"type": "Copy",
 				"dependsOn": [
 					{
 						"activity": "EntradaDiario",
@@ -73,26 +74,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "reproceso/contabiliadad"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/reproceso/contabilidad"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"enablePartitionDiscovery": false
-					}
+					"enableStaging": false
 				}
 			}
 		],
