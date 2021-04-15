@@ -1,0 +1,240 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "df-bi-dwh"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_admin_Escalar_DWH')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Ejecuta proceso de escalado del DWH\nSe debe setear el parametro DWU.",
+				"activities": [
+					{
+						"name": "Escalar DWH",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Espera",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": {
+									"value": "--Escalar Data Warehouse\nALTER DATABASE dwh\nMODIFY (SERVICE_OBJECTIVE = '@{pipeline().parameters.DWU}');\n\nSELECT 'ok' AS Resultado",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_master",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Verificar Estatus",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Escalar DWH",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Verificar estatus de escalado cada 5 segudnos\nWHILE \n(\n    SELECT TOP 1 state_desc\n    FROM sys.dm_operation_status\n    WHERE \n        1=1\n        AND resource_type_desc = 'Database'\n        AND major_resource_id = 'dwh'\n        AND operation = 'ALTER DATABASE'\n    ORDER BY\n        start_time DESC\n) = 'IN_PROGRESS'\nBEGIN\n    RAISERROR('El escalado de la base de datos está en progreso',0,0) WITH NOWAIT;\n    WAITFOR DELAY '00:00:05';\nEND\nWAITFOR DELAY '00:00:30';\nSelect 'Complete' AS Resultado;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_master",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Consultar_dwu_act",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "---Consultar dwu Actual\nSELECT ds.service_objective AS DWU\nFROM    sys.database_service_objectives   AS ds\nJOIN    sys.databases                     AS db ON ds.database_id = db.database_id\nWHERE db.name = 'dwh'",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_master",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Insertar log dwu",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Consultar_dwu_act",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": {
+									"value": "---Ingreso de registro en el log\nINSERT INTO [admin_btc].[LogEscalarDWH]\nSELECT CONVERT(DATETIME,DATEADD(HH, -5, GETDATE())), '@{activity('Consultar_dwu_act').output.firstRow.DWU}', NULL,NULL\n\nSELECT 'ok' AS Resultado",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Consultar_dwu_obj",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Verificar Estatus",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "---Consultar dwu Actual\nSELECT ds.service_objective AS DWU\nFROM    sys.database_service_objectives   AS ds\nJOIN    sys.databases                     AS db ON ds.database_id = db.database_id\nWHERE db.name = 'dwh'",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_master",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Actualizar log dwu",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Consultar_dwu_obj",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Consultar_dwu_act",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": {
+									"value": "---Insertar datos log fin escalar dwh\nIF EXISTS \n  (\n  ---Buscar si el registro existe \n    SELECT * FROM [admin_btc].[LogEscalarDWH] \n\tWHERE CONVERT(VARCHAR(10),[FechaInicio],112) = CONVERT(VARCHAR(10),DATEADD(HH, -5, GETDATE()),112) and [DWUActual]='@{activity('Consultar_dwu_act').output.firstRow.DWU}' and [FechaFin] is null and [DWUObjetivo] is null\n  )\n    BEGIN\n\t---Actualizacion campos finalizacion de registro en el log\n      UPDATE [admin_btc].[LogEscalarDWH]\n\t\tSET [FechaFin]=CONVERT(DATETIME,DATEADD(HH, -5, GETDATE())) , [DWUObjetivo]='@{activity('Consultar_dwu_obj').output.firstRow.DWU}'\n\t\tWHERE CONVERT(VARCHAR(10),[FechaInicio],112) = CONVERT(VARCHAR(10),DATEADD(HH, -5, GETDATE()),112) and [DWUActual]='@{activity('Consultar_dwu_act').output.firstRow.DWU}' and [FechaFin] is null and [DWUObjetivo] is null\n    END\nELSE\n\tINSERT INTO [admin_btc].[LogEscalarDWH]\n\tSELECT NULL,NULL,CONVERT(DATETIME,DATEADD(HH, -5, GETDATE())), '@{activity('Consultar_dwu_obj').output.firstRow.DWU}'\n\nSELECT 'ok' AS Resultado",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Espera",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 60
+						}
+					}
+				],
+				"parameters": {
+					"DWU": {
+						"type": "string",
+						"defaultValue": "DW100c"
+					}
+				},
+				"folder": {
+					"name": "Admin_dwh"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
