@@ -1,0 +1,7269 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "df-bi-dwh"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_admin_Escalar_DWH')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Ejecuta proceso de escalado del DWH\nSe debe setear el parametro DWU.",
+				"activities": [
+					{
+						"name": "Escalar DWH",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Insertar log dwu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": {
+									"value": "--Escalar Data Warehouse\nALTER DATABASE dwh\nMODIFY (SERVICE_OBJECTIVE = '@{pipeline().parameters.DWU}');\n\nSELECT 'ok' AS Resultado",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_master",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Verificar Estatus",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Escalar DWH",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Verificar estatus de escalado cada 5 segudnos\nWHILE \n(\n    SELECT TOP 1 state_desc\n    FROM sys.dm_operation_status\n    WHERE \n        1=1\n        AND resource_type_desc = 'Database'\n        AND major_resource_id = 'dwh'\n        AND operation = 'ALTER DATABASE'\n    ORDER BY\n        start_time DESC\n) = 'IN_PROGRESS'\nBEGIN\n    RAISERROR('El escalado de la base de datos está en progreso',0,0) WITH NOWAIT;\n    WAITFOR DELAY '00:00:05';\nEND\nWAITFOR DELAY '00:00:30';\nSelect 'Complete' AS Resultado;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_master",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Consultar_dwu_act",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "---Consultar dwu Actual\nSELECT ds.service_objective AS DWU\nFROM    sys.database_service_objectives   AS ds\nJOIN    sys.databases                     AS db ON ds.database_id = db.database_id\nWHERE db.name = 'dwh'",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_master",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Insertar log dwu",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Consultar_dwu_act",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": {
+									"value": "---Ingreso de registro en el log\nINSERT INTO [admin_btc].[LogEscalarDWH]\nSELECT CONVERT(DATETIME,DATEADD(HH, -5, GETDATE())), '@{activity('Consultar_dwu_act').output.firstRow.DWU}', NULL,NULL\n\nSELECT 'ok' AS Resultado",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Consultar_dwu_obj",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Verificar Estatus",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "---Consultar dwu Actual\nSELECT ds.service_objective AS DWU\nFROM    sys.database_service_objectives   AS ds\nJOIN    sys.databases                     AS db ON ds.database_id = db.database_id\nWHERE db.name = 'dwh'",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_master",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "Actualizar log dwu",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Consultar_dwu_obj",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": {
+									"value": "---Insertar datos log fin escalar dwh\nIF EXISTS \n  (\n  ---Buscar si el registro existe \n    SELECT * FROM [admin_btc].[LogEscalarDWH] \n\tWHERE CONVERT(VARCHAR(10),[FechaInicio],112) = CONVERT(VARCHAR(10),DATEADD(HH, -5, GETDATE()),112) and [DWUActual]='@{activity('Consultar_dwu_act').output.firstRow.DWU}' and [FechaFin] is null and [DWUObjetivo] is null\n  )\n    BEGIN\n\t---Actualizacion campos finalizacion de registro en el log\n      UPDATE [admin_btc].[LogEscalarDWH]\n\t\tSET [FechaFin]=CONVERT(DATETIME,DATEADD(HH, -5, GETDATE())) , [DWUObjetivo]='@{activity('Consultar_dwu_obj').output.firstRow.DWU}'\n\t\tWHERE CONVERT(VARCHAR(10),[FechaInicio],112) = CONVERT(VARCHAR(10),DATEADD(HH, -5, GETDATE()),112) and [DWUActual]='@{activity('Consultar_dwu_act').output.firstRow.DWU}' and [FechaFin] is null and [DWUObjetivo] is null\n    END\nELSE\n\t---Ingreso de registro en el log\n\tRAISERROR('Proceso no completado',16,1)\n\nSELECT 'ok' AS Resultado",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_master",
+								"type": "DatasetReference"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"DWU": {
+						"type": "string",
+						"defaultValue": "DW100c"
+					}
+				},
+				"folder": {
+					"name": "Admin_dwh"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Domicilio_Chl_Transaccional')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Detalle_Factura",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Detalle_Factura]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Detalle_Factura]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,det.Cod_Detalle_Factura,det.Cod_Factura,det.Cod_Plu,det.Cod_Plu_Promocion,det.Cantidad,det.Precio,det.Iva,det.Costo,det.Orden,Descuento_con_Impuesto,Descuento FROM dbo.Detalle_Factura det INNER JOIN dbo.Factura_Domicilio fac ON det.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Detalle_Factura]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Plu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Plu_Promocion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Precio",
+											"type": "Double"
+										},
+										{
+											"name": "Iva",
+											"type": "Double"
+										},
+										{
+											"name": "Costo",
+											"type": "Double"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Descuento_con_Impuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Descuento",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[dbo].[Detalle_Factura]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Plu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Plu_Promocion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Precio",
+											"type": "Double"
+										},
+										{
+											"name": "Iva",
+											"type": "Double"
+										},
+										{
+											"name": "Costo",
+											"type": "Double"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Descuento_con_Impuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Descuento",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Detalle_Factura]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_Anulacion",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_Anulacion]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_Anulacion]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Factura,Cod_Motivo,Cod_Administrador,Cod_Motorolo,Observacion,Fecha_anulacion FROM dbo.Factura_Anulacion WHERE CAST(Fecha_anulacion AS DATE) BETWEEN '@{pipeline().parameters.FechaDesde}' AND DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Factura_Anulacion]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Motivo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Observacion",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_anulacion",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_Anulacion]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Motivo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Observacion",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_anulacion",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_Anulacion]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_Domicilio",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_Domicilio]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_Domicilio]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,fac.Cod_Factura,fac.Cod_Restaurante,fac.Cod_Cliente_Domicilio,fac.Cod_Periodo,fac.Cod_Usuario,fac.Cod_Administrador,fac.Estado_Transferencia,fac.Fecha,fac.Comentario,fac.Estado,fac.Consumidor_Final,fac.Cod_Telefono,fac.Transferencia,fac.Fecha_Creacion,fac.DescuentoIVA,fac.DescuentoNoIVA,fac.Direccion_Alterna,fac.Porcentaje,fac.Cod_Usuario_Descto,fac.Propina,fac.Serie_Dian,fac.Cod_Nota_Credito,fac.Tipo_Facturacion,fac.Cod_Tipo_Comprobante,fac.Clave_Acceso,fac.Numero_Factura,fac.Autorizado,fac.Datos_Adicionales,fac.FechaOperacion,fac.numeroAutorizacion,fac.ControlPendientes,fac.Compensacion,fac.Cod_AppMovil,fac.guiaTracking,fac.TotalBruto,fac.Subtotal,fac.IvaTotal,fac.SubCero,fac.SubImpuesto,fac.Medio,fac.Dispositivo,per.Fecha AS FechaPeriodo, fac.Cod_Desasignacion,fac.CodPersonalDespacho,fac.Nombre,fac.RUC,fac.Direccion,fac.bringg,fac.Cod_Bringg,fac.TipoAsignacion,fac.Impresion,fac.Impresion_Comanda,fac.Impresion_Factura,fac.Solicita_Autorizacion FROM dbo.Factura_Domicilio fac INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Factura_Domicilio]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cliente_Domicilio",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado_Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Comentario",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Consumidor_Final",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Telefono",
+											"type": "Int64"
+										},
+										{
+											"name": "Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "DescuentoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "DescuentoNoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "Direccion_Alterna",
+											"type": "String"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_Usuario_Descto",
+											"type": "Int32"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "Serie_Dian",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Nota_Credito",
+											"type": "String"
+										},
+										{
+											"name": "Tipo_Facturacion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Tipo_Comprobante",
+											"type": "Int32"
+										},
+										{
+											"name": "Clave_Acceso",
+											"type": "String"
+										},
+										{
+											"name": "Numero_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Autorizado",
+											"type": "Int32"
+										},
+										{
+											"name": "Datos_Adicionales",
+											"type": "String"
+										},
+										{
+											"name": "FechaOperacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "numeroAutorizacion",
+											"type": "String"
+										},
+										{
+											"name": "ControlPendientes",
+											"type": "String"
+										},
+										{
+											"name": "Compensacion",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_AppMovil",
+											"type": "String"
+										},
+										{
+											"name": "guiaTracking",
+											"type": "String"
+										},
+										{
+											"name": "TotalBruto",
+											"type": "Double"
+										},
+										{
+											"name": "Subtotal",
+											"type": "Double"
+										},
+										{
+											"name": "IvaTotal",
+											"type": "Double"
+										},
+										{
+											"name": "SubCero",
+											"type": "Double"
+										},
+										{
+											"name": "SubImpuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Medio",
+											"type": "String"
+										},
+										{
+											"name": "Dispositivo",
+											"type": "String"
+										},
+										{
+											"name": "FechaPeriodo",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int64"
+										},
+										{
+											"name": "CodPersonalDespacho",
+											"type": "Int64"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "RUC",
+											"type": "String"
+										},
+										{
+											"name": "Direccion",
+											"type": "String"
+										},
+										{
+											"name": "bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "TipoAsignacion",
+											"type": "String"
+										},
+										{
+											"name": "Impresion",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Comanda",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Factura",
+											"type": "Int32"
+										},
+										{
+											"name": "Solicita_Autorizacion",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_Domicilio]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cliente_Domicilio",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado_Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Comentario",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Consumidor_Final",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Telefono",
+											"type": "Int64"
+										},
+										{
+											"name": "Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "DescuentoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "DescuentoNoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "Direccion_Alterna",
+											"type": "String"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_Usuario_Descto",
+											"type": "Int32"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "Serie_Dian",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Nota_Credito",
+											"type": "String"
+										},
+										{
+											"name": "Tipo_Facturacion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Tipo_Comprobante",
+											"type": "Int32"
+										},
+										{
+											"name": "Clave_Acceso",
+											"type": "String"
+										},
+										{
+											"name": "Numero_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Autorizado",
+											"type": "Int32"
+										},
+										{
+											"name": "Datos_Adicionales",
+											"type": "String"
+										},
+										{
+											"name": "FechaOperacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "numeroAutorizacion",
+											"type": "String"
+										},
+										{
+											"name": "ControlPendientes",
+											"type": "String"
+										},
+										{
+											"name": "Compensacion",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_AppMovil",
+											"type": "String"
+										},
+										{
+											"name": "guiaTracking",
+											"type": "String"
+										},
+										{
+											"name": "TotalBruto",
+											"type": "Double"
+										},
+										{
+											"name": "Subtotal",
+											"type": "Double"
+										},
+										{
+											"name": "IvaTotal",
+											"type": "Double"
+										},
+										{
+											"name": "SubCero",
+											"type": "Double"
+										},
+										{
+											"name": "SubImpuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Medio",
+											"type": "String"
+										},
+										{
+											"name": "Dispositivo",
+											"type": "String"
+										},
+										{
+											"name": "FechaPeriodo",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int64"
+										},
+										{
+											"name": "CodPersonalDespacho",
+											"type": "Int64"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "RUC",
+											"type": "String"
+										},
+										{
+											"name": "Direccion",
+											"type": "String"
+										},
+										{
+											"name": "bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "TipoAsignacion",
+											"type": "String"
+										},
+										{
+											"name": "Impresion",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Comanda",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Factura",
+											"type": "Int32"
+										},
+										{
+											"name": "Solicita_Autorizacion",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_Domicilio]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_FormasPago",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_FormasPago]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_FormasPago]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,ffp.Cod_FFormasPago,ffp.Cod_Factura,ffp.Cod_FormaPago,ffp.Num_Tarjeta,ffp.Num_Seguridad,ffp.Fecha_Caducidad,ffp.Billete,ffp.NumeroCheque,ffp.Banco,ffp.Titular,ffp.Referencia_Billete,ffp.Valor_Billete,ffp.Total_Pagar,ffp.Propina,ffp.ClienteAx,ffp.Cod_Desasignacion,ffp.IDTipoEnvio,ffp.Transaction_id FROM dbo.Factura_FormasPago ffp INNER JOIN dbo.Factura_Domicilio fac ON ffp.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Factura_FormasPago]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_FFormasPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_FormaPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Num_Tarjeta",
+											"type": "String"
+										},
+										{
+											"name": "Num_Seguridad",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_Caducidad",
+											"type": "String"
+										},
+										{
+											"name": "Billete",
+											"type": "Double"
+										},
+										{
+											"name": "NumeroCheque",
+											"type": "String"
+										},
+										{
+											"name": "Banco",
+											"type": "String"
+										},
+										{
+											"name": "Titular",
+											"type": "String"
+										},
+										{
+											"name": "Referencia_Billete",
+											"type": "String"
+										},
+										{
+											"name": "Valor_Billete",
+											"type": "Double"
+										},
+										{
+											"name": "Total_Pagar",
+											"type": "Double"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "ClienteAx",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int32"
+										},
+										{
+											"name": "IDTipoEnvio",
+											"type": "Int32"
+										},
+										{
+											"name": "Transaction_id",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_FormasPago]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_FFormasPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_FormaPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Num_Tarjeta",
+											"type": "String"
+										},
+										{
+											"name": "Num_Seguridad",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_Caducidad",
+											"type": "String"
+										},
+										{
+											"name": "Billete",
+											"type": "Double"
+										},
+										{
+											"name": "NumeroCheque",
+											"type": "String"
+										},
+										{
+											"name": "Banco",
+											"type": "String"
+										},
+										{
+											"name": "Titular",
+											"type": "String"
+										},
+										{
+											"name": "Referencia_Billete",
+											"type": "String"
+										},
+										{
+											"name": "Valor_Billete",
+											"type": "Double"
+										},
+										{
+											"name": "Total_Pagar",
+											"type": "Double"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "ClienteAx",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int32"
+										},
+										{
+											"name": "IDTipoEnvio",
+											"type": "Int32"
+										},
+										{
+											"name": "Transaction_id",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_FormasPago]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_Motorolo",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_Motorolo]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_Motorolo]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,fmo.Cod_Motorolo,fmo.Cod_Factura,fmo.Cod_Periodo,fmo.Cod_Estado,fmo.Fecha FROM dbo.Factura_Motorolo fmo INNER JOIN dbo.Factura_Domicilio fac ON fmo.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Factura_Motorolo]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_Motorolo]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_Motorolo]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Modificador_Detalle_Factura",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Modificador_Detalle_Factura]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Modificador_Detalle_Factura]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,mdf.Cod_Detalle_Factura,mdf.Cod_Modificador FROM dbo.Modificador_Detalle_Factura mdf INNER JOIN dbo.Detalle_Factura det on mdf.Cod_Detalle_Factura=det.Cod_Detalle_Factura INNER JOIN dbo.Factura_Domicilio fac ON det.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Modificador_Detalle_Factura]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Modificador",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Modificador_Detalle_Factura]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Modificador",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Modificador_Detalle_Factura]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Detalle_Factura_KFC_G1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Detalle_Factura",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Detalle_Factura]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Detalle_Factura]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,det.Cod_Detalle_Factura,det.Cod_Factura,det.Cod_Plu,det.Cod_Plu_Promocion,det.Cantidad,det.Precio,det.Iva,det.Costo,det.Orden,Descuento_con_Impuesto,Descuento FROM dbo.Detalle_Factura det INNER JOIN dbo.Factura_Domicilio fac ON det.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Plu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Plu_Promocion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Precio",
+											"type": "Double"
+										},
+										{
+											"name": "Iva",
+											"type": "Double"
+										},
+										{
+											"name": "Costo",
+											"type": "Double"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Descuento_con_Impuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Descuento",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[dbo].[Detalle_Factura]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G1",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Plu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Plu_Promocion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Precio",
+											"type": "Double"
+										},
+										{
+											"name": "Iva",
+											"type": "Double"
+										},
+										{
+											"name": "Costo",
+											"type": "Double"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Descuento_con_Impuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Descuento",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Detalle_Factura]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Detalle_Factura_KFC_G2",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Detalle_Factura_KFC_G1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Detalle_Factura]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Detalle_Factura]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,det.Cod_Detalle_Factura,det.Cod_Factura,det.Cod_Plu,det.Cod_Plu_Promocion,det.Cantidad,det.Precio,det.Iva,det.Costo,det.Orden,Descuento_con_Impuesto,Descuento FROM dbo.Detalle_Factura det INNER JOIN dbo.Factura_Domicilio fac ON det.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Plu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Plu_Promocion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Precio",
+											"type": "Double"
+										},
+										{
+											"name": "Iva",
+											"type": "Double"
+										},
+										{
+											"name": "Costo",
+											"type": "Double"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Descuento_con_Impuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Descuento",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[dbo].[Detalle_Factura]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G2",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Plu",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Plu_Promocion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cantidad",
+											"type": "Double"
+										},
+										{
+											"name": "Precio",
+											"type": "Double"
+										},
+										{
+											"name": "Iva",
+											"type": "Double"
+										},
+										{
+											"name": "Costo",
+											"type": "Double"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Descuento_con_Impuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Descuento",
+											"type": "Double"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Detalle_Factura]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_Anulacion_KFC_G1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Factura_Anulacion",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_Anulacion]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_Anulacion]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Factura,Cod_Motivo,Cod_Administrador,Cod_Motorolo,Observacion,Fecha_anulacion FROM dbo.Factura_Anulacion WHERE CAST(Fecha_anulacion AS DATE) BETWEEN '@{pipeline().parameters.FechaDesde}' AND DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}') AND CAST(Fecha_anulacion AS DATE) >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Motivo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Observacion",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_anulacion",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_Anulacion]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G1",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Motivo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Observacion",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_anulacion",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_Anulacion]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_Anulacion_KFC_G2",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Factura_Anulacion_KFC_G1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_Anulacion]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_Anulacion]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Factura,Cod_Motivo,Cod_Administrador,Cod_Motorolo,Observacion,Fecha_anulacion FROM dbo.Factura_Anulacion WHERE CAST(Fecha_anulacion AS DATE) BETWEEN '@{pipeline().parameters.FechaDesde}' AND DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}') AND CAST(Fecha_anulacion AS DATE) >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Motivo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Observacion",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_anulacion",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_Anulacion]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G2",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Motivo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Observacion",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_anulacion",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_Anulacion]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_Domicilio_KFC_G2",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Factura_Domicilio_KFC_G1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_Domicilio]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_Domicilio]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,fac.Cod_Factura,fac.Cod_Restaurante,fac.Cod_Cliente_Domicilio,fac.Cod_Periodo,fac.Cod_Usuario,fac.Cod_Administrador,fac.Estado_Transferencia,fac.Fecha,fac.Comentario,fac.Estado,fac.Consumidor_Final,fac.Cod_Telefono,fac.Transferencia,fac.Fecha_Creacion,fac.DescuentoIVA,fac.DescuentoNoIVA,fac.Direccion_Alterna,fac.Porcentaje,fac.Cod_Usuario_Descto,fac.Propina,fac.Serie_Dian,fac.Cod_Nota_Credito,fac.Tipo_Facturacion,fac.Cod_Tipo_Comprobante,fac.Clave_Acceso,fac.Numero_Factura,fac.Autorizado,fac.Datos_Adicionales,fac.FechaOperacion,fac.numeroAutorizacion,fac.ControlPendientes,fac.Compensacion,fac.Cod_AppMovil,fac.guiaTracking,fac.TotalBruto,fac.Subtotal,fac.IvaTotal,fac.SubCero,fac.SubImpuesto,fac.Medio,fac.Dispositivo,per.Fecha AS FechaPeriodo, fac.Cod_Desasignacion,fac.CodPersonalDespacho,fac.Nombre,fac.RUC,fac.Direccion,fac.bringg,fac.Cod_Bringg,fac.TipoAsignacion,fac.Impresion,fac.Impresion_Comanda,fac.Impresion_Factura,fac.Solicita_Autorizacion FROM dbo.Factura_Domicilio fac INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cliente_Domicilio",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado_Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Comentario",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Consumidor_Final",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Telefono",
+											"type": "Int64"
+										},
+										{
+											"name": "Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "DescuentoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "DescuentoNoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "Direccion_Alterna",
+											"type": "String"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_Usuario_Descto",
+											"type": "Int32"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "Serie_Dian",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Nota_Credito",
+											"type": "String"
+										},
+										{
+											"name": "Tipo_Facturacion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Tipo_Comprobante",
+											"type": "Int32"
+										},
+										{
+											"name": "Clave_Acceso",
+											"type": "String"
+										},
+										{
+											"name": "Numero_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Autorizado",
+											"type": "Int32"
+										},
+										{
+											"name": "Datos_Adicionales",
+											"type": "String"
+										},
+										{
+											"name": "FechaOperacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "numeroAutorizacion",
+											"type": "String"
+										},
+										{
+											"name": "ControlPendientes",
+											"type": "String"
+										},
+										{
+											"name": "Compensacion",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_AppMovil",
+											"type": "String"
+										},
+										{
+											"name": "guiaTracking",
+											"type": "String"
+										},
+										{
+											"name": "TotalBruto",
+											"type": "Double"
+										},
+										{
+											"name": "Subtotal",
+											"type": "Double"
+										},
+										{
+											"name": "IvaTotal",
+											"type": "Double"
+										},
+										{
+											"name": "SubCero",
+											"type": "Double"
+										},
+										{
+											"name": "SubImpuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Medio",
+											"type": "String"
+										},
+										{
+											"name": "Dispositivo",
+											"type": "String"
+										},
+										{
+											"name": "FechaPeriodo",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int64"
+										},
+										{
+											"name": "CodPersonalDespacho",
+											"type": "Int64"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "RUC",
+											"type": "String"
+										},
+										{
+											"name": "Direccion",
+											"type": "String"
+										},
+										{
+											"name": "bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "TipoAsignacion",
+											"type": "String"
+										},
+										{
+											"name": "Impresion",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Comanda",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Factura",
+											"type": "Int32"
+										},
+										{
+											"name": "Solicita_Autorizacion",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_Domicilio]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G2",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cliente_Domicilio",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado_Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Comentario",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Consumidor_Final",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Telefono",
+											"type": "Int64"
+										},
+										{
+											"name": "Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "DescuentoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "DescuentoNoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "Direccion_Alterna",
+											"type": "String"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_Usuario_Descto",
+											"type": "Int32"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "Serie_Dian",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Nota_Credito",
+											"type": "String"
+										},
+										{
+											"name": "Tipo_Facturacion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Tipo_Comprobante",
+											"type": "Int32"
+										},
+										{
+											"name": "Clave_Acceso",
+											"type": "String"
+										},
+										{
+											"name": "Numero_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Autorizado",
+											"type": "Int32"
+										},
+										{
+											"name": "Datos_Adicionales",
+											"type": "String"
+										},
+										{
+											"name": "FechaOperacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "numeroAutorizacion",
+											"type": "String"
+										},
+										{
+											"name": "ControlPendientes",
+											"type": "String"
+										},
+										{
+											"name": "Compensacion",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_AppMovil",
+											"type": "String"
+										},
+										{
+											"name": "guiaTracking",
+											"type": "String"
+										},
+										{
+											"name": "TotalBruto",
+											"type": "Double"
+										},
+										{
+											"name": "Subtotal",
+											"type": "Double"
+										},
+										{
+											"name": "IvaTotal",
+											"type": "Double"
+										},
+										{
+											"name": "SubCero",
+											"type": "Double"
+										},
+										{
+											"name": "SubImpuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Medio",
+											"type": "String"
+										},
+										{
+											"name": "Dispositivo",
+											"type": "String"
+										},
+										{
+											"name": "FechaPeriodo",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int64"
+										},
+										{
+											"name": "CodPersonalDespacho",
+											"type": "Int64"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "RUC",
+											"type": "String"
+										},
+										{
+											"name": "Direccion",
+											"type": "String"
+										},
+										{
+											"name": "bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "TipoAsignacion",
+											"type": "String"
+										},
+										{
+											"name": "Impresion",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Comanda",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Factura",
+											"type": "Int32"
+										},
+										{
+											"name": "Solicita_Autorizacion",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_Domicilio]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_FormasPago_KFC_G2",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Factura_FormasPago_KFC_G1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_FormasPago]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_FormasPago]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,ffp.Cod_FFormasPago,ffp.Cod_Factura,ffp.Cod_FormaPago,ffp.Num_Tarjeta,ffp.Num_Seguridad,ffp.Fecha_Caducidad,ffp.Billete,ffp.NumeroCheque,ffp.Banco,ffp.Titular,ffp.Referencia_Billete,ffp.Valor_Billete,ffp.Total_Pagar,ffp.Propina,ffp.ClienteAx,ffp.Cod_Desasignacion,ffp.IDTipoEnvio,ffp.Transaction_id FROM dbo.Factura_FormasPago ffp INNER JOIN dbo.Factura_Domicilio fac ON ffp.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_FFormasPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_FormaPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Num_Tarjeta",
+											"type": "String"
+										},
+										{
+											"name": "Num_Seguridad",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_Caducidad",
+											"type": "String"
+										},
+										{
+											"name": "Billete",
+											"type": "Double"
+										},
+										{
+											"name": "NumeroCheque",
+											"type": "String"
+										},
+										{
+											"name": "Banco",
+											"type": "String"
+										},
+										{
+											"name": "Titular",
+											"type": "String"
+										},
+										{
+											"name": "Referencia_Billete",
+											"type": "String"
+										},
+										{
+											"name": "Valor_Billete",
+											"type": "Double"
+										},
+										{
+											"name": "Total_Pagar",
+											"type": "Double"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "ClienteAx",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int32"
+										},
+										{
+											"name": "IDTipoEnvio",
+											"type": "Int32"
+										},
+										{
+											"name": "Transaction_id",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_FormasPago]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G2",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_FFormasPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_FormaPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Num_Tarjeta",
+											"type": "String"
+										},
+										{
+											"name": "Num_Seguridad",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_Caducidad",
+											"type": "String"
+										},
+										{
+											"name": "Billete",
+											"type": "Double"
+										},
+										{
+											"name": "NumeroCheque",
+											"type": "String"
+										},
+										{
+											"name": "Banco",
+											"type": "String"
+										},
+										{
+											"name": "Titular",
+											"type": "String"
+										},
+										{
+											"name": "Referencia_Billete",
+											"type": "String"
+										},
+										{
+											"name": "Valor_Billete",
+											"type": "Double"
+										},
+										{
+											"name": "Total_Pagar",
+											"type": "Double"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "ClienteAx",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int32"
+										},
+										{
+											"name": "IDTipoEnvio",
+											"type": "Int32"
+										},
+										{
+											"name": "Transaction_id",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_FormasPago]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_Motorolo_KFC_G2",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Factura_Motorolo_KFC_G1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_Motorolo]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_Motorolo]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,fmo.Cod_Motorolo,fmo.Cod_Factura,fmo.Cod_Periodo,fmo.Cod_Estado,fmo.Fecha FROM dbo.Factura_Motorolo fmo INNER JOIN dbo.Factura_Domicilio fac ON fmo.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_Motorolo]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G2",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_Motorolo]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Modificador_Detalle_Factura_KFC_G2",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Modificador_Detalle_Factura_KFC_G1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Modificador_Detalle_Factura]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Modificador_Detalle_Factura]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,mdf.Cod_Detalle_Factura,mdf.Cod_Modificador FROM dbo.Modificador_Detalle_Factura mdf INNER JOIN dbo.Detalle_Factura det on mdf.Cod_Detalle_Factura=det.Cod_Detalle_Factura INNER JOIN dbo.Factura_Domicilio fac ON det.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Modificador",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Modificador_Detalle_Factura]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G2",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Modificador",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Modificador_Detalle_Factura]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_Domicilio_KFC_G1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Factura_Domicilio",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_Domicilio]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_Domicilio]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,fac.Cod_Factura,fac.Cod_Restaurante,fac.Cod_Cliente_Domicilio,fac.Cod_Periodo,fac.Cod_Usuario,fac.Cod_Administrador,fac.Estado_Transferencia,fac.Fecha,fac.Comentario,fac.Estado,fac.Consumidor_Final,fac.Cod_Telefono,fac.Transferencia,fac.Fecha_Creacion,fac.DescuentoIVA,fac.DescuentoNoIVA,fac.Direccion_Alterna,fac.Porcentaje,fac.Cod_Usuario_Descto,fac.Propina,fac.Serie_Dian,fac.Cod_Nota_Credito,fac.Tipo_Facturacion,fac.Cod_Tipo_Comprobante,fac.Clave_Acceso,fac.Numero_Factura,fac.Autorizado,fac.Datos_Adicionales,fac.FechaOperacion,fac.numeroAutorizacion,fac.ControlPendientes,fac.Compensacion,fac.Cod_AppMovil,fac.guiaTracking,fac.TotalBruto,fac.Subtotal,fac.IvaTotal,fac.SubCero,fac.SubImpuesto,fac.Medio,fac.Dispositivo,per.Fecha AS FechaPeriodo, fac.Cod_Desasignacion,fac.CodPersonalDespacho,fac.Nombre,fac.RUC,fac.Direccion,fac.bringg,fac.Cod_Bringg,fac.TipoAsignacion,fac.Impresion,fac.Impresion_Comanda,fac.Impresion_Factura,fac.Solicita_Autorizacion FROM dbo.Factura_Domicilio fac INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cliente_Domicilio",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado_Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Comentario",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Consumidor_Final",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Telefono",
+											"type": "Int64"
+										},
+										{
+											"name": "Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "DescuentoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "DescuentoNoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "Direccion_Alterna",
+											"type": "String"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_Usuario_Descto",
+											"type": "Int32"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "Serie_Dian",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Nota_Credito",
+											"type": "String"
+										},
+										{
+											"name": "Tipo_Facturacion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Tipo_Comprobante",
+											"type": "Int32"
+										},
+										{
+											"name": "Clave_Acceso",
+											"type": "String"
+										},
+										{
+											"name": "Numero_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Autorizado",
+											"type": "Int32"
+										},
+										{
+											"name": "Datos_Adicionales",
+											"type": "String"
+										},
+										{
+											"name": "FechaOperacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "numeroAutorizacion",
+											"type": "String"
+										},
+										{
+											"name": "ControlPendientes",
+											"type": "String"
+										},
+										{
+											"name": "Compensacion",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_AppMovil",
+											"type": "String"
+										},
+										{
+											"name": "guiaTracking",
+											"type": "String"
+										},
+										{
+											"name": "TotalBruto",
+											"type": "Double"
+										},
+										{
+											"name": "Subtotal",
+											"type": "Double"
+										},
+										{
+											"name": "IvaTotal",
+											"type": "Double"
+										},
+										{
+											"name": "SubCero",
+											"type": "Double"
+										},
+										{
+											"name": "SubImpuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Medio",
+											"type": "String"
+										},
+										{
+											"name": "Dispositivo",
+											"type": "String"
+										},
+										{
+											"name": "FechaPeriodo",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int64"
+										},
+										{
+											"name": "CodPersonalDespacho",
+											"type": "Int64"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "RUC",
+											"type": "String"
+										},
+										{
+											"name": "Direccion",
+											"type": "String"
+										},
+										{
+											"name": "bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "TipoAsignacion",
+											"type": "String"
+										},
+										{
+											"name": "Impresion",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Comanda",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Factura",
+											"type": "Int32"
+										},
+										{
+											"name": "Solicita_Autorizacion",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_Domicilio]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G1",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Cliente_Domicilio",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Administrador",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado_Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										},
+										{
+											"name": "Comentario",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Consumidor_Final",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Telefono",
+											"type": "Int64"
+										},
+										{
+											"name": "Transferencia",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "DescuentoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "DescuentoNoIVA",
+											"type": "Double"
+										},
+										{
+											"name": "Direccion_Alterna",
+											"type": "String"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_Usuario_Descto",
+											"type": "Int32"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "Serie_Dian",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Nota_Credito",
+											"type": "String"
+										},
+										{
+											"name": "Tipo_Facturacion",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Tipo_Comprobante",
+											"type": "Int32"
+										},
+										{
+											"name": "Clave_Acceso",
+											"type": "String"
+										},
+										{
+											"name": "Numero_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Autorizado",
+											"type": "Int32"
+										},
+										{
+											"name": "Datos_Adicionales",
+											"type": "String"
+										},
+										{
+											"name": "FechaOperacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "numeroAutorizacion",
+											"type": "String"
+										},
+										{
+											"name": "ControlPendientes",
+											"type": "String"
+										},
+										{
+											"name": "Compensacion",
+											"type": "Double"
+										},
+										{
+											"name": "Cod_AppMovil",
+											"type": "String"
+										},
+										{
+											"name": "guiaTracking",
+											"type": "String"
+										},
+										{
+											"name": "TotalBruto",
+											"type": "Double"
+										},
+										{
+											"name": "Subtotal",
+											"type": "Double"
+										},
+										{
+											"name": "IvaTotal",
+											"type": "Double"
+										},
+										{
+											"name": "SubCero",
+											"type": "Double"
+										},
+										{
+											"name": "SubImpuesto",
+											"type": "Double"
+										},
+										{
+											"name": "Medio",
+											"type": "String"
+										},
+										{
+											"name": "Dispositivo",
+											"type": "String"
+										},
+										{
+											"name": "FechaPeriodo",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int64"
+										},
+										{
+											"name": "CodPersonalDespacho",
+											"type": "Int64"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "RUC",
+											"type": "String"
+										},
+										{
+											"name": "Direccion",
+											"type": "String"
+										},
+										{
+											"name": "bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Bringg",
+											"type": "Int32"
+										},
+										{
+											"name": "TipoAsignacion",
+											"type": "String"
+										},
+										{
+											"name": "Impresion",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Comanda",
+											"type": "Int32"
+										},
+										{
+											"name": "Impresion_Factura",
+											"type": "Int32"
+										},
+										{
+											"name": "Solicita_Autorizacion",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_Domicilio]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_FormasPago_KFC_G1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Factura_FormasPago",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_FormasPago]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_FormasPago]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,ffp.Cod_FFormasPago,ffp.Cod_Factura,ffp.Cod_FormaPago,ffp.Num_Tarjeta,ffp.Num_Seguridad,ffp.Fecha_Caducidad,ffp.Billete,ffp.NumeroCheque,ffp.Banco,ffp.Titular,ffp.Referencia_Billete,ffp.Valor_Billete,ffp.Total_Pagar,ffp.Propina,ffp.ClienteAx,ffp.Cod_Desasignacion,ffp.IDTipoEnvio,ffp.Transaction_id FROM dbo.Factura_FormasPago ffp INNER JOIN dbo.Factura_Domicilio fac ON ffp.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_FFormasPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_FormaPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Num_Tarjeta",
+											"type": "String"
+										},
+										{
+											"name": "Num_Seguridad",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_Caducidad",
+											"type": "String"
+										},
+										{
+											"name": "Billete",
+											"type": "Double"
+										},
+										{
+											"name": "NumeroCheque",
+											"type": "String"
+										},
+										{
+											"name": "Banco",
+											"type": "String"
+										},
+										{
+											"name": "Titular",
+											"type": "String"
+										},
+										{
+											"name": "Referencia_Billete",
+											"type": "String"
+										},
+										{
+											"name": "Valor_Billete",
+											"type": "Double"
+										},
+										{
+											"name": "Total_Pagar",
+											"type": "Double"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "ClienteAx",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int32"
+										},
+										{
+											"name": "IDTipoEnvio",
+											"type": "Int32"
+										},
+										{
+											"name": "Transaction_id",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_FormasPago]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G1",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_FFormasPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_FormaPago",
+											"type": "Int32"
+										},
+										{
+											"name": "Num_Tarjeta",
+											"type": "String"
+										},
+										{
+											"name": "Num_Seguridad",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_Caducidad",
+											"type": "String"
+										},
+										{
+											"name": "Billete",
+											"type": "Double"
+										},
+										{
+											"name": "NumeroCheque",
+											"type": "String"
+										},
+										{
+											"name": "Banco",
+											"type": "String"
+										},
+										{
+											"name": "Titular",
+											"type": "String"
+										},
+										{
+											"name": "Referencia_Billete",
+											"type": "String"
+										},
+										{
+											"name": "Valor_Billete",
+											"type": "Double"
+										},
+										{
+											"name": "Total_Pagar",
+											"type": "Double"
+										},
+										{
+											"name": "Propina",
+											"type": "Double"
+										},
+										{
+											"name": "ClienteAx",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Desasignacion",
+											"type": "Int32"
+										},
+										{
+											"name": "IDTipoEnvio",
+											"type": "Int32"
+										},
+										{
+											"name": "Transaction_id",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_FormasPago]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Factura_Motorolo_KFC_G1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Factura_Motorolo",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Factura_Motorolo]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Factura_Motorolo]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,fmo.Cod_Motorolo,fmo.Cod_Factura,fmo.Cod_Periodo,fmo.Cod_Estado,fmo.Fecha FROM dbo.Factura_Motorolo fmo INNER JOIN dbo.Factura_Domicilio fac ON fmo.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dbo].[Factura_Motorolo]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G1",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Motorolo",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Periodo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha",
+											"type": "DateTime"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Factura_Motorolo]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Modificador_Detalle_Factura_KFC_G1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Modificador_Detalle_Factura",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Modificador_Detalle_Factura]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_domi].[Modificador_Detalle_Factura]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,mdf.Cod_Detalle_Factura,mdf.Cod_Modificador FROM dbo.Modificador_Detalle_Factura mdf INNER JOIN dbo.Detalle_Factura det on mdf.Cod_Detalle_Factura=det.Cod_Detalle_Factura INNER JOIN dbo.Factura_Domicilio fac ON det.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_DomicilioChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Modificador",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Modificador_Detalle_Factura]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "SqlGerenteDomKFC_G1",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Detalle_Factura",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Modificador",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_domi].[Modificador_Detalle_Factura]"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "192.168.148.110"
+					},
+					"BaseDatosDomicilioGerente": {
+						"type": "string",
+						"defaultValue": "SqlGerenteDom"
+					},
+					"FechaDesde": {
+						"type": "string"
+					},
+					"FechaHasta": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_DomicilioChl"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_Catalogo_2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "HomologacionEmbutser",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/HOMOLOGACIONEMBUTSER",
+									"wildcardFileName": {
+										"value": "@Concat('HOMOLOGACIONEMBUTSER_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[HomologacionEmbutser]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/HOMOLOGACIONEMBUTSER"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "COSTCENTER",
+											"type": "String"
+										},
+										{
+											"name": "PROFITCENTER",
+											"type": "String"
+										},
+										{
+											"name": "DISTRIBUTIONCHANNEL",
+											"type": "String"
+										},
+										{
+											"name": "CUSTOMERGROUP",
+											"type": "String"
+										},
+										{
+											"name": "BPCUSTOMERNUMBER",
+											"type": "String"
+										},
+										{
+											"name": "MATERIALPRICINGGROUP",
+											"type": "String"
+										},
+										{
+											"name": "CREATEDBYUSER",
+											"type": "String"
+										},
+										{
+											"name": "CREATIONDATE",
+											"type": "String"
+										},
+										{
+											"name": "CREATIONTIME",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[HomologacionEmbutser]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Material",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/MATERIAL",
+									"wildcardFileName": {
+										"value": "@Concat('MATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[material]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIAL"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "MATERIAL",
+											"type": "String"
+										},
+										{
+											"name": "MATERIALNAME",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "CREATIONDATE",
+											"type": "String"
+										},
+										{
+											"name": "LASTCHANGEDATE",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTOLDID",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTTYPE",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTGROUP",
+											"type": "String"
+										},
+										{
+											"name": "BASEUNIT",
+											"type": "String"
+										},
+										{
+											"name": "NETWEIGHT",
+											"type": "Decimal"
+										},
+										{
+											"name": "WEIGHTUNIT",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										{
+											"name": "GROSSWEIGHT",
+											"type": "Decimal"
+										},
+										{
+											"name": "DIVISION",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTHIERARCHY",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[material]"
+								}
+							}
+						]
+					},
+					{
+						"name": "MaterialAlmacen",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/MATERIALALMACEN",
+									"wildcardFileName": {
+										"value": "@Concat('MATERIALALMACEN_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[materialalmacen]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIALALMACEN"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "MATERIAL",
+											"type": "String"
+										},
+										{
+											"name": "PLANT",
+											"type": "String"
+										},
+										{
+											"name": "WAREHOUSE",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										{
+											"name": "PROFITCENTER",
+											"type": "String"
+										},
+										{
+											"name": "PURCHASINGGROUP",
+											"type": "String"
+										},
+										{
+											"name": "MATERIALVALUATIONCLASS",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[materialalmacen]"
+								}
+							}
+						]
+					},
+					{
+						"name": "MaterialVenta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/MATERIALVENTA",
+									"wildcardFileName": {
+										"value": "@Concat('MATERIALVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[materialventa]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIALVENTA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCT",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTSALESORG",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTDISTRIBUTIONCHNL",
+											"type": "String"
+										},
+										{
+											"name": "MATERIALPRICINGGROUP",
+											"type": "String"
+										},
+										{
+											"name": "SALESMEASUREUNIT",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTHIERARCHY",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[materialventa]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Planta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/PLANTA",
+									"wildcardFileName": {
+										"value": "@Concat('PLANTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[planta]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PLANTA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "PLANT",
+											"type": "String"
+										},
+										{
+											"name": "PLANTNAME",
+											"type": "String"
+										},
+										{
+											"name": "FACTORYCALENDAR",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[planta]"
+								}
+							}
+						]
+					},
+					{
+						"name": "PlantaEmpresa",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/PLANTAEMPRESA",
+									"wildcardFileName": {
+										"value": "@Concat('PLANTAEMPRESA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[plantaempresa]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PLANTAEMPRESA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										{
+											"name": "COMPANYCODE",
+											"type": "String"
+										},
+										{
+											"name": "PLANT",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[plantaempresa]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Proveedor",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/PROVEEDOR",
+									"wildcardFileName": {
+										"value": "@Concat('PROVEEDOR_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table  [dsa_ecu_sap].[proveedor]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PROVEEDOR"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIER",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIERACCOUNTGROUP",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIERNAME",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIERFULLNAME",
+											"type": "String"
+										},
+										{
+											"name": "BPTAXTYPE",
+											"type": "String"
+										},
+										{
+											"name": "BPTAXNUMBER",
+											"type": "String"
+										},
+										{
+											"name": "ORGANIZATIONBPNAME1",
+											"type": "String"
+										},
+										{
+											"name": "ORGANIZATIONBPNAME2",
+											"type": "String"
+										},
+										{
+											"name": "CITYNAME",
+											"type": "String"
+										},
+										{
+											"name": "STREETNAME",
+											"type": "String"
+										},
+										{
+											"name": "COUNTRY",
+											"type": "String"
+										},
+										{
+											"name": "PHONENUMBER1",
+											"type": "String"
+										},
+										{
+											"name": "FAXNUMBER",
+											"type": "String"
+										},
+										{
+											"name": "SORTFIELD",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIERLANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "BUSINESSTYPE",
+											"type": "String"
+										},
+										{
+											"name": "INDUSTRYTYPE",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[proveedor]"
+								}
+							}
+						]
+					},
+					{
+						"name": "ProveedorEmpresaPlanta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/PROVEEDOREMPRESAPLANTA",
+									"wildcardFileName": {
+										"value": "@Concat('PROVEEDOREMPRESAPLANTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[proveedorempresaplanta]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PROVEEDOREMPRESAPLANTA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "PLANT",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIER",
+											"type": "String"
+										},
+										{
+											"name": "COMPANYCODE",
+											"type": "String"
+										},
+										{
+											"name": "CASHPLANNINGGROUP",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[proveedorempresaplanta]"
+								}
+							}
+						]
+					},
+					{
+						"name": "StatusFacturaCompra",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/STATUSFACTURACOMPRA",
+									"wildcardFileName": {
+										"value": "@Concat('STATUSFACTURACOMPRA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[statusfacturacompra]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSFACTURACOMPRA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIERINVOICESTATUS",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "SUPPLIERINVOICESTATUSDESC",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[statusfacturacompra]"
+								}
+							}
+						]
+					},
+					{
+						"name": "StatusFacturaVenta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/STATUSFACTURAVENTA",
+									"wildcardFileName": {
+										"value": "@Concat('STATUSFACTURAVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[statusfacturaventa]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSFACTURAVENTA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "OVERALLBILLINGSTATUS",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "OVERALLBILLINGSTATUSDESC",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[statusfacturaventa]"
+								}
+							}
+						]
+					},
+					{
+						"name": "StatusOrdenCompra",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/STATUSORDENCOMPRA",
+									"wildcardFileName": {
+										"value": "@Concat('STATUSORDENCOMPRA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[statusordencompra]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSORDENCOMPRA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "PURCHASINGDOCUMENTSTATUS",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "PURCHASINGDOCUMENTSTATUSNAME",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[statusordencompra]"
+								}
+							}
+						]
+					},
+					{
+						"name": "StatusProcesoVenta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/STATUSPROCESOVENTA",
+									"wildcardFileName": {
+										"value": "@Concat('STATUSPROCESOVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[statusprocesoventa]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSPROCESOVENTA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "OVERALLSDPROCESSSTATUS",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "OVERALLSDPROCESSSTATUSDESC",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[statusprocesoventa]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TipoCondicion",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/TIPOCONDICION",
+									"wildcardFileName": {
+										"value": "@Concat('TIPOCONDICION_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[tipocondicion]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/TIPOCONDICION"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "CONDITIONTYPE",
+											"type": "String"
+										},
+										{
+											"name": "CONDITIONTYPENAME",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										{
+											"name": "CONDITIONAPPLICATION",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[tipocondicion]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TipoMaterial",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/TIPOMATERIAL",
+									"wildcardFileName": {
+										"value": "@Concat('TIPOMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[tipomaterial]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/TIPOMATERIAL"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "MATERIALTYPE",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "MATERIALTYPENAME",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										{
+											"name": "PRICE_CONTROL",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[tipomaterial]"
+								}
+							}
+						]
+					},
+					{
+						"name": "UnidadMaterial",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/UNIDADMATERIAL",
+									"wildcardFileName": {
+										"value": "@Concat('UNIDADMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[UNIDADMATERIAL]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/UNIDADMATERIAL"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCT",
+											"type": "String"
+										},
+										{
+											"name": "ALTERNATIVEUNIT",
+											"type": "String"
+										},
+										{
+											"name": "QUANTITYNUMERATOR",
+											"type": "Decimal"
+										},
+										{
+											"name": "QUANTITYDENOMINATOR",
+											"type": "Decimal"
+										},
+										{
+											"name": "GROSSWEIGHT",
+											"type": "Decimal"
+										},
+										{
+											"name": "WEIGHTUNIT",
+											"type": "String"
+										},
+										{
+											"name": "ISACTIVEENTITY",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[UNIDADMATERIAL]"
+								}
+							}
+						]
+					},
+					{
+						"name": "DeleteHomologacionEmbutser",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "HomologacionEmbutser",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/HOMOLOGACIONEMBUTSER"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/HOMOLOGACIONEMBUTSER"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteMaterial",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Material",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIAL"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/MATERIAL"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteMaterialAlmacen",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "MaterialAlmacen",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIALALMACEN"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/MATERIALALMACEN"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteMaterialVenta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "MaterialVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/MATERIALVENTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/MATERIALVENTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeletePlanta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Planta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PLANTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/PLANTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeletePlantaEmpresa",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "PlantaEmpresa",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PLANTAEMPRESA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/PLANTAEMPRESA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteProveedor",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Proveedor",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PROVEEDOR"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/PROVEEDOR"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteProveedorEmpresaPlanta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "ProveedorEmpresaPlanta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/PROVEEDOREMPRESAPLANTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/PROVEEDOREMPRESAPLANTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteStatusFacturaCompra",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "StatusFacturaCompra",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSFACTURACOMPRA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/STATUSFACTURACOMPRA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteStatusFacturaVenta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "StatusFacturaVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSFACTURAVENTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/STATUSFACTURAVENTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteStatusOrdenCompra",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "StatusOrdenCompra",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSORDENCOMPRA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/STATUSORDENCOMPRA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteStatusProcesoVenta",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "StatusProcesoVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/STATUSPROCESOVENTA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/STATUSPROCESOVENTA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteTipoCondicion",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "TipoCondicion",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/TIPOCONDICION"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/TIPOCONDICION"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteTipoMaterial",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "TipoMaterial",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/TIPOMATERIAL"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/TIPOMATERIAL"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "DeleteUnidadMaterial",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "UnidadMaterial",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/UNIDADMATERIAL"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/UNIDADMATERIAL"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "JerarquiaMaterial",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/JERARQUIAMATERIAL",
+									"wildcardFileName": {
+										"value": "@Concat('JERARQUIAMATERIAL_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[jerarquiamaterial]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/JERARQUIAMATERIAL"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTHIERARCHY",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTHIERARCHYTEXT",
+											"type": "String"
+										},
+										{
+											"name": "PRODUCTHIERARCHYLEVEL",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[jerarquiamaterial]"
+								}
+							}
+						]
+					},
+					{
+						"name": "DELETEJerarquiaMaterial",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "JerarquiaMaterial",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/JERARQUIAMATERIAL"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/JERARQUIAMATERIAL"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "UnidadMedida",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/UNIDADMEDIDA",
+									"wildcardFileName": {
+										"value": "@Concat('UNIDADMEDIDA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[unidadmedida]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/UNIDADMEDIDA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_UNIT",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_UNIT_COM",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_UNIT_TEC",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_TEXT_SHORT",
+											"type": "String"
+										},
+										{
+											"name": "MEASURE_TEXT_LARGE",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[unidadmedida]"
+								}
+							}
+						]
+					},
+					{
+						"name": "DELETEUnidadMedida",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "UnidadMedida",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/UNIDADMEDIDA"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/UNIDADMEDIDA"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "Division",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "catalogo/DIVISION",
+									"wildcardFileName": {
+										"value": "@Concat('DIVISION_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table [dsa_ecu_sap].[division]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/DIVISION"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "MANDT",
+											"type": "String"
+										},
+										{
+											"name": "DIVISION",
+											"type": "String"
+										},
+										{
+											"name": "DESCRIPTION",
+											"type": "String"
+										},
+										{
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										{
+											"name": "LANGUAGE",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sap].[division]"
+								}
+							}
+						]
+					},
+					{
+						"name": "DELETEDivision",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Division",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "catalogo/DIVISION"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/catalogo/DIVISION"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					}
+				],
+				"parameters": {
+					"Anio": {
+						"type": "string",
+						"defaultValue": "2021"
+					},
+					"Mes": {
+						"type": "string",
+						"defaultValue": "01"
+					},
+					"Dia": {
+						"type": "string",
+						"defaultValue": "13"
+					}
+				},
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_ReprocesoContabildiad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "Select Anio=year(dateadd(hh,-5,getdate()))\n,Mes=convert (char(2),dateadd(hh,-5,getdate()),101)\n,Dia=convert (char(2),dateadd(hh,-5,getdate()),103)",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "CatalogoReproceso",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_CatalogoReprocesoContabilidad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Anio": {
+									"value": "@activity('Fecha Carga').output.firstRow.Anio",
+									"type": "Expression"
+								},
+								"Mes": {
+									"value": "@activity('Fecha Carga').output.firstRow.Mes",
+									"type": "Expression"
+								},
+								"Dia": {
+									"value": "@activity('Fecha Carga').output.firstRow.Dia",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "TransaccionalReproceso",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "CatalogoReproceso",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_TransaccionalReprocesoContabilidad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "TransaccionalHistoricoReproceso",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "TransaccionalReproceso",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sap_Ecu_Transaccional_HistoricoReprocesoContabilidad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					}
+				],
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sap_Ecu_TransaccionalReprocesoContabilidad')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sap_entradadiario')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataset parametrizado DWH\n",
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dwh_General/ds_Sap"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"structure": [
+					{
+						"name": "MANDT",
+						"type": "String"
+					},
+					{
+						"name": "GLACCOUNT",
+						"type": "String"
+					},
+					{
+						"name": "POSTINGDATE",
+						"type": "String"
+					},
+					{
+						"name": "AMOUNTINCOMPANYCODECURRENCY",
+						"type": "Decimal"
+					},
+					{
+						"name": "ACCOUNTINGDOCUMENT",
+						"type": "String"
+					},
+					{
+						"name": "DOCUMENTITEMTEXT",
+						"type": "String"
+					},
+					{
+						"name": "ACCOUNTINGDOCUMENTCATEGORY",
+						"type": "String"
+					},
+					{
+						"name": "LEDGER",
+						"type": "String"
+					},
+					{
+						"name": "COMPANYCODE",
+						"type": "String"
+					},
+					{
+						"name": "FISCALPERIOD",
+						"type": "Int32"
+					},
+					{
+						"name": "FISCALYEAR",
+						"type": "Int32"
+					},
+					{
+						"name": "COSTCENTER",
+						"type": "String"
+					},
+					{
+						"name": "PROFITCENTER",
+						"type": "String"
+					},
+					{
+						"name": "SEGMENT",
+						"type": "String"
+					},
+					{
+						"name": "COMPANYCODECURRENCY",
+						"type": "String"
+					},
+					{
+						"name": "GLOBALCURRENCY",
+						"type": "String"
+					},
+					{
+						"name": "AMOUNTINGLOBALCURRENCY",
+						"type": "Decimal"
+					},
+					{
+						"name": "QUANTITY",
+						"type": "Decimal"
+					},
+					{
+						"name": "BASEUNIT",
+						"type": "String"
+					},
+					{
+						"name": "COSTSOURCEUNIT",
+						"type": "String"
+					},
+					{
+						"name": "DEBITCREDITCODE",
+						"type": "String"
+					},
+					{
+						"name": "DOCUMENTDATE",
+						"type": "String"
+					},
+					{
+						"name": "POSTINGKEY",
+						"type": "String"
+					},
+					{
+						"name": "ACCOUNTINGDOCUMENTTYPE",
+						"type": "String"
+					},
+					{
+						"name": "MATERIAL",
+						"type": "String"
+					},
+					{
+						"name": "PLANT",
+						"type": "String"
+					},
+					{
+						"name": "SUPPLIER",
+						"type": "String"
+					},
+					{
+						"name": "CUSTOMER",
+						"type": "String"
+					},
+					{
+						"name": "FINANCIALACCOUNTTYPE",
+						"type": "String"
+					},
+					{
+						"name": "LASTCHANGEDATETIME",
+						"type": "String"
+					},
+					{
+						"name": "FECHACARGA",
+						"type": "String"
+					},
+					{
+						"name": "LEDGERGLLINEITEM",
+						"type": "String"
+					},
+					{
+						"name": "LEDGERFISCALYEAR",
+						"type": "String"
+					},
+					{
+						"name": "FINANCIALTRANSACTIONTYPE",
+						"type": "String"
+					},
+					{
+						"name": "REFERENCEDOCUMENT",
+						"type": "String"
+					},
+					{
+						"name": "REFERENCEDOCUMENTITEM",
+						"type": "String"
+					},
+					{
+						"name": "ISREVERSAL",
+						"type": "String"
+					},
+					{
+						"name": "ISREVERSED",
+						"type": "String"
+					},
+					{
+						"name": "REVERSALREFERENCEDOCUMENT",
+						"type": "String"
+					},
+					{
+						"name": "ISSETTLEMENT",
+						"type": "String"
+					},
+					{
+						"name": "ISSETTLED",
+						"type": "String"
+					},
+					{
+						"name": "SOURCEREFERENCEDOCUMENTTYPE",
+						"type": "String"
+					},
+					{
+						"name": "PARTNERCOSTCENTER",
+						"type": "String"
+					},
+					{
+						"name": "PARTNERPROFITCENTER",
+						"type": "String"
+					},
+					{
+						"name": "BALANCETRANSACTIONCURRENCY",
+						"type": "String"
+					},
+					{
+						"name": "AMOUNTINBALANCETRANSACCRCY",
+						"type": "Decimal"
+					},
+					{
+						"name": "TRANSACTIONCURRENCY",
+						"type": "String"
+					},
+					{
+						"name": "AMOUNTINTRANSACTIONCURRENCY",
+						"type": "Decimal"
+					},
+					{
+						"name": "FIXEDQUANTITY",
+						"type": "Decimal"
+					},
+					{
+						"name": "VALUATIONQUANTITY",
+						"type": "Decimal"
+					},
+					{
+						"name": "VALUATIONFIXEDQUANTITY",
+						"type": "Decimal"
+					},
+					{
+						"name": "FISCALYEARVARIANT",
+						"type": "String"
+					},
+					{
+						"name": "FISCALYEARPERIOD",
+						"type": "String"
+					},
+					{
+						"name": "ACCOUNTINGDOCUMENTITEM",
+						"type": "String"
+					},
+					{
+						"name": "ACCOUNTINGDOCCREATEDBYUSER",
+						"type": "String"
+					},
+					{
+						"name": "CREATIONDATETIME",
+						"type": "String"
+					},
+					{
+						"name": "CREATIONDATE",
+						"type": "String"
+					},
+					{
+						"name": "GLACCOUNTTYPE",
+						"type": "String"
+					},
+					{
+						"name": "INVOICEREFERENCE",
+						"type": "String"
+					},
+					{
+						"name": "INVOICEITEMREFERENCE",
+						"type": "String"
+					},
+					{
+						"name": "PURCHASINGDOCUMENT",
+						"type": "String"
+					},
+					{
+						"name": "PURCHASINGDOCUMENTITEM",
+						"type": "String"
+					},
+					{
+						"name": "ACCOUNTASSIGNMENTNUMBER",
+						"type": "String"
+					},
+					{
+						"name": "SALESORDER",
+						"type": "String"
+					},
+					{
+						"name": "SALESORDERITEM",
+						"type": "String"
+					},
+					{
+						"name": "SALESDOCUMENT",
+						"type": "String"
+					},
+					{
+						"name": "SALESDOCUMENTITEM",
+						"type": "String"
+					},
+					{
+						"name": "PRODUCT",
+						"type": "String"
+					},
+					{
+						"name": "TAXCODE",
+						"type": "String"
+					},
+					{
+						"name": "HOUSEBANK",
+						"type": "String"
+					},
+					{
+						"name": "HOUSEBANKACCOUNT",
+						"type": "String"
+					},
+					{
+						"name": "COSTESTIMATE",
+						"type": "String"
+					},
+					{
+						"name": "OFFSETTINGACCOUNT",
+						"type": "String"
+					},
+					{
+						"name": "OFFSETTINGACCOUNTTYPE",
+						"type": "String"
+					},
+					{
+						"name": "PARTNERCOMPANYCODE",
+						"type": "String"
+					},
+					{
+						"name": "ORIGINCOSTCENTER",
+						"type": "String"
+					},
+					{
+						"name": "ORIGINPROFITCENTER",
+						"type": "String"
+					},
+					{
+						"name": "ORDERID",
+						"type": "String"
+					},
+					{
+						"name": "ORDERCATEGORY",
+						"type": "String"
+					},
+					{
+						"name": "PARTNERORDER",
+						"type": "String"
+					},
+					{
+						"name": "PARTNERORDERCATEGORY",
+						"type": "String"
+					},
+					{
+						"name": "BILLINGDOCUMENTTYPE",
+						"type": "String"
+					},
+					{
+						"name": "SOLDMATERIAL",
+						"type": "String"
+					},
+					{
+						"name": "SOLDPRODUCT",
+						"type": "String"
+					},
+					{
+						"name": "MATERIALGROUP",
+						"type": "String"
+					},
+					{
+						"name": "DIVISION",
+						"type": "String"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dsa_ecu_sap].[entradadiario]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_TransaccionalReprocesoContabilidad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Sap",
+				"activities": [
+					{
+						"name": "EntradaDiarioHistorica",
+						"description": "",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaEntradaDiarioHistorico]",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": "0"
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": null
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
