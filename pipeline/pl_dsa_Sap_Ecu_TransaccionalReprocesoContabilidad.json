@@ -824,16 +824,9 @@
 				]
 			},
 			{
-				"name": "Get Metadata1",
+				"name": "Metadata1",
 				"type": "GetMetadata",
-				"dependsOn": [
-					{
-						"activity": "EntradaDiario",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -855,10 +848,37 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobStorageReadSettings",
+						"modifiedDatetimeEnd": "2021-01-01T00:00:00.000Z",
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
 						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Fecha",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "EntradaDiario",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Fecha",
+					"value": {
+						"value": "@activity('Metadata1').output.lastModified",
+						"type": "Expression"
 					}
 				}
 			}
