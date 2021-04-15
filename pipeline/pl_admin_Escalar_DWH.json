@@ -10,7 +10,7 @@
 					{
 						"activity": "Insertar log dwu",
 						"dependencyConditions": [
-							"Succeeded"
+							"Completed"
 						]
 					}
 				],
@@ -99,7 +99,7 @@
 					{
 						"activity": "Consultar_dwu_act",
 						"dependencyConditions": [
-							"Succeeded"
+							"Completed"
 						]
 					}
 				],
@@ -114,7 +114,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlDWSource",
-						"sqlReaderQuery": "---Ingreso de registro en el log\nINSERT INTO [admin_btc].[LogEscalarDWH]\nSELECT CONVERT(DATETIME,DATEADD(HH, -5, GETDATE())), '@{activity('Consultar_dwu_act').output.firstRow.DWU}', NULL,NULL\n\nSELECT 'ok' AS Resultado",
+						"sqlReaderQuery": {
+							"value": "---Ingreso de registro en el log\nINSERT INTO [admin_btc].[LogEscalarDWH]\nSELECT CONVERT(DATETIME,DATEADD(HH, -5, GETDATE())), '@{activity('Consultar_dwu_act').output.firstRow.DWU}', NULL,NULL\n\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
 						"partitionOption": "None"
 					},
 					"dataset": {
@@ -130,7 +133,7 @@
 					{
 						"activity": "Verificar Estatus",
 						"dependencyConditions": [
-							"Succeeded"
+							"Completed"
 						]
 					}
 				],
@@ -161,7 +164,7 @@
 					{
 						"activity": "Consultar_dwu_obj",
 						"dependencyConditions": [
-							"Succeeded"
+							"Completed"
 						]
 					}
 				],
@@ -176,7 +179,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlDWSource",
-						"sqlReaderQuery": "---Insertar datos log fin escalar dwh\nIF EXISTS \n  (\n  ---Buscar si el registro existe \n    SELECT * FROM [admin_btc].[LogEscalarDWH] \n\tWHERE CONVERT(VARCHAR(10),[FechaInicio],112) = CONVERT(VARCHAR(10),DATEADD(HH, -5, GETDATE()),112) and [DWUActual]='@{activity('Consultar_dwu_act').output.firstRow.DWU}' and [FechaFin] is null and [DWUObjetivo] is null\n  )\n    BEGIN\n\t---Actualizacion campos finalizacion de registro en el log\n      UPDATE [admin_btc].[LogEscalarDWH]\n\t\tSET [FechaFin]=CONVERT(DATETIME,DATEADD(HH, -5, GETDATE())) , [DWUObjetivo]='@{activity('Consultar_dwu_obj').output.firstRow.DWU}'\n\t\tWHERE CONVERT(VARCHAR(10),[FechaInicio],112) = CONVERT(VARCHAR(10),DATEADD(HH, -5, GETDATE()),112) and [DWUActual]='@{activity('Consultar_dwu_act').output.firstRow.DWU}' and [FechaFin] is null and [DWUObjetivo] is null\n    END\nELSE\n\t---Ingreso de registro en el log\n\tRAISERROR('Proceso no completado',16,1)\n\nSELECT 'ok' AS Resultado",
+						"sqlReaderQuery": {
+							"value": "---Insertar datos log fin escalar dwh\nIF EXISTS \n  (\n  ---Buscar si el registro existe \n    SELECT * FROM [admin_btc].[LogEscalarDWH] \n\tWHERE CONVERT(VARCHAR(10),[FechaInicio],112) = CONVERT(VARCHAR(10),DATEADD(HH, -5, GETDATE()),112) and [DWUActual]='@{activity('Consultar_dwu_act').output.firstRow.DWU}' and [FechaFin] is null and [DWUObjetivo] is null\n  )\n    BEGIN\n\t---Actualizacion campos finalizacion de registro en el log\n      UPDATE [admin_btc].[LogEscalarDWH]\n\t\tSET [FechaFin]=CONVERT(DATETIME,DATEADD(HH, -5, GETDATE())) , [DWUObjetivo]='@{activity('Consultar_dwu_obj').output.firstRow.DWU}'\n\t\tWHERE CONVERT(VARCHAR(10),[FechaInicio],112) = CONVERT(VARCHAR(10),DATEADD(HH, -5, GETDATE()),112) and [DWUActual]='@{activity('Consultar_dwu_act').output.firstRow.DWU}' and [FechaFin] is null and [DWUObjetivo] is null\n    END\nELSE\n\t---Ingreso de registro en el log\n\tRAISERROR('Proceso no completado',16,1)\n\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
 						"partitionOption": "None"
 					},
 					"dataset": {
