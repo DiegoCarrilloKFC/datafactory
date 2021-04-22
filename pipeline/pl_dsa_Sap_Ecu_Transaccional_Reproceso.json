@@ -21,7 +21,14 @@
 							"type": "AzureBlobStorageReadSettings",
 							"maxConcurrentConnections": 1,
 							"recursive": true,
-							"modifiedDatetimeStart": "2021-04-22T16:00:00.000Z",
+							"modifiedDatetimeStart": {
+								"value": "@addMinutes(pipeline().TriggerTime,-30)",
+								"type": "Expression"
+							},
+							"modifiedDatetimeEnd": {
+								"value": "@addMinutes(pipeline().TriggerTime,+30)",
+								"type": "Expression"
+							},
 							"wildcardFolderPath": "reproceso/contabilidad",
 							"wildcardFileName": {
 								"value": "@Concat('ENTRADADIARIO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
@@ -126,59 +133,6 @@
 						"parameters": {
 							"cw_carpeta": "reproceso/contabilidadLeidos"
 						}
-					}
-				]
-			},
-			{
-				"name": "EntradaDiario_copy1",
-				"type": "Copy",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"maxConcurrentConnections": 1,
-							"recursive": true,
-							"modifiedDatetimeStart": "2021-04-22T17:00:00.000Z",
-							"wildcardFolderPath": "reproceso/contabilidad",
-							"wildcardFileName": {
-								"value": "@Concat('ENTRADADIARIO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[entradadiario_prueba]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "reproceso/contabilidad"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_sap_entradadiario_prueba",
-						"type": "DatasetReference"
 					}
 				]
 			}
