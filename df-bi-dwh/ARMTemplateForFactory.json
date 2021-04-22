@@ -56316,6 +56316,10 @@
 										{
 											"name": "CUSTOMERPRICEGROUP",
 											"type": "String"
+										},
+										{
+											"name": "ORDERISBLOCKEDFORCUSTOMER",
+											"type": "String"
 										}
 									],
 									"cw_tableName": "[[dsa_ecu_sap].[clienteareaventa]"
@@ -62110,7 +62114,7 @@
 									{
 										"source": {
 											"name": "NETAMOUNT",
-											"type": "String"
+											"type": "Decimal"
 										},
 										"sink": {
 											"name": "NETAMOUNT"
@@ -62204,6 +62208,15 @@
 										},
 										"sink": {
 											"name": "SUPPLIERPHONENUMBER"
+										}
+									},
+									{
+										"source": {
+											"name": "FECHACREACIONL",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FECHACREACIONL"
 										}
 									}
 								]
@@ -63073,6 +63086,15 @@
 										"sink": {
 											"name": "PRCTR"
 										}
+									},
+									{
+										"source": {
+											"name": "PLSEZ",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PLSEZ"
+										}
 									}
 								]
 							}
@@ -63624,6 +63646,135 @@
 				"[concat(variables('factoryId'), '/datasets/ds_sap_FacturaInterlocutor')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sap_entradadiario')]",
 				"[concat(variables('factoryId'), '/linkedServices/linked_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_TransaccionalReprocesoContabilidad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Sap",
+				"activities": [
+					{
+						"name": "EntradaDiarioHistorica",
+						"description": "",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaEntradaDiarioHistorico]",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": "0"
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": null
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					}
+				],
+				"parameters": {
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linked_dwh')]",
+				"[concat(variables('factoryId'), '/datasets/ds_dwh_general')]"
 			]
 		},
 		{
@@ -165483,6 +165634,10 @@
 					{
 						"name": "SUPPLIERPHONENUMBER",
 						"type": "String"
+					},
+					{
+						"name": "FECHACREACIONL",
+						"type": "String"
 					}
 				],
 				"typeProperties": {
@@ -165944,6 +166099,10 @@
 					},
 					{
 						"name": "PRCTR",
+						"type": "String"
+					},
+					{
+						"name": "PLSEZ",
 						"type": "String"
 					}
 				],
@@ -167338,135 +167497,6 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_TransaccionalReprocesoContabilidad')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Carga Información Sap",
-				"activities": [
-					{
-						"name": "EntradaDiarioHistorica",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaEntradaDiarioHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Fecha Carga",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
-								"storedProcedureParameters": {
-									"Dias": {
-										"type": "Int32",
-										"value": "0"
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaFin": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": null
-									}
-								},
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					}
-				],
-				"parameters": {
-					"Pais": {
-						"type": "String",
-						"defaultValue": "ECU"
-					},
-					"TipoCarga": {
-						"type": "String",
-						"defaultValue": "MANUAL"
-					}
-				},
-				"folder": {
-					"name": "dsa_Sap"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/linked_dwh')]",
-				"[concat(variables('factoryId'), '/datasets/ds_dwh_general')]"
-			]
 		}
 	]
 }
