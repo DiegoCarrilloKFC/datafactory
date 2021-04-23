@@ -4,6 +4,48 @@
 		"description": "Carga Información Sap",
 		"activities": [
 			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
+						"storedProcedureParameters": {
+							"Dias": {
+								"type": "Int32",
+								"value": "1"
+							},
+							"FechaDesde": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaFin": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaHasta": {
+								"type": "DateTime",
+								"value": null
+							}
+						},
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
 				"name": "EntradaDiarioHistorica",
 				"description": "",
 				"type": "SqlServerStoredProcedure",
@@ -59,48 +101,6 @@
 				"linkedServiceName": {
 					"referenceName": "linked_dwh",
 					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "Fecha Carga",
-				"type": "Lookup",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
-						"storedProcedureParameters": {
-							"Dias": {
-								"type": "Int32",
-								"value": "0"
-							},
-							"FechaDesde": {
-								"type": "DateTime",
-								"value": null
-							},
-							"FechaFin": {
-								"type": "DateTime",
-								"value": null
-							},
-							"FechaHasta": {
-								"type": "DateTime",
-								"value": null
-							}
-						},
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
 				}
 			}
 		],
