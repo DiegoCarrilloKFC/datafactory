@@ -3,16 +3,9 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "CuentasContables",
+				"name": "CuentaContable",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "DeleteCuentasContables",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -27,7 +20,7 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/CUENTASCONTABLES",
+							"wildcardFolderPath": "reproceso/catalogo/CUENTASCONTABLES",
 							"wildcardFileName": {
 								"value": "@Concat('CUENTASCONTABLES_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
@@ -49,7 +42,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CUENTASCONTABLES"
+							"cw_carpeta": "reproceso/catalogo/CUENTASCONTABLES"
 						}
 					}
 				],
@@ -96,7 +89,14 @@
 			{
 				"name": "DeleteCuentasContables",
 				"type": "Delete",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "CuentaContable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -110,7 +110,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CUENTASCONTABLES"
+							"cw_carpeta": "reproceso/catalogo/CUENTASCONTABLES"
 						}
 					},
 					"logStorageSettings": {
@@ -118,16 +118,12 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/CUENTASCONTABLES"
+						"path": "almacenamientosap/reproceso/catalogo/CUENTASCONTABLES"
 					},
 					"enableLogging": true,
 					"storeSettings": {
 						"type": "AzureBlobStorageReadSettings",
 						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-0)",
-							"type": "Expression"
-						},
 						"enablePartitionDiscovery": false
 					}
 				}
@@ -136,15 +132,15 @@
 		"parameters": {
 			"Anio": {
 				"type": "string",
-				"defaultValue": "2021"
+				"defaultValue": "2020"
 			},
 			"Mes": {
 				"type": "string",
-				"defaultValue": "01"
+				"defaultValue": "12"
 			},
 			"Dia": {
 				"type": "string",
-				"defaultValue": "13"
+				"defaultValue": "28"
 			}
 		},
 		"folder": {
