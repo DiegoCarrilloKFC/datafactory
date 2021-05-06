@@ -5,7 +5,14 @@
 			{
 				"name": "conta_FacPyG",
 				"type": "SqlServerStoredProcedure",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -225,6 +232,30 @@
 				"linkedServiceName": {
 					"referenceName": "linked_dwh",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT\n\tFechaCarga=DATEADD(HH,-5,GETDATE()),\n\tFechaDesde=convert(smalldatetime,DATEADD(s,0,DATEADD(mm, DATEDIFF(m,0,DATEADD(HH,-5,GETDATE()))-1,0)),112),\n\tFechaHasta=convert(smalldatetime,EOMONTH(DATEADD(HH,-5,GETDATE()),-1),112)",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
 				}
 			}
 		],
