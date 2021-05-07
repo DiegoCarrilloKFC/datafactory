@@ -63,7 +63,49 @@
 					},
 					"ifFalseActivities": [
 						{
-							"name": "Carga Anterior",
+							"name": "Carga Anterior UIO",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Carga Anterior GYE",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"Servidor": {
+										"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior1",
+										"type": "Expression"
+									},
+									"BaseDatos": {
+										"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior1",
+										"type": "Expression"
+									},
+									"FechaDesde": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"FechaHasta": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
+										"type": "Expression"
+									},
+									"Region": {
+										"value": "@activity('Obtener Servidores').output.firstRow.RegionAnterior1",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "Carga Actual UIO_",
 							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"userProperties": [],
@@ -74,58 +116,12 @@
 								},
 								"waitOnCompletion": true,
 								"parameters": {
-									"FechaDesde": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"FechaHasta": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
-										"type": "Expression"
-									}
-								}
-							}
-						},
-						{
-							"name": "Carga Actual_",
-							"type": "ExecutePipeline",
-							"dependsOn": [
-								{
-									"activity": "Carga Anterior",
-									"dependencyConditions": [
-										"Completed"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"pipeline": {
-									"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional",
-									"type": "PipelineReference"
-								},
-								"waitOnCompletion": true,
-								"parameters": {
-									"ServidorQuito": {
+									"Servidor": {
 										"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
 										"type": "Expression"
 									},
-									"ServidorGuayaquil": {
-										"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
-										"type": "Expression"
-									},
-									"BaseDatosQuito": {
+									"BaseDatos": {
 										"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
-										"type": "Expression"
-									},
-									"BaseDatosGuayaquil": {
-										"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
-										"type": "Expression"
-									},
-									"RegionQuito": {
-										"value": "@activity('Obtener Servidores').output.firstRow.RegionActual1",
-										"type": "Expression"
-									},
-									"RegionGuayaquil": {
-										"value": "@activity('Obtener Servidores').output.firstRow.RegionActual2",
 										"type": "Expression"
 									},
 									"FechaDesde": {
@@ -133,7 +129,95 @@
 										"type": "Expression"
 									},
 									"FechaHasta": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"Region": {
+										"value": "@activity('Obtener Servidores').output.firstRow.RegionActual1",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "Carga Anterior GYE",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Carga Actual GYE_",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"Servidor": {
+										"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior2",
+										"type": "Expression"
+									},
+									"BaseDatos": {
+										"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior2",
+										"type": "Expression"
+									},
+									"FechaDesde": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"FechaHasta": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
+										"type": "Expression"
+									},
+									"Region": {
+										"value": "@activity('Obtener Servidores').output.firstRow.RegionAnterior2",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "Carga Actual GYE_",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Carga Actual UIO_",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"Servidor": {
+										"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+										"type": "Expression"
+									},
+									"BaseDatos": {
+										"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+										"type": "Expression"
+									},
+									"FechaDesde": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual",
+										"type": "Expression"
+									},
+									"FechaHasta": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"Region": {
+										"value": "@activity('Obtener Servidores').output.firstRow.RegionActual2",
 										"type": "Expression"
 									}
 								}
