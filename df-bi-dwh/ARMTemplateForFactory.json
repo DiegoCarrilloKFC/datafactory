@@ -2711,7 +2711,7 @@
 							{
 								"activity": "Carga Dimension Ecu",
 								"dependencyConditions": [
-									"Completed"
+									"Succeeded"
 								]
 							}
 						],
@@ -2734,9 +2734,15 @@
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
+								"activity": "Carga DSA SG ECU",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
 								"activity": "Carga DSA SAP ECU",
 								"dependencyConditions": [
-									"Completed"
+									"Succeeded"
 								]
 							}
 						],
@@ -2753,6 +2759,20 @@
 								"TipoCarga": "MANUAL"
 							}
 						}
+					},
+					{
+						"name": "Carga DSA SG ECU",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidadPyG",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"folder": {
@@ -2763,7 +2783,8 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sap_Ecu_ReprocesoPyG')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_ReprocesoPyG')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Dimensiones_ReprocesoPyG')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Dimensiones_ReprocesoPyG')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidadPyG')]"
 			]
 		},
 		{
@@ -60987,7 +61008,7 @@
 							{
 								"activity": "CatalogoReproceso",
 								"dependencyConditions": [
-									"Completed"
+									"Succeeded"
 								]
 							}
 						],
@@ -61008,7 +61029,7 @@
 							{
 								"activity": "TransaccionalReproceso",
 								"dependencyConditions": [
-									"Completed"
+									"Succeeded"
 								]
 							}
 						],
@@ -64783,16 +64804,19 @@
 								"storedProcedureParameters": {
 									"Dias": {
 										"type": "Int32",
-										"value": "0"
+										"value": "1"
 									},
 									"FechaDesde": {
-										"type": "DateTime"
+										"type": "DateTime",
+										"value": null
 									},
 									"FechaFin": {
-										"type": "DateTime"
+										"type": "DateTime",
+										"value": null
 									},
 									"FechaHasta": {
-										"type": "DateTime"
+										"type": "DateTime",
+										"value": null
 									}
 								},
 								"partitionOption": "None"
@@ -115407,7 +115431,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidad')]",
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidadPyG')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -115474,17 +115498,32 @@
 							},
 							"ifFalseActivities": [
 								{
-									"name": "Carga Anterior",
+									"name": "Carga Anterior UIO",
 									"type": "ExecutePipeline",
-									"dependsOn": [],
+									"dependsOn": [
+										{
+											"activity": "Carga Anterior GYE",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
 									"userProperties": [],
 									"typeProperties": {
 										"pipeline": {
-											"referenceName": "pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1",
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ContabilidadPyG",
 											"type": "PipelineReference"
 										},
 										"waitOnCompletion": true,
 										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior1",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior1",
+												"type": "Expression"
+											},
 											"FechaDesde": {
 												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
 												"type": "Expression"
@@ -115492,51 +115531,32 @@
 											"FechaHasta": {
 												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
 												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionAnterior1",
+												"type": "Expression"
 											}
 										}
 									}
 								},
 								{
-									"name": "Carga Actual_",
+									"name": "Carga Actual UIO_",
 									"type": "ExecutePipeline",
-									"dependsOn": [
-										{
-											"activity": "Carga Anterior",
-											"dependencyConditions": [
-												"Completed"
-											]
-										}
-									],
+									"dependsOn": [],
 									"userProperties": [],
 									"typeProperties": {
 										"pipeline": {
-											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional",
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ContabilidadPyG",
 											"type": "PipelineReference"
 										},
 										"waitOnCompletion": true,
 										"parameters": {
-											"ServidorQuito": {
+											"Servidor": {
 												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
 												"type": "Expression"
 											},
-											"ServidorGuayaquil": {
-												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
-												"type": "Expression"
-											},
-											"BaseDatosQuito": {
+											"BaseDatos": {
 												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
-												"type": "Expression"
-											},
-											"BaseDatosGuayaquil": {
-												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
-												"type": "Expression"
-											},
-											"RegionQuito": {
-												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual1",
-												"type": "Expression"
-											},
-											"RegionGuayaquil": {
-												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual2",
 												"type": "Expression"
 											},
 											"FechaDesde": {
@@ -115544,7 +115564,95 @@
 												"type": "Expression"
 											},
 											"FechaHasta": {
-												"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual1",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "Carga Anterior GYE",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Carga Actual GYE_",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ContabilidadPyG",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior2",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior2",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionAnterior2",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "Carga Actual GYE_",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Carga Actual UIO_",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ContabilidadPyG",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual2",
 												"type": "Expression"
 											}
 										}
@@ -115553,23 +115661,77 @@
 							],
 							"ifTrueActivities": [
 								{
-									"name": "Carga Actual",
+									"name": "Carga Actual UIO",
 									"type": "ExecutePipeline",
 									"dependsOn": [],
 									"userProperties": [],
 									"typeProperties": {
 										"pipeline": {
-											"referenceName": "pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1",
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ContabilidadPyG",
 											"type": "PipelineReference"
 										},
 										"waitOnCompletion": true,
 										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+												"type": "Expression"
+											},
 											"FechaDesde": {
 												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
 												"type": "Expression"
 											},
 											"FechaHasta": {
-												"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual1",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "Carga Actual GYE",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Carga Actual UIO",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ContabilidadPyG",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual2",
 												"type": "Expression"
 											}
 										}
@@ -115646,10 +115808,10 @@
 											"type": "Expression"
 										}
 									},
-									"FechaHastaActual": {
+									"FechaHasta": {
 										"type": "DateTime",
 										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
 											"type": "Expression"
 										}
 									}
@@ -115671,8 +115833,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_dwh_general')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_Transaccional')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_Transaccional_ContabilidadPyG')]"
 			]
 		},
 		{
@@ -115876,364 +116037,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_Transaccional_1')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_Transaccional_2')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Estado_PyG",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Estado_PyG]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[Estado_PyG]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": {
-									"value": "SELECT GETDATE() AS FechaCarga,Mes,Anio,Estado,Cod_Estado,Cod_Restaurante,Fecha_Creacion,'@{pipeline().parameters.Region}' AS Region FROM dbo.Estado_PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
-									"type": "Expression"
-								},
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Mes",
-											"type": "Int32"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Estado",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Fecha_Creacion",
-											"type": "DateTime"
-										},
-										{
-											"name": "Region",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[Estado_PyG]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Mes",
-											"type": "Int32"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Estado",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Fecha_Creacion",
-											"type": "DateTime"
-										},
-										{
-											"name": "Region",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[Estado_PyG]"
-								}
-							}
-						]
-					},
-					{
-						"name": "PyG",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 3,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[PyG]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_sg].[PyG]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": {
-									"value": "SELECT GETDATE() AS FechaCarga,Cod_Estado,Grupo,Descripcion,Valor,Porcentaje,Nivel,Orden,Fecha_Creacion,Mes,Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
-									"type": "Expression"
-								},
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_SistemaGerenteEcu",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Estado",
-											"type": "String"
-										},
-										{
-											"name": "Grupo",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Valor",
-											"type": "Double"
-										},
-										{
-											"name": "Porcentaje",
-											"type": "Double"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Orden",
-											"type": "Int32"
-										},
-										{
-											"name": "Fecha_Creacion",
-											"type": "DateTime"
-										},
-										{
-											"name": "Mes",
-											"type": "Int32"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Region",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[PyG]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Estado",
-											"type": "String"
-										},
-										{
-											"name": "Grupo",
-											"type": "String"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Valor",
-											"type": "Double"
-										},
-										{
-											"name": "Porcentaje",
-											"type": "Double"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Orden",
-											"type": "Int32"
-										},
-										{
-											"name": "Fecha_Creacion",
-											"type": "DateTime"
-										},
-										{
-											"name": "Mes",
-											"type": "Int32"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Region",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_sg].[PyG]"
-								}
-							}
-						]
-					}
-				],
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "SAZGERENTEDBUIO"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "SQLGerente_19"
-					},
-					"FechaDesde": {
-						"type": "string"
-					},
-					"FechaHasta": {
-						"type": "string"
-					},
-					"Region": {
-						"type": "string",
-						"defaultValue": "QUITO"
-					}
-				},
-				"folder": {
-					"name": "dsa_SistemaGerenteEcu"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_SistemaGerenteEcu')]",
-				"[concat(variables('factoryId'), '/datasets/ds_dwh')]",
-				"[concat(variables('factoryId'), '/linkedServices/linked_storage')]"
 			]
 		},
 		{
@@ -127064,6 +126867,364 @@
 										}
 									],
 									"cw_tableName": "[[dsa_ecu_sg].[MixCab]"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"Servidor": {
+						"type": "string",
+						"defaultValue": "SAZGERENTEDBUIO"
+					},
+					"BaseDatos": {
+						"type": "string",
+						"defaultValue": "SQLGerente_19"
+					},
+					"FechaDesde": {
+						"type": "string"
+					},
+					"FechaHasta": {
+						"type": "string"
+					},
+					"Region": {
+						"type": "string",
+						"defaultValue": "QUITO"
+					}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerenteEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_SistemaGerenteEcu')]",
+				"[concat(variables('factoryId'), '/datasets/ds_dwh')]",
+				"[concat(variables('factoryId'), '/linkedServices/linked_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_Transaccional_ContabilidadPyG')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Estado_PyG",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Estado_PyG]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[Estado_PyG]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Mes,Anio,Estado,Cod_Estado,Cod_Restaurante,Fecha_Creacion,'@{pipeline().parameters.Region}' AS Region FROM dbo.Estado_PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Mes",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[Estado_PyG]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Mes",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[Estado_PyG]"
+								}
+							}
+						]
+					},
+					{
+						"name": "PyG",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[PyG]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[PyG]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Estado,Grupo,Descripcion,Valor,Porcentaje,Nivel,Orden,Fecha_Creacion,Mes,Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"type": "Expression"
+								},
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "String"
+										},
+										{
+											"name": "Grupo",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Nivel",
+											"type": "Int32"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Mes",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[PyG]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Estado",
+											"type": "String"
+										},
+										{
+											"name": "Grupo",
+											"type": "String"
+										},
+										{
+											"name": "Descripcion",
+											"type": "String"
+										},
+										{
+											"name": "Valor",
+											"type": "Double"
+										},
+										{
+											"name": "Porcentaje",
+											"type": "Double"
+										},
+										{
+											"name": "Nivel",
+											"type": "Int32"
+										},
+										{
+											"name": "Orden",
+											"type": "Int32"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Mes",
+											"type": "Int32"
+										},
+										{
+											"name": "Anio",
+											"type": "Int32"
+										},
+										{
+											"name": "Region",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[PyG]"
 								}
 							}
 						]
@@ -163770,6 +163931,13 @@
 										"type": "Expression"
 									},
 									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
 								}
 							}
 						},
@@ -163827,6 +163995,13 @@
 										"type": "Expression"
 									},
 									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
 								}
 							}
 						},
@@ -163884,6 +164059,13 @@
 										"type": "Expression"
 									},
 									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
 								}
 							}
 						},
@@ -163938,7 +164120,7 @@
 				],
 				"parameters": {
 					"IDCadenaSistemaGerente": {
-						"type": "Int",
+						"type": "int",
 						"defaultValue": 0
 					},
 					"Pais": {
@@ -166867,6 +167049,60 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl_Recarga_Compras_Ecuador')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Recarga Contabiliadad PyG')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl_Recarga_ContabilidadPyG_Ecuador",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Month",
+						"interval": 15,
+						"startTime": "2021-05-07T14:51:00Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								20
+							],
+							"hours": [
+								16,
+								19,
+								22,
+								1
+							],
+							"monthDays": [
+								5,
+								6,
+								7,
+								8,
+								9,
+								10,
+								12,
+								13,
+								14,
+								11,
+								15
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_Recarga_ContabilidadPyG_Ecuador')]"
 			]
 		},
 		{
