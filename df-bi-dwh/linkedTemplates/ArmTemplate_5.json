@@ -13,6 +13,100 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_SipEcu')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_sip_ecu",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": {
+							"value": "@dataset().cw_servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@dataset().cw_baseDatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_Sip"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteArg')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_sg_arg",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": {
+							"value": "@dataset().cw_servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@dataset().cw_baseDatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerente"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_SistemaGerenteChl')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -50422,289 +50516,6 @@
 				},
 				"folder": {
 					"name": "dsa_MaxPointEcu"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Fecha Carga",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "Select Anio=year(dateadd(hh,-5,getdate()))\n,Mes=convert (char(2),dateadd(hh,-5,getdate()),101)\n,Dia=convert (char(2),dateadd(hh,-5,getdate()),103)",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Catalogo1",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Sap_Ecu_Catalogo_1",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Anio": {
-									"value": "@activity('Fecha Carga').output.firstRow.Anio",
-									"type": "Expression"
-								},
-								"Mes": {
-									"value": "@activity('Fecha Carga').output.firstRow.Mes",
-									"type": "Expression"
-								},
-								"Dia": {
-									"value": "@activity('Fecha Carga').output.firstRow.Dia",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "Transaccional",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Catalogo2",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Catalogo1",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Sap_Ecu_Transaccional",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Anio": {
-									"value": "@activity('Fecha Carga').output.firstRow.Anio",
-									"type": "Expression"
-								},
-								"Mes": {
-									"value": "@activity('Fecha Carga').output.firstRow.Mes",
-									"type": "Expression"
-								},
-								"Dia": {
-									"value": "@activity('Fecha Carga').output.firstRow.Dia",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "Catalogo2",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Sap_Ecu_Catalogo_2",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Anio": {
-									"value": "@activity('Fecha Carga').output.firstRow.Anio",
-									"type": "Expression"
-								},
-								"Mes": {
-									"value": "@activity('Fecha Carga').output.firstRow.Mes",
-									"type": "Expression"
-								},
-								"Dia": {
-									"value": "@activity('Fecha Carga').output.firstRow.Dia",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "TransaccionalHistorico",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Transaccional",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Sap_Ecu_Transaccional_Historico",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					}
-				],
-				"folder": {
-					"name": "dsa_Sap"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_ReprocesoContabildiad')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Fecha Carga",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "Select Anio=year(dateadd(hh,-5,getdate()))\n,Mes=convert (char(2),dateadd(hh,-5,getdate()),101)\n,Dia=convert (char(2),dateadd(hh,-5,getdate()),103)",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "CatalogoReproceso",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Sap_Ecu_CatalogoReprocesoContabilidad",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Anio": {
-									"value": "@activity('Fecha Carga').output.firstRow.Anio",
-									"type": "Expression"
-								},
-								"Mes": {
-									"value": "@activity('Fecha Carga').output.firstRow.Mes",
-									"type": "Expression"
-								},
-								"Dia": {
-									"value": "@activity('Fecha Carga').output.firstRow.Dia",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "TransaccionalReproceso",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "CatalogoReproceso",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Sap_Ecu_TransaccionalReprocesoContabilidad",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "TransaccionalHistoricoReproceso",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "TransaccionalReproceso",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Sap_Ecu_Transaccional_HistoricoReprocesoContabilidad",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					}
-				],
-				"folder": {
-					"name": "dsa_Sap"
 				},
 				"annotations": []
 			},
