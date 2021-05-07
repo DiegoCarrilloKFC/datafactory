@@ -142,7 +142,7 @@
 					],
 					"ifTrueActivities": [
 						{
-							"name": "Carga Actual",
+							"name": "Carga Actual UIO",
 							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"userProperties": [],
@@ -171,6 +171,48 @@
 									},
 									"Region": {
 										"value": "@activity('Obtener Servidores').output.firstRow.RegionActual1",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "Carga Actual GYE",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Carga Actual UIO",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_dsa_SistemaGerente_Ecu_TransaccionalReprocesoContabilidad_1",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"Servidor": {
+										"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+										"type": "Expression"
+									},
+									"BaseDatos": {
+										"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+										"type": "Expression"
+									},
+									"FechaDesde": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"FechaHasta": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"Region": {
+										"value": "@activity('Obtener Servidores').output.firstRow.RegionActual2",
 										"type": "Expression"
 									}
 								}
