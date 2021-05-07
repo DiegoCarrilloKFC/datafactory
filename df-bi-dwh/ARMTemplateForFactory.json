@@ -2693,7 +2693,14 @@
 					{
 						"name": "Carga DSA SAP ECU",
 						"type": "ExecutePipeline",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -2763,7 +2770,14 @@
 					{
 						"name": "Carga DSA SG ECU",
 						"type": "ExecutePipeline",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -2772,6 +2786,63 @@
 							},
 							"waitOnCompletion": true,
 							"parameters": {}
+						}
+					},
+					{
+						"name": "Inicializar Etapas",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "UPDATE admin_btc.LogEjecucionEtapa SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND IDEtapa IN ('DIMENSIONECU','FACTCONTABILIDADECU')\n\nUPDATE admin_btc.LogEjecucionTabla SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND Tabla IN ('FacPyG','FacPyGUniforme','FacPyGContabilidad')\nAND Esquema in ('dwh_ecu_cubo','dwh_ecu_conta')\n\n--Control de Cargas\nDELETE FROM admin_btc.CargaDataFactory\nWHERE FechaPeriodo = CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'REPROCESO PYG ECUADOR'\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'REPROCESO PYG ECUADOR',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Finalizar Carga",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Carga Contabilidad Ecu",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "UPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'REPROCESO PYG ECUADOR'\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
 						}
 					}
 				],
@@ -2784,7 +2855,8 @@
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sap_Ecu_ReprocesoPyG')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_ReprocesoPyG')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Dimensiones_ReprocesoPyG')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidadPyG')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidadPyG')]",
+				"[concat(variables('factoryId'), '/datasets/ds_dwh_general')]"
 			]
 		},
 		{
@@ -14736,7 +14808,7 @@
 										"type": "Expression"
 									},
 									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
+										"value": "SqlGerenteDomKFC_G1",
 										"type": "Expression"
 									}
 								}
@@ -14861,7 +14933,7 @@
 										"type": "Expression"
 									},
 									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
+										"value": "SqlGerenteDomKFC_G2",
 										"type": "Expression"
 									}
 								}
@@ -14910,12 +14982,10 @@
 						"defaultValue": "SqlGerenteDom"
 					},
 					"FechaDesde": {
-						"type": "string",
-						"defaultValue": "20210303"
+						"type": "string"
 					},
 					"FechaHasta": {
-						"type": "string",
-						"defaultValue": "20210502"
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -61019,7 +61089,20 @@
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {}
+							"parameters": {
+								"Anio": {
+									"value": "@activity('Fecha Carga').output.firstRow.Anio",
+									"type": "Expression"
+								},
+								"Mes": {
+									"value": "@activity('Fecha Carga').output.firstRow.Mes",
+									"type": "Expression"
+								},
+								"Dia": {
+									"value": "@activity('Fecha Carga').output.firstRow.Dia",
+									"type": "Expression"
+								}
+							}
 						}
 					},
 					{
