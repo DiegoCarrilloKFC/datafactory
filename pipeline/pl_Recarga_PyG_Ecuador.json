@@ -64,37 +64,6 @@
 						"TipoCarga": "MANUAL"
 					}
 				}
-			},
-			{
-				"name": "Finalizar Carga",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "Carga Contabilidad Ecu",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'AUDITORIA ECUADOR'\n\nSELECT 'ok' AS Resultado",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
 			}
 		],
 		"folder": {
