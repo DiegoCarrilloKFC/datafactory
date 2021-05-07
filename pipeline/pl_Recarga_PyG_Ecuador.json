@@ -3,20 +3,13 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Carga DSA SG Ecu",
+				"name": "Carga DSA SAP ECU",
 				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Inicializar Etapas",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
+				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_dsa_SistemaGerente_Ecu_Auditoria",
+						"referenceName": "pl_dsa_Sap_Ecu_ReprocesoPyG",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -48,35 +41,11 @@
 				}
 			},
 			{
-				"name": "Inicializar Etapas",
-				"type": "Lookup",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": "UPDATE admin_btc.LogEjecucionEtapa SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND IDEtapa IN ('DIMENSIONECU','FACTAUDITORIAECU')\n\nUPDATE admin_btc.LogEjecucionTabla SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND Tabla IN ('FacSgPorcentual','FacSgPorcentualCentroCosto','FacSgVentaFormaPago','FacSgCierreCaja','FacSgDeposito','FacSgCierreCajaChica','FacSgMatrizAuditoria','FacSgMatrizAuditoriaAcumulada') and IDCadenaSistemaGerente!=29\n\n--Control de Cargas\nDELETE FROM admin_btc.CargaDataFactory\nWHERE FechaPeriodo = CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'AUDITORIA ECUADOR'\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'AUDITORIA ECUADOR',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
 				"name": "Carga Dimension Ecu",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "Carga DSA SG Ecu",
+						"activity": "Carga DSA SAP ECU",
 						"dependencyConditions": [
 							"Completed"
 						]
