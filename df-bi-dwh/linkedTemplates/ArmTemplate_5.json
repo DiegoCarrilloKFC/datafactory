@@ -13,6 +13,53 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_Sharepoint')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_sharepoint",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Servidor": {
+							"value": "@dataset().cw_servidor",
+							"type": "Expression"
+						},
+						"BaseDatos": {
+							"value": "@dataset().cw_baseDatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dwh_Sharepoint"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_SipEcu')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -256,7 +303,14 @@
 					{
 						"name": "Reescalar DWH 2",
 						"type": "ExecutePipeline",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Tiempo Espera Log",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -300,6 +354,15 @@
 								"parameters": {}
 							},
 							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Tiempo Espera Log",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 800
 						}
 					}
 				],
@@ -1620,7 +1683,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_Sharepoint')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_App_ContabilidadRegional_Transaccional')]",
@@ -1830,7 +1895,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_Sharepoint')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_Conta_ConsolidadoTarjetas')]",
@@ -4397,7 +4464,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_Sharepoint')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_Domicilio_Chl_Catalogo')]",
@@ -49270,7 +49339,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_Sharepoint')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_ListaExterna_Vito')]",
@@ -50001,7 +50072,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_Sharepoint')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_Maxpoint_Ecu_Catalogo')]",
@@ -50318,198 +50391,6 @@
 								}
 							}
 						]
-					}
-				},
-				"folder": {
-					"name": "dsa_MaxPointEcu"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_Maxpoint_Ecu_Drive')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "RegaliasYUM",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dwh_ecu_ope].[RegaliasYUM]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_ecu_mp].[RegaliasYUM]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "select GETDATE() as FechaCarga,'6F9619FF-8B86-D011-B42D-00C04FC964FF' AS IDRegaliasYUM,Cod_Restaurante,Transaccion,VentaBruta,VentaNeta,FechaPeriodo from [dwh_ecu_ope].[RegaliasYUM]",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_mp].[RegaliasYUM]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDRegaliasYUM",
-											"type": "Guid"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int64"
-										},
-										{
-											"name": "Transaccion",
-											"type": "String"
-										},
-										{
-											"name": "VentaBruta",
-											"type": "Double"
-										},
-										{
-											"name": "VentaNeta",
-											"type": "Double"
-										},
-										{
-											"name": "FechaPeriodo",
-											"type": "DateTime"
-										}
-									],
-									"cw_tableName": "[[dwh_ecu_ope].[RegaliasYUM]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDRegaliasYUM",
-											"type": "Guid"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int64"
-										},
-										{
-											"name": "Transaccion",
-											"type": "String"
-										},
-										{
-											"name": "VentaBruta",
-											"type": "Double"
-										},
-										{
-											"name": "VentaNeta",
-											"type": "Double"
-										},
-										{
-											"name": "FechaPeriodo",
-											"type": "DateTime"
-										}
-									],
-									"cw_tableName": "[[dsa_ecu_mp].[RegaliasYUM]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Actualizar VentaNeta",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "RegaliasYUM",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "UPDATE reg SET VentaNeta = ISNULL( VentaBruta / (((SELECT Porcentaje FROM dwh_dim.Impuesto WHERE Impuesto = 'IVA' AND CAST(reg.FechaPeriodo AS DATE) BETWEEN FechaInicio AND FechaFin AND Pais = 'ECU') / 100) + 1),0) FROM dsa_ecu_mp.RegaliasYUM reg\n\nSELECT 'ok' AS Resultado",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					}
-				],
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "SAZSHAREPBDD\\BD_NEGOCIO"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "dw_dwh_suscripcion"
 					}
 				},
 				"folder": {

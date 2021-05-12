@@ -13,6 +13,186 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Maxpoint_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Carga Catalogos",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Obtener Servidores",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Maxpoint_Ecu_Catalogo",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": {
+									"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+									"type": "Expression"
+								},
+								"BaseDatos": {
+									"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Obtener Servidores",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
+								"storedProcedureParameters": {
+									"CodigoETL": {
+										"type": "String",
+										"value": "BD-MP-ECU"
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+											"type": "Expression"
+										}
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+											"type": "Expression"
+										}
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": null
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": null
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Actualiza Estadistica",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Carga Catalogos",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dsa_ecu_mp",
+									"type": "String"
+								},
+								"Paso": {
+									"value": "1",
+									"type": "Int16"
+								},
+								"Proceso": {
+									"value": "General",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"folder": {
+					"name": "dsa_MaxPointEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sip_Ecu')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -4235,6 +4415,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Maxpoint_Ecu')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_CAR_Ecu')]"
 			]
 		},
@@ -4586,6 +4767,12 @@
 								"dependencyConditions": [
 									"Completed"
 								]
+							},
+							{
+								"activity": "Carga DSA DOM Col",
+								"dependencyConditions": [
+									"Completed"
+								]
 							}
 						],
 						"userProperties": [],
@@ -4656,12 +4843,6 @@
 						"name": "Carga Operacion Col",
 						"type": "ExecutePipeline",
 						"dependsOn": [
-							{
-								"activity": "Carga DSA DOM Col",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
 							{
 								"activity": "Carga Venta Acumulada Ecu",
 								"dependencyConditions": [
@@ -5325,22 +5506,6 @@
 						}
 					},
 					{
-						"name": "Tiempo Espera Log",
-						"type": "Wait",
-						"dependsOn": [
-							{
-								"activity": "Verificar Proceso Cubos Venta",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": 800
-						}
-					},
-					{
 						"name": "Carga DSA DOM Chl",
 						"type": "ExecutePipeline",
 						"dependsOn": [
@@ -5387,7 +5552,7 @@
 						"type": "Lookup",
 						"dependsOn": [
 							{
-								"activity": "Carga CAR Ecu",
+								"activity": "Carga Operacion Ecu",
 								"dependencyConditions": [
 									"Completed"
 								]
@@ -5419,7 +5584,7 @@
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
-								"activity": "Carga Info Sus Dim",
+								"activity": "Carga Domicilio COL",
 								"dependencyConditions": [
 									"Completed"
 								]
@@ -5444,7 +5609,7 @@
 						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
-								"activity": "Tiempo Espera Log",
+								"activity": "Verificar Proceso Cubos Venta",
 								"dependencyConditions": [
 									"Completed"
 								]
@@ -5458,6 +5623,31 @@
 							},
 							"waitOnCompletion": true,
 							"parameters": {}
+						}
+					},
+					{
+						"name": "Carga Domicilio COL",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_DomicilioCol",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "COL",
+								"TipoCarga": "AUTOMATICA"
+							}
 						}
 					}
 				],
@@ -6083,179 +6273,6 @@
 				"annotations": []
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_Recarga_Venta_Colombia')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Carga DSA SG Col",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_SistemaGerente_Col",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Carga Dimension Col",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga DSA SG Col",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carta DSA DOM Col",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Dimensiones_Venta_Col",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "COL",
-								"TipoCarga": "MANUAL"
-							}
-						}
-					},
-					{
-						"name": "Carga Operacion Col",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Dimension Col",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_Venta_Col",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "COL",
-								"TipoCarga": "MANUAL"
-							}
-						}
-					},
-					{
-						"name": "Carta DSA DOM Col",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Domicilio_Col",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Inicializar Etapas",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "INSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'RECARGA VENTA COLOMBIA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					},
-					{
-						"name": "Finalizar Carga Venta",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Carga Operacion Col",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'RECARGA VENTA COLOMBIA'\n\nSELECT 'ok' AS Resultado",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					}
-				],
-				"folder": {
-					"name": "Carga_dwh_Triggers"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Col')]"
-			]
 		}
 	]
 }
