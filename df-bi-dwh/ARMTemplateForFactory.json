@@ -109799,6 +109799,10 @@
 										{
 											"name": "Cod_GrupoArt",
 											"type": "String"
+										},
+										{
+											"name": "Maestro_Cod_Articulo",
+											"type": "String"
 										}
 									],
 									"cw_tableName": "[[dsa_ecu_sg].[Costos_Articulos]"
@@ -115771,6 +115775,141 @@
 								}
 							}
 						]
+					},
+					{
+						"name": "Perfil",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[CanalMenuMedio]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[CanalMenuMedio]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "\t\t\tSELECT GETDATE() FechaCarga, Cod_Perfil, Nombre, Estado, AperturaProceso, AjusteCierre, ControlVacaciones\nFROM dbo.Perfil",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[CanalMenuMedio]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Perfil",
+											"type": "Int32"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "AperturaProceso",
+											"type": "Int32"
+										},
+										{
+											"name": "AjusteCierre",
+											"type": "Int32"
+										},
+										{
+											"name": "ControlVacaciones",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Perfil]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatosQuito",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Perfil",
+											"type": "Int32"
+										},
+										{
+											"name": "Nombre",
+											"type": "String"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "AperturaProceso",
+											"type": "Int32"
+										},
+										{
+											"name": "AjusteCierre",
+											"type": "Int32"
+										},
+										{
+											"name": "ControlVacaciones",
+											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[Perfil]"
+								}
+							}
+						]
 					}
 				],
 				"parameters": {
@@ -116914,7 +117053,7 @@
 							"source": {
 								"type": "SqlServerSource",
 								"sqlReaderQuery": {
-									"value": "SELECT GETDATE() AS FechaCarga,Cod_Pedido,Cod_Estado,Cod_Restaurante,Cod_Proveedor,Fecha_Pedido,Fecha_Recepcion,Relacionado,Tipo,YEAR(Fecha_Pedido) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.CabPedidos WHERE Fecha_Pedido >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Pedido < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Pedido,Cod_Estado,Cod_Restaurante,Cod_Proveedor,Fecha_Pedido,Fecha_Recepcion,Relacionado,Tipo,YEAR(Fecha_Pedido) AS Anio,'@{pipeline().parameters.Region}' AS Region, Cod_Usuario FROM dbo.CabPedidos WHERE Fecha_Pedido >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Pedido < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 									"type": "Expression"
 								},
 								"partitionOption": "None"
@@ -116987,6 +117126,10 @@
 										{
 											"name": "Region",
 											"type": "String"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
 										}
 									],
 									"cw_tableName": "[[dbo].[CabPedidos]",
@@ -117050,6 +117193,10 @@
 										{
 											"name": "Region",
 											"type": "String"
+										},
+										{
+											"name": "Cod_Usuario",
+											"type": "Int32"
 										}
 									],
 									"cw_tableName": "[[dsa_ecu_sg].[CabPedidos]"
