@@ -988,7 +988,7 @@
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "Carga CAR Col",
+						"activity": "Inicializar Carga COL",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -1026,6 +1026,38 @@
 						"Pais": "COL",
 						"TipoCarga": "MANUAL"
 					}
+				}
+			},
+			{
+				"name": "Inicializar Carga COL",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Carga CAR Col",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA COLOMBIA',DATEADD(HH,-5,GETDATE()),DATEADD(HH,-5,GETDATE()),1\n\nSELECT 'ok' AS Resultado",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
 				}
 			}
 		],
