@@ -1320,7 +1320,14 @@
 					{
 						"name": "Inicializar Etapas",
 						"type": "Lookup",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Inicializar Info Suscripcion",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -1367,7 +1374,14 @@
 					{
 						"name": "Recarga Permisologia",
 						"type": "ExecutePipeline",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Inicializar Info Suscripcion",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -1927,27 +1941,6 @@
 						}
 					},
 					{
-						"name": "Carga Multipais Ext",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga CAR Col",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_Carga_Multipais_Ext",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
 						"name": "Carga Domicilio COL",
 						"type": "ExecutePipeline",
 						"dependsOn": [
@@ -1970,6 +1963,39 @@
 								"Pais": "COL",
 								"TipoCarga": "MANUAL"
 							}
+						}
+					},
+					{
+						"name": "Inicializar Carga COL",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Carga CAR Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA COLOMBIA',DATEADD(HH,-5,GETDATE()),DATEADD(HH,-5,GETDATE()),1\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
 						}
 					}
 				],
@@ -2010,7 +2036,6 @@
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Domicilio_Chl')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_Sap_Ecu')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Operaciones_Venta_Acum_Ecu')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_Carga_Multipais_Ext')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_dwh_Operaciones_DomicilioCol')]"
 			]
 		},
@@ -2082,7 +2107,7 @@
 						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
-							"waitTimeInSeconds": 800
+							"waitTimeInSeconds": 1500
 						}
 					}
 				],
