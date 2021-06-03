@@ -242,31 +242,6 @@
 				}
 			},
 			{
-				"name": "Carga Operacion Col",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Carga Domicilio COL",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_dwh_Operaciones_Col",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"IDCadenaSistemaGerente": "0",
-						"Pais": "COL",
-						"TipoCarga": "MANUAL"
-					}
-				}
-			},
-			{
 				"name": "Carga Operacion Chl",
 				"type": "ExecutePipeline",
 				"dependsOn": [
@@ -319,31 +294,6 @@
 						"IDCadenaSistemaGerente": "0",
 						"Pais": "ECU",
 						"TipoCarga": "AUTOMATICA"
-					}
-				}
-			},
-			{
-				"name": "Carga CAR Col",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Carga Operacion Col",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_dwh_Auditoria_Col",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"IDCadenaSistemaGerente": "0",
-						"Pais": "COL",
-						"TipoCarga": "MANUAL"
 					}
 				}
 			},
@@ -984,7 +934,7 @@
 				}
 			},
 			{
-				"name": "Carga Domicilio COL",
+				"name": "Carga COL DOMI OPE CAR",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
@@ -997,23 +947,80 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_dwh_Operaciones_DomicilioCol",
+						"referenceName": "pl_Carga_COL_DOMI_OPE_CAR",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"IDCadenaSistemaGerente": "0",
-						"Pais": "COL",
-						"TipoCarga": "MANUAL"
-					}
+					"waitOnCompletion": true
 				}
 			},
 			{
-				"name": "Inicializar Carga COL",
+				"name": "Verificar Proceso Cubos Col",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Carga COL DOMI OPE CAR",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Verificar Carga Venta').output.firstRow.Resultado, 'OK')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Verificar Carga Venta COL",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Espera_copy1",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA COL' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "ds_dwh_general",
+									"type": "DatasetReference"
+								}
+							}
+						},
+						{
+							"name": "Espera_copy1",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 180
+							}
+						}
+					],
+					"timeout": "00.12:00:00"
+				}
+			},
+			{
+				"name": "Finalizar Carga UyC",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Carga CAR Col",
+						"activity": "Verificar Proceso Cubos Col",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -1030,7 +1037,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlDWSource",
-						"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA COLOMBIA',DATEADD(HH,-5,GETDATE()),DATEADD(HH,-5,GETDATE()),1\n\nSELECT 'ok' AS Resultado",
+						"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA USO CONSUMO ECU'\n\nSELECT 'ok' AS Resultado",
 						"partitionOption": "None"
 					},
 					"dataset": {
