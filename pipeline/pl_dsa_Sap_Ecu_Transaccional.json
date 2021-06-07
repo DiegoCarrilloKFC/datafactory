@@ -2901,6 +2901,52 @@
 				]
 			},
 			{
+				"name": "DeleteCostos",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "Costos",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/REPORTEDCOSTOS"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/produccionplanta/REPORTEDCOSTOS"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
 				"name": "Costos",
 				"type": "Copy",
 				"dependsOn": [],
@@ -3003,7 +3049,7 @@
 							{
 								"source": {
 									"name": "COSTESINTERNOS",
-									"type": "String"
+									"type": "Decimal"
 								},
 								"sink": {
 									"name": "COSTESINTERNOS"
@@ -3057,7 +3103,7 @@
 							{
 								"source": {
 									"name": "CANTIDAD",
-									"type": "String"
+									"type": "Decimal"
 								},
 								"sink": {
 									"name": "CANTIDAD"
@@ -3084,7 +3130,7 @@
 							{
 								"source": {
 									"name": "COSTO_OBRA",
-									"type": "String"
+									"type": "Decimal"
 								},
 								"sink": {
 									"name": "COSTO_OBRA"
@@ -3093,7 +3139,7 @@
 							{
 								"source": {
 									"name": "COSTO_FAB",
-									"type": "String"
+									"type": "Decimal"
 								},
 								"sink": {
 									"name": "COSTO_FAB"
@@ -3102,7 +3148,7 @@
 							{
 								"source": {
 									"name": "COSTO_DEPRE",
-									"type": "String"
+									"type": "Decimal"
 								},
 								"sink": {
 									"name": "COSTO_DEPRE"
@@ -3111,7 +3157,7 @@
 							{
 								"source": {
 									"name": "COSTO_REVALO",
-									"type": "String"
+									"type": "Decimal"
 								},
 								"sink": {
 									"name": "COSTO_REVALO"
@@ -3120,7 +3166,7 @@
 							{
 								"source": {
 									"name": "TOTALCOSTOSMAT",
-									"type": "String"
+									"type": "Decimal"
 								},
 								"sink": {
 									"name": "TOTALCOSTOSMAT"
@@ -3162,52 +3208,6 @@
 						"type": "DatasetReference"
 					}
 				]
-			},
-			{
-				"name": "DeleteCostos",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "Costos",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "produccionplanta/REPORTEDCOSTOS"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/produccionplanta/REPORTEDCOSTOS"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
 			}
 		],
 		"parameters": {
