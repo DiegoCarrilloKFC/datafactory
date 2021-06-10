@@ -13,6 +13,206 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_Transaccional')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Carga Transac UIO 1",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_1",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": {
+									"value": "@pipeline().parameters.ServidorQuito",
+									"type": "Expression"
+								},
+								"BaseDatos": {
+									"value": "@pipeline().parameters.BaseDatosQuito",
+									"type": "Expression"
+								},
+								"FechaDesde": {
+									"value": "@pipeline().parameters.FechaDesde",
+									"type": "Expression"
+								},
+								"FechaHasta": {
+									"value": "@pipeline().parameters.FechaHasta",
+									"type": "Expression"
+								},
+								"Region": {
+									"value": "@pipeline().parameters.RegionQuito",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Carga Transac UIO 2",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_2",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": {
+									"value": "@pipeline().parameters.ServidorQuito",
+									"type": "Expression"
+								},
+								"BaseDatos": {
+									"value": "@pipeline().parameters.BaseDatosQuito",
+									"type": "Expression"
+								},
+								"FechaDesde": {
+									"value": "@pipeline().parameters.FechaDesde",
+									"type": "Expression"
+								},
+								"FechaHasta": {
+									"value": "@pipeline().parameters.FechaHasta",
+									"type": "Expression"
+								},
+								"Region": {
+									"value": "@pipeline().parameters.RegionQuito",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Carga Transac GYE 1",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Transac UIO 1",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_1",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": {
+									"value": "@pipeline().parameters.ServidorGuayaquil",
+									"type": "Expression"
+								},
+								"BaseDatos": {
+									"value": "@pipeline().parameters.BaseDatosGuayaquil",
+									"type": "Expression"
+								},
+								"FechaDesde": {
+									"value": "@pipeline().parameters.FechaDesde",
+									"type": "Expression"
+								},
+								"FechaHasta": {
+									"value": "@pipeline().parameters.FechaHasta",
+									"type": "Expression"
+								},
+								"Region": {
+									"value": "@pipeline().parameters.RegionGuayaquil",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Carga Transac GYE 2",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Transac UIO 2",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_2",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": {
+									"value": "@pipeline().parameters.ServidorGuayaquil",
+									"type": "Expression"
+								},
+								"BaseDatos": {
+									"value": "@pipeline().parameters.BaseDatosGuayaquil",
+									"type": "Expression"
+								},
+								"FechaDesde": {
+									"value": "@pipeline().parameters.FechaDesde",
+									"type": "Expression"
+								},
+								"FechaHasta": {
+									"value": "@pipeline().parameters.FechaHasta",
+									"type": "Expression"
+								},
+								"Region": {
+									"value": "@pipeline().parameters.RegionGuayaquil",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"parameters": {
+					"ServidorQuito": {
+						"type": "string",
+						"defaultValue": "SAZGERENTEDBUIO"
+					},
+					"ServidorGuayaquil": {
+						"type": "string",
+						"defaultValue": "SAZGERENTEDBGYE"
+					},
+					"BaseDatosQuito": {
+						"type": "string",
+						"defaultValue": "SQLGerente_19"
+					},
+					"BaseDatosGuayaquil": {
+						"type": "string",
+						"defaultValue": "SQLGerente_19"
+					},
+					"RegionQuito": {
+						"type": "string",
+						"defaultValue": "QUITO"
+					},
+					"RegionGuayaquil": {
+						"type": "string",
+						"defaultValue": "GUAYAQUIL"
+					},
+					"FechaDesde": {
+						"type": "string"
+					},
+					"FechaHasta": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerenteEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Esp_Catalogo_1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -19416,265 +19616,6 @@
 				},
 				"folder": {
 					"name": "dsa_Intranet"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_Domicilio_Chl')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Fecha Carga",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
-								"storedProcedureParameters": {
-									"Dias": {
-										"type": "Int32",
-										"value": "30"
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaFin": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": null
-									}
-								},
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Servidor Domicilio SG",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
-								"storedProcedureParameters": {
-									"CodigoETL": {
-										"type": "String",
-										"value": "BD-DOMISG-CHL"
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-											"type": "Expression"
-										}
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": {
-											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
-											"type": "Expression"
-										}
-									}
-								},
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Carga Transaccional",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Catalogos",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Domicilio_Chl_Transaccional",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Servidor": {
-									"value": "@activity('Servidor Domicilio SG').output.firstRow.ServidorActual1",
-									"type": "Expression"
-								},
-								"BaseDatosDomicilioGerente": {
-									"value": "@activity('Servidor Domicilio SG').output.firstRow.BaseDatosActual1",
-									"type": "Expression"
-								},
-								"FechaDesde": {
-									"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-									"type": "Expression"
-								},
-								"FechaHasta": {
-									"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "Carga Catalogos",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Servidor Domicilio SG",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Domicilio_Chl_Catalogo",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Servidor": {
-									"value": "@activity('Servidor Domicilio SG').output.firstRow.ServidorActual1",
-									"type": "Expression"
-								},
-								"BaseDatosDomicilioGerente": {
-									"value": "@activity('Servidor Domicilio SG').output.firstRow.BaseDatosActual1",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "Actualiza Estadistica 1",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Carga Transaccional",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dsa_chl_domi",
-									"type": "String"
-								},
-								"Paso": {
-									"value": "1",
-									"type": "Int16"
-								},
-								"Proceso": {
-									"value": "General",
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Actualiza Estadistica 2",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Carga Transaccional",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_adm].[ActualizarEstadisticas]",
-							"storedProcedureParameters": {
-								"Esquema": {
-									"value": "dsa_chl_domi",
-									"type": "String"
-								},
-								"Paso": {
-									"value": "2",
-									"type": "Int16"
-								},
-								"Proceso": {
-									"value": "General",
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"folder": {
-					"name": "dsa_DomicilioChl"
 				},
 				"annotations": []
 			},

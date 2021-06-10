@@ -65,6 +65,27 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_sap_ReservaMaterial')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataset parametrizado DWH\n",
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dwh_General/ds_Sap"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"typeProperties": {
+					"tableName": "[[dsa_ecu_sap].[RESERVALISTAMATERIAL]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_sap_entradadiario')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -6267,58 +6288,6 @@
 						]
 					},
 					{
-						"name": "DocumentoEntrega",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "produccionplanta/DOCUMENTOENTREGA",
-									"wildcardFileName": {
-										"value": "@Concat('DOCUMENTOENTREGA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[documentoentrega]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "produccionplanta/DOCUMENTOENTREGA"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_sap_DocumentoEntrega",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					},
-					{
 						"name": "OrdenCompraCondicion",
 						"type": "Copy",
 						"dependsOn": [],
@@ -6808,486 +6777,6 @@
 						"outputs": [
 							{
 								"referenceName": "ds_sap_PedidoVentaInterlocutor",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					},
-					{
-						"name": "FacturaVenta",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "produccionplanta/FACTURAVENTA",
-									"wildcardFileName": {
-										"value": "@Concat('FACTURAVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-										"type": "Expression"
-									}
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[FacturaVenta]",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"mappings": [
-									{
-										"source": {
-											"name": "MANDT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "MANDT"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGDOCUMENT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLINGDOCUMENT"
-										}
-									},
-									{
-										"source": {
-											"name": "SDDOCUMENTCATEGORY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SDDOCUMENTCATEGORY"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGDOCUMENTCATEGORY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLINGDOCUMENTCATEGORY"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGDOCUMENTTYPE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLINGDOCUMENTTYPE"
-										}
-									},
-									{
-										"source": {
-											"name": "CREATEDBYUSER",
-											"type": "String"
-										},
-										"sink": {
-											"name": "CREATEDBYUSER"
-										}
-									},
-									{
-										"source": {
-											"name": "FECHACARGA",
-											"type": "String"
-										},
-										"sink": {
-											"name": "FECHACARGA"
-										}
-									},
-									{
-										"source": {
-											"name": "CREATIONTIME",
-											"type": "String"
-										},
-										"sink": {
-											"name": "CREATIONTIME"
-										}
-									},
-									{
-										"source": {
-											"name": "LASTCHANGEDATETIME",
-											"type": "String"
-										},
-										"sink": {
-											"name": "LASTCHANGEDATETIME"
-										}
-									},
-									{
-										"source": {
-											"name": "CREATIONDATE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "CREATIONDATE"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESORGANIZATION",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESORGANIZATION"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGDOCUMENTDATE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLINGDOCUMENTDATE"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGDOCUMENTISCANCELLED",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLINGDOCUMENTISCANCELLED"
-										}
-									},
-									{
-										"source": {
-											"name": "CANCELLEDBILLINGDOCUMENT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "CANCELLEDBILLINGDOCUMENT"
-										}
-									},
-									{
-										"source": {
-											"name": "PAYMENTMETHOD",
-											"type": "String"
-										},
-										"sink": {
-											"name": "PAYMENTMETHOD"
-										}
-									},
-									{
-										"source": {
-											"name": "COMPANYCODE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "COMPANYCODE"
-										}
-									},
-									{
-										"source": {
-											"name": "ACCOUNTINGDOCUMENT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "ACCOUNTINGDOCUMENT"
-										}
-									},
-									{
-										"source": {
-											"name": "SOLDTOPARTY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SOLDTOPARTY"
-										}
-									},
-									{
-										"source": {
-											"name": "CUSTOMERGROUP",
-											"type": "String"
-										},
-										"sink": {
-											"name": "CUSTOMERGROUP"
-										}
-									},
-									{
-										"source": {
-											"name": "COUNTRY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "COUNTRY"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGDOCUMENTITEM",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLINGDOCUMENTITEM"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESDOCUMENTITEMCATEGORY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESDOCUMENTITEMCATEGORY"
-										}
-									},
-									{
-										"source": {
-											"name": "MATERIAL",
-											"type": "String"
-										},
-										"sink": {
-											"name": "MATERIAL"
-										}
-									},
-									{
-										"source": {
-											"name": "MATERIALGROUP",
-											"type": "String"
-										},
-										"sink": {
-											"name": "MATERIALGROUP"
-										}
-									},
-									{
-										"source": {
-											"name": "PLANT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "PLANT"
-										}
-									},
-									{
-										"source": {
-											"name": "STORAGELOCATION",
-											"type": "String"
-										},
-										"sink": {
-											"name": "STORAGELOCATION"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGQUANTITY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLINGQUANTITY"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGQUANTITYUNIT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLINGQUANTITYUNIT"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLINGQUANTITYINBASEUNIT",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "BILLINGQUANTITYINBASEUNIT"
-										}
-									},
-									{
-										"source": {
-											"name": "BASEUNIT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BASEUNIT"
-										}
-									},
-									{
-										"source": {
-											"name": "BILLTOPARTYCOUNTRY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "BILLTOPARTYCOUNTRY"
-										}
-									},
-									{
-										"source": {
-											"name": "NETAMOUNT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "NETAMOUNT"
-										}
-									},
-									{
-										"source": {
-											"name": "TRANSACTIONCURRENCY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "TRANSACTIONCURRENCY"
-										}
-									},
-									{
-										"source": {
-											"name": "GROSSAMOUNT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "GROSSAMOUNT"
-										}
-									},
-									{
-										"source": {
-											"name": "COSTAMOUNT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "COSTAMOUNT"
-										}
-									},
-									{
-										"source": {
-											"name": "DEPARTURECOUNTRY",
-											"type": "String"
-										},
-										"sink": {
-											"name": "DEPARTURECOUNTRY"
-										}
-									},
-									{
-										"source": {
-											"name": "PROFITCENTER",
-											"type": "String"
-										},
-										"sink": {
-											"name": "PROFITCENTER"
-										}
-									},
-									{
-										"source": {
-											"name": "COSTCENTER",
-											"type": "String"
-										},
-										"sink": {
-											"name": "COSTCENTER"
-										}
-									},
-									{
-										"source": {
-											"name": "REFERENCESDDOCUMENT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "REFERENCESDDOCUMENT"
-										}
-									},
-									{
-										"source": {
-											"name": "REFERENCESDDOCUMENTITEM",
-											"type": "Int32"
-										},
-										"sink": {
-											"name": "REFERENCESDDOCUMENTITEM"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESDOCUMENT",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESDOCUMENT"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESDOCUMENTITEM",
-											"type": "Int32"
-										},
-										"sink": {
-											"name": "SALESDOCUMENTITEM"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESGROUP",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESGROUP"
-										}
-									},
-									{
-										"source": {
-											"name": "SALESORDERSALESORGANIZATION",
-											"type": "String"
-										},
-										"sink": {
-											"name": "SALESORDERSALESORGANIZATION"
-										}
-									},
-									{
-										"source": {
-											"name": "LASTCHANGEDATE",
-											"type": "String"
-										},
-										"sink": {
-											"name": "LASTCHANGEDATE"
-										}
-									},
-									{
-										"source": {
-											"name": "OVERALLSDPROCESSSTATUS",
-											"type": "String"
-										},
-										"sink": {
-											"name": "OVERALLSDPROCESSSTATUS"
-										}
-									},
-									{
-										"source": {
-											"name": "OVERALLBILLINGSTATUS",
-											"type": "String"
-										},
-										"sink": {
-											"name": "OVERALLBILLINGSTATUS"
-										}
-									}
-								]
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_BlobSap",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_carpeta": "produccionplanta/FACTURAVENTA"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_sap_FacturaVenta",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
@@ -9124,6 +8613,1568 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "DeleteCostos",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Costos",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "produccionplanta/REPORTEDCOSTOS"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/produccionplanta/REPORTEDCOSTOS"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "Costos",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "produccionplanta/REPORTEDCOSTOS",
+									"wildcardFileName": {
+										"value": "@Concat('REPORTEDCOSTOS_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[Costos]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "ORGVENTAS",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ORGVENTAS"
+										}
+									},
+									{
+										"source": {
+											"name": "FECHAFACTURA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FECHAFACTURA"
+										}
+									},
+									{
+										"source": {
+											"name": "NROFACTURA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "NROFACTURA"
+										}
+									},
+									{
+										"source": {
+											"name": "SOCIEDAD",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SOCIEDAD"
+										}
+									},
+									{
+										"source": {
+											"name": "EJERCICIO",
+											"type": "String"
+										},
+										"sink": {
+											"name": "EJERCICIO"
+										}
+									},
+									{
+										"source": {
+											"name": "MATERIAL",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MATERIAL"
+										}
+									},
+									{
+										"source": {
+											"name": "MONEDA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MONEDA"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTESINTERNOS",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "COSTESINTERNOS"
+										}
+									},
+									{
+										"source": {
+											"name": "MARGEN",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MARGEN"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTOSMAT",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "COSTOMAT"
+										}
+									},
+									{
+										"source": {
+											"name": "DOCVENTA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DOCVENTA"
+										}
+									},
+									{
+										"source": {
+											"name": "POSICIONVTA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "POSICIONVT"
+										}
+									},
+									{
+										"source": {
+											"name": "SECTOR",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SECTOR"
+										}
+									},
+									{
+										"source": {
+											"name": "CANTIDAD",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "CANTIDAD"
+										}
+									},
+									{
+										"source": {
+											"name": "CENTRO",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CENTRO"
+										}
+									},
+									{
+										"source": {
+											"name": "FECHACREACION",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FECHACREACION"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTO_OBRA",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "COSTO_OBRA"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTO_FAB",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "COSTO_FAB"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTO_DEPRE",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "COSTO_DEPRE"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTO_REVALO",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "COSTO_REVALO"
+										}
+									},
+									{
+										"source": {
+											"name": "TOTALCOSTOSMAT",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "TOTALCOSTOSMAT"
+										}
+									},
+									{
+										"source": {
+											"name": "MANDT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MANDT"
+										}
+									},
+									{
+										"source": {
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FECHACARGA"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "produccionplanta/REPORTEDCOSTOS"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sap_Costos",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "DeleteProyeccionpresupuestoembutser",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "PROYECCIONPRESUPUESTOEMBUTSER",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "produccionplanta/PROYECCIONPRESUPUESTOEMBUTSER"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/produccionplanta/PROYECCIONPRESUPUESTOEMBUTSER"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "PROYECCIONPRESUPUESTOEMBUTSER",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "produccionplanta/PROYECCIONPRESUPUESTOEMBUTSER",
+									"wildcardFileName": {
+										"value": "@Concat('PROYECCIONPRESUPUESTOEMBUTSER_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].PROYECCIONPRESUPUESTOEMBUTSER",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FECHACARGA"
+										}
+									},
+									{
+										"source": {
+											"name": "MANDT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MANDT"
+										}
+									},
+									{
+										"source": {
+											"name": "CENTROCOSTEMEBU",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CENTROCOSTEMEBU"
+										}
+									},
+									{
+										"source": {
+											"name": "FECHAPROYECCION",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FECHAPROYECCION"
+										}
+									},
+									{
+										"source": {
+											"name": "MODELO",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MODELO"
+										}
+									},
+									{
+										"source": {
+											"name": "IMPORTE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "IMPORTE"
+										}
+									},
+									{
+										"source": {
+											"name": "MONEDA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MONEDA"
+										}
+									},
+									{
+										"source": {
+											"name": "CANTIDAD",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "CANTIDAD"
+										}
+									},
+									{
+										"source": {
+											"name": "UNIDAD",
+											"type": "String"
+										},
+										"sink": {
+											"name": "UNIDAD"
+										}
+									},
+									{
+										"source": {
+											"name": "PRECIO",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "PRECIO"
+										}
+									},
+									{
+										"source": {
+											"name": "CUENTACONTABLEEMBU",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CUENTACONTABLEEMBU"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATEDBYUSER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATEDBYUSER"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATIONDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATIONDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATIONTIME",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATIONTIME"
+										}
+									},
+									{
+										"source": {
+											"name": "TIPO",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TIPO"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "produccionplanta/PROYECCIONPRESUPUESTOEMBUTSER"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sap_ProyeccionPresupuestoEmbutser",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "DocumentoEntrega",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "produccionplanta/DOCUMENTOENTREGA",
+									"wildcardFileName": {
+										"value": "@Concat('DOCUMENTOENTREGA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[documentoentrega]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FECHACARGA"
+										}
+									},
+									{
+										"source": {
+											"name": "MANDT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MANDT"
+										}
+									},
+									{
+										"source": {
+											"name": "DELIVERYDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DELIVERYDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "SDDOCUMENTCATEGORY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SDDOCUMENTCATEGORY"
+										}
+									},
+									{
+										"source": {
+											"name": "DELIVERYDOCUMENTTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DELIVERYDOCUMENTTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATEDBYUSER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATEDBYUSER"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATIONDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATIONDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATIONTIME",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATIONTIME"
+										}
+									},
+									{
+										"source": {
+											"name": "LASTCHANGEDBYUSER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "LASTCHANGEDBYUSER"
+										}
+									},
+									{
+										"source": {
+											"name": "LASTCHANGEDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "LASTCHANGEDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESORGANIZATION",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESORGANIZATION"
+										}
+									},
+									{
+										"source": {
+											"name": "SUPPLIER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SUPPLIER"
+										}
+									},
+									{
+										"source": {
+											"name": "DELIVERYDOCUMENTBYSUPPLIER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DELIVERYDOCUMENTBYSUPPLIER"
+										}
+									},
+									{
+										"source": {
+											"name": "RECEIVINGPLANT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "RECEIVINGPLANT"
+										}
+									},
+									{
+										"source": {
+											"name": "WAREHOUSE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "WAREHOUSE"
+										}
+									},
+									{
+										"source": {
+											"name": "DOCUMENTDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DOCUMENTDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "SHIPTOPARTY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SHIPTOPARTY"
+										}
+									},
+									{
+										"source": {
+											"name": "DELIVERYDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DELIVERYDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "DELIVERYTIME",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DELIVERYTIME"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGDOCUMENTDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLINGDOCUMENTDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "SOLDTOPARTY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SOLDTOPARTY"
+										}
+									},
+									{
+										"source": {
+											"name": "CUSTOMERGROUP",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CUSTOMERGROUP"
+										}
+									},
+									{
+										"source": {
+											"name": "TRANSACTIONCURRENCY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TRANSACTIONCURRENCY"
+										}
+									},
+									{
+										"source": {
+											"name": "OVERALLGOODSMOVEMENTSTATUS",
+											"type": "String"
+										},
+										"sink": {
+											"name": "OVERALLGOODSMOVEMENTSTATUS"
+										}
+									},
+									{
+										"source": {
+											"name": "DELIVERYDOCUMENTITEM",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "DELIVERYDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "DELIVERYDOCUMENTITEMCATEGORY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DELIVERYDOCUMENTITEMCATEGORY"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESGROUP",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESGROUP"
+										}
+									},
+									{
+										"source": {
+											"name": "MATERIAL",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MATERIAL"
+										}
+									},
+									{
+										"source": {
+											"name": "MATERIALGROUP",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MATERIALGROUP"
+										}
+									},
+									{
+										"source": {
+											"name": "PLANT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PLANT"
+										}
+									},
+									{
+										"source": {
+											"name": "STORAGELOCATION",
+											"type": "String"
+										},
+										"sink": {
+											"name": "STORAGELOCATION"
+										}
+									},
+									{
+										"source": {
+											"name": "DELIVERYDOCUMENTITEMTEXT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DELIVERYDOCUMENTITEMTEXT"
+										}
+									},
+									{
+										"source": {
+											"name": "ORIGINALDELIVERYQUANTITY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "ORIGINALDELIVERYQUANTITY"
+										}
+									},
+									{
+										"source": {
+											"name": "DELIVERYQUANTITYUNIT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DELIVERYQUANTITYUNIT"
+										}
+									},
+									{
+										"source": {
+											"name": "ACTUALDELIVEREDQTYINBASEUNIT",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "ACTUALDELIVEREDQTYINBASEUNIT"
+										}
+									},
+									{
+										"source": {
+											"name": "BASEUNIT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BASEUNIT"
+										}
+									},
+									{
+										"source": {
+											"name": "GLACCOUNT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "GLACCOUNT"
+										}
+									},
+									{
+										"source": {
+											"name": "ISCOMPLETELYDELIVERED",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ISCOMPLETELYDELIVERED"
+										}
+									},
+									{
+										"source": {
+											"name": "GOODSMOVEMENTTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "GOODSMOVEMENTTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "RECEIVINGPOINT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "RECEIVINGPOINT"
+										}
+									},
+									{
+										"source": {
+											"name": "INTERCOMPANYBILLINGSTATUS",
+											"type": "String"
+										},
+										"sink": {
+											"name": "INTERCOMPANYBILLINGSTATUS"
+										}
+									},
+									{
+										"source": {
+											"name": "PROFITCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PROFITCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "COSTCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "REFERENCESDDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "REFERENCESDDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "REFERENCESDDOCUMENTITEM",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "REFERENCESDDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "REFERENCESDDOCUMENTCATEGORY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "REFERENCESDDOCUMENTCATEGORY"
+										}
+									},
+									{
+										"source": {
+											"name": "SDPROCESSSTATUS",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SDPROCESSSTATUS"
+										}
+									},
+									{
+										"source": {
+											"name": "GOODSMOVEMENTSTATUS",
+											"type": "String"
+										},
+										"sink": {
+											"name": "GOODSMOVEMENTSTATUS"
+										}
+									},
+									{
+										"source": {
+											"name": "ORIGINSDDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ORIGINSDDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "SDDOCUMENTITEM",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "SDDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "MATERIALTYPEPRIMARY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MATERIALTYPEPRIMARY"
+										}
+									},
+									{
+										"source": {
+											"name": "SHIPPINGPOINT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SHIPPINGPOINT"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "produccionplanta/DOCUMENTOENTREGA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sap_DocumentoEntrega",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "FacturaVenta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "produccionplanta/FACTURAVENTA",
+									"wildcardFileName": {
+										"value": "@Concat('FACTURAVENTA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[FacturaVenta]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "MANDT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MANDT"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLINGDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "SDDOCUMENTCATEGORY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SDDOCUMENTCATEGORY"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGDOCUMENTCATEGORY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLINGDOCUMENTCATEGORY"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGDOCUMENTTYPE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLINGDOCUMENTTYPE"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATEDBYUSER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATEDBYUSER"
+										}
+									},
+									{
+										"source": {
+											"name": "FECHACARGA",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FECHACARGA"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATIONTIME",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATIONTIME"
+										}
+									},
+									{
+										"source": {
+											"name": "LASTCHANGEDATETIME",
+											"type": "String"
+										},
+										"sink": {
+											"name": "LASTCHANGEDATETIME"
+										}
+									},
+									{
+										"source": {
+											"name": "CREATIONDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CREATIONDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESORGANIZATION",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESORGANIZATION"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGDOCUMENTDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLINGDOCUMENTDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGDOCUMENTISCANCELLED",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLINGDOCUMENTISCANCELLED"
+										}
+									},
+									{
+										"source": {
+											"name": "CANCELLEDBILLINGDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CANCELLEDBILLINGDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "PAYMENTMETHOD",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PAYMENTMETHOD"
+										}
+									},
+									{
+										"source": {
+											"name": "COMPANYCODE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "COMPANYCODE"
+										}
+									},
+									{
+										"source": {
+											"name": "ACCOUNTINGDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "ACCOUNTINGDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "SOLDTOPARTY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SOLDTOPARTY"
+										}
+									},
+									{
+										"source": {
+											"name": "CUSTOMERGROUP",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CUSTOMERGROUP"
+										}
+									},
+									{
+										"source": {
+											"name": "COUNTRY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "COUNTRY"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGDOCUMENTITEM",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "BILLINGDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESDOCUMENTITEMCATEGORY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESDOCUMENTITEMCATEGORY"
+										}
+									},
+									{
+										"source": {
+											"name": "MATERIAL",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MATERIAL"
+										}
+									},
+									{
+										"source": {
+											"name": "MATERIALGROUP",
+											"type": "String"
+										},
+										"sink": {
+											"name": "MATERIALGROUP"
+										}
+									},
+									{
+										"source": {
+											"name": "PLANT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PLANT"
+										}
+									},
+									{
+										"source": {
+											"name": "STORAGELOCATION",
+											"type": "String"
+										},
+										"sink": {
+											"name": "STORAGELOCATION"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGQUANTITY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "BILLINGQUANTITY"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGQUANTITYUNIT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLINGQUANTITYUNIT"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLINGQUANTITYINBASEUNIT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLINGQUANTITYINBASEUNIT"
+										}
+									},
+									{
+										"source": {
+											"name": "BASEUNIT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BASEUNIT"
+										}
+									},
+									{
+										"source": {
+											"name": "BILLTOPARTYCOUNTRY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BILLTOPARTYCOUNTRY"
+										}
+									},
+									{
+										"source": {
+											"name": "NETAMOUNT",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "NETAMOUNT"
+										}
+									},
+									{
+										"source": {
+											"name": "TRANSACTIONCURRENCY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TRANSACTIONCURRENCY"
+										}
+									},
+									{
+										"source": {
+											"name": "GROSSAMOUNT",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "GROSSAMOUNT"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTAMOUNT",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "COSTAMOUNT"
+										}
+									},
+									{
+										"source": {
+											"name": "DEPARTURECOUNTRY",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DEPARTURECOUNTRY"
+										}
+									},
+									{
+										"source": {
+											"name": "PROFITCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PROFITCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "COSTCENTER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "COSTCENTER"
+										}
+									},
+									{
+										"source": {
+											"name": "REFERENCESDDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "REFERENCESDDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "REFERENCESDDOCUMENTITEM",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "REFERENCESDDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESDOCUMENT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESDOCUMENT"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESDOCUMENTITEM",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "SALESDOCUMENTITEM"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESGROUP",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESGROUP"
+										}
+									},
+									{
+										"source": {
+											"name": "SALESORDERSALESORGANIZATION",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SALESORDERSALESORGANIZATION"
+										}
+									},
+									{
+										"source": {
+											"name": "LASTCHANGEDATE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "LASTCHANGEDATE"
+										}
+									},
+									{
+										"source": {
+											"name": "OVERALLSDPROCESSSTATUS",
+											"type": "String"
+										},
+										"sink": {
+											"name": "OVERALLSDPROCESSSTATUS"
+										}
+									},
+									{
+										"source": {
+											"name": "OVERALLBILLINGSTATUS",
+											"type": "String"
+										},
+										"sink": {
+											"name": "OVERALLBILLINGSTATUS"
+										}
+									},
+									{
+										"source": {
+											"name": "SHIPPINGPOINT",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SHIPPINGPOINT"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "produccionplanta/FACTURAVENTA"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sap_FacturaVenta",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"parameters": {
@@ -9146,772 +10197,9 @@
 				"annotations": []
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_sap_ReservaMaterial')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sap_entradadiario')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sap_Ecu_Transaccional_Historico')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Carga Información Sap",
-				"activities": [
-					{
-						"name": "EntradaDiarioHistorica",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaEntradaDiarioHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Fecha Carga",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
-								"storedProcedureParameters": {
-									"Dias": {
-										"type": "Int32",
-										"value": "1"
-									},
-									"FechaDesde": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaFin": {
-										"type": "DateTime",
-										"value": null
-									},
-									"FechaHasta": {
-										"type": "DateTime",
-										"value": null
-									}
-								},
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "DocumentoEntrega",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaDocumentoEntregaHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "FacturaCompraHistorico",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaFacturaCompraHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "FacturaVentaHistorico",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaFacturaVentaHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "OrdenCompraCondicionHistorico",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaOrdenCompraCondicionHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "OrdenCompraHistorico",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaOrdenCompraHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "PedidoVentaHistorico",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaPedidoVentaHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "ReporteProyectosHistorico",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaReporteProyectosHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "PedidoVentaInterlocutor",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaPedidoventainterlocutorHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "FacturaInterlocutor",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaFacturaInterlocutorHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "InventarioMaterialHistorico",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaInventarioMaterialHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "ProyeccionPresupuestoEmbuserHistorico",
-						"description": "",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Fecha Carga",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dsa_ecu_sap].[usp_CargaPPEmbuHistorico]",
-							"storedProcedureParameters": {
-								"FechaDesde": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"FechaHasta": {
-									"value": {
-										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Pais": {
-									"value": {
-										"value": "@pipeline().parameters.Pais",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TipoCarga": {
-									"value": {
-										"value": "@pipeline().parameters.TipoCarga",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_dwh",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"parameters": {
-					"Pais": {
-						"type": "String",
-						"defaultValue": "ECU"
-					},
-					"TipoCarga": {
-						"type": "String",
-						"defaultValue": "MANUAL"
-					}
-				},
-				"folder": {
-					"name": "dsa_Sap"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
 		}
 	]
 }
