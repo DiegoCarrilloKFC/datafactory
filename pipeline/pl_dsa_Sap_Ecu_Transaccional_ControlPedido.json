@@ -3,71 +3,11 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "EntradaDiario",
-				"type": "Copy",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"maxConcurrentConnections": 1,
-							"recursive": true,
-							"modifiedDatetimeStart": {
-								"value": "@addMinutes(pipeline().TriggerTime,-30)",
-								"type": "Expression"
-							},
-							"modifiedDatetimeEnd": {
-								"value": "@addMinutes(pipeline().TriggerTime,+30)",
-								"type": "Expression"
-							},
-							"wildcardFolderPath": "reproceso/contabilidad/ENTRADADIARIO",
-							"wildcardFileName": {
-								"value": "@Concat('ENTRADADIARIO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[entradadiario]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "reproceso/contabilidad/ENTRADADIARIO"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_sap_entradadiario",
-						"type": "DatasetReference"
-					}
-				]
-			},
-			{
 				"name": "Copy Blob Entrada Diario",
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "EntradaDiario",
+						"activity": "OrdenCompra",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -134,7 +74,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "reproceso/contabilidadLeidos"
+							"cw_carpeta": "reproceso/produccionplantaLeidos"
 						}
 					}
 				]
@@ -226,6 +166,467 @@
 						"enablePartitionDiscovery": false
 					}
 				}
+			},
+			{
+				"name": "OrdenCompra",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "produccionplanta/ORDENCOMPRA",
+							"wildcardFileName": {
+								"value": "@Concat('ORDENCOMPRA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[OrdenCompra]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								"sink": {
+									"name": "FECHACARGA"
+								}
+							},
+							{
+								"source": {
+									"name": "MANDT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "MANDT"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGDOCUMENT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGDOCUMENT"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGDOCUMENTCATEGORY",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGDOCUMENTCATEGORY"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGDOCUMENTTYPE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGDOCUMENTTYPE"
+								}
+							},
+							{
+								"source": {
+									"name": "COMPANYCODE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "COMPANYCODE"
+								}
+							},
+							{
+								"source": {
+									"name": "CREATIONDATE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CREATIONDATE"
+								}
+							},
+							{
+								"source": {
+									"name": "LASTCHANGEDATETIME",
+									"type": "String"
+								},
+								"sink": {
+									"name": "LASTCHANGEDATETIME"
+								}
+							},
+							{
+								"source": {
+									"name": "CREATEDBYUSER",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CREATEDBYUSER"
+								}
+							},
+							{
+								"source": {
+									"name": "SUPPLIER",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SUPPLIER"
+								}
+							},
+							{
+								"source": {
+									"name": "SUPPLIERRESPSALESPERSONNAME",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SUPPLIERRESPSALESPERSONNAME"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGORGANIZATION",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGORGANIZATION"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGGROUP",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGGROUP"
+								}
+							},
+							{
+								"source": {
+									"name": "SUPPLYINGSUPPLIER",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SUPPLYINGSUPPLIER"
+								}
+							},
+							{
+								"source": {
+									"name": "SUPPLYINGPLANT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SUPPLYINGPLANT"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGDOCUMENTITEM",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGDOCUMENTITEM"
+								}
+							},
+							{
+								"source": {
+									"name": "MATERIAL",
+									"type": "String"
+								},
+								"sink": {
+									"name": "MATERIAL"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGDOCUMENTITEMTEXT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGDOCUMENTITEMTEXT"
+								}
+							},
+							{
+								"source": {
+									"name": "PLANT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PLANT"
+								}
+							},
+							{
+								"source": {
+									"name": "STORAGELOCATION",
+									"type": "String"
+								},
+								"sink": {
+									"name": "STORAGELOCATION"
+								}
+							},
+							{
+								"source": {
+									"name": "MATERIALGROUP",
+									"type": "String"
+								},
+								"sink": {
+									"name": "MATERIALGROUP"
+								}
+							},
+							{
+								"source": {
+									"name": "ORDERQUANTITYUNIT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ORDERQUANTITYUNIT"
+								}
+							},
+							{
+								"source": {
+									"name": "ISCOMPLETELYDELIVERED",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ISCOMPLETELYDELIVERED"
+								}
+							},
+							{
+								"source": {
+									"name": "ISFINALLYINVOICED",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ISFINALLYINVOICED"
+								}
+							},
+							{
+								"source": {
+									"name": "GOODSRECEIPTISEXPECTED",
+									"type": "String"
+								},
+								"sink": {
+									"name": "GOODSRECEIPTISEXPECTED"
+								}
+							},
+							{
+								"source": {
+									"name": "INVOICEISEXPECTED",
+									"type": "String"
+								},
+								"sink": {
+									"name": "INVOICEISEXPECTED"
+								}
+							},
+							{
+								"source": {
+									"name": "INVOICEISGOODSRECEIPTBASED",
+									"type": "String"
+								},
+								"sink": {
+									"name": "INVOICEISGOODSRECEIPTBASED"
+								}
+							},
+							{
+								"source": {
+									"name": "PRODUCTTYPE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PRODUCTTYPE"
+								}
+							},
+							{
+								"source": {
+									"name": "MATERIALTYPE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "MATERIALTYPE"
+								}
+							},
+							{
+								"source": {
+									"name": "BASEUNIT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "BASEUNIT"
+								}
+							},
+							{
+								"source": {
+									"name": "PROFITCENTER",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PROFITCENTER"
+								}
+							},
+							{
+								"source": {
+									"name": "ORDERPRICEUNIT",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ORDERPRICEUNIT"
+								}
+							},
+							{
+								"source": {
+									"name": "NETAMOUNT",
+									"type": "Decimal"
+								},
+								"sink": {
+									"name": "NETAMOUNT"
+								}
+							},
+							{
+								"source": {
+									"name": "GROSSAMOUNT",
+									"type": "Decimal"
+								},
+								"sink": {
+									"name": "GROSSAMOUNT"
+								}
+							},
+							{
+								"source": {
+									"name": "ORDERQUANTITY",
+									"type": "Decimal"
+								},
+								"sink": {
+									"name": "ORDERQUANTITY"
+								}
+							},
+							{
+								"source": {
+									"name": "NETPRICEAMOUNT",
+									"type": "Decimal"
+								},
+								"sink": {
+									"name": "NETPRICEAMOUNT"
+								}
+							},
+							{
+								"source": {
+									"name": "DELIVERYDOCUMENTTYPE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DELIVERYDOCUMENTTYPE"
+								}
+							},
+							{
+								"source": {
+									"name": "DOCUMENTCURRENCY",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DOCUMENTCURRENCY"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGDOCUMENTSTATUS",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGDOCUMENTSTATUS"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGDOCUMENTDELETIONCODE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGDOCUMENTDELETIONCODE"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGDOCUMENTORDERDATE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGDOCUMENTORDERDATE"
+								}
+							},
+							{
+								"source": {
+									"name": "PURCHASINGINFORECORD",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PURCHASINGINFORECORD"
+								}
+							},
+							{
+								"source": {
+									"name": "SUPPLIERPHONENUMBER",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SUPPLIERPHONENUMBER"
+								}
+							},
+							{
+								"source": {
+									"name": "FECHACREACIONL",
+									"type": "String"
+								},
+								"sink": {
+									"name": "FECHACREACIONL"
+								}
+							},
+							{
+								"source": {
+									"name": "FECHACREACIONML",
+									"type": "String"
+								},
+								"sink": {
+									"name": "FECHACREACIONML"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/ORDENCOMPRA"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_sap_OrdenCompra",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
 		"parameters": {
