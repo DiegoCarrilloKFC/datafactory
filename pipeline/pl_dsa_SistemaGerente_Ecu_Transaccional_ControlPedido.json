@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Estado_PyG",
+				"name": "ArticuloBodega",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -16,18 +16,18 @@
 				"userProperties": [
 					{
 						"name": "Source",
-						"value": "[dbo].[Estado_PyG]"
+						"value": "[dbo].[ArticuloBodega]"
 					},
 					{
 						"name": "Destination",
-						"value": "[dsa_ecu_sg].[Estado_PyG]"
+						"value": "[dsa_ecu_sg].[ArticuloBodega]"
 					}
 				],
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT GETDATE() AS FechaCarga,Mes,Anio,Estado,Cod_Estado,Cod_Restaurante,Fecha_Creacion,'@{pipeline().parameters.Region}' AS Region FROM dbo.Estado_PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+							"value": "SELECT GETDATE() AS FechaCarga,Cod_Art_Bodega,Cod_Bodega,Cod_Articulo,Cantidad_Disponible,Minimo,Maximo,Costo_Compra,Costo_Inventario,Estado,YEAR('@{pipeline().parameters.FechaDesde}') AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.ArticuloBodega WHERE Cod_Bodega IS NOT NULL",
 							"type": "Expression"
 						},
 						"partitionOption": "None"
@@ -62,7 +62,39 @@
 									"type": "DateTime"
 								},
 								{
-									"name": "Mes",
+									"name": "Cod_Art_Bodega",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Bodega",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Articulo",
+									"type": "String"
+								},
+								{
+									"name": "Cantidad_Disponible",
+									"type": "Double"
+								},
+								{
+									"name": "Minimo",
+									"type": "Double"
+								},
+								{
+									"name": "Maximo",
+									"type": "Double"
+								},
+								{
+									"name": "Costo_Compra",
+									"type": "Double"
+								},
+								{
+									"name": "Costo_Inventario",
+									"type": "Double"
+								},
+								{
+									"name": "Estado",
 									"type": "Int32"
 								},
 								{
@@ -70,27 +102,11 @@
 									"type": "Int32"
 								},
 								{
-									"name": "Estado",
-									"type": "Int32"
-								},
-								{
-									"name": "Cod_Estado",
-									"type": "String"
-								},
-								{
-									"name": "Cod_Restaurante",
-									"type": "Int32"
-								},
-								{
-									"name": "Fecha_Creacion",
-									"type": "DateTime"
-								},
-								{
 									"name": "Region",
 									"type": "String"
 								}
 							],
-							"cw_tableName": "[dbo].[Estado_PyG]",
+							"cw_tableName": "[dbo].[ArticuloBodega]",
 							"cw_servidor": {
 								"value": "@pipeline().parameters.Servidor",
 								"type": "Expression"
@@ -113,7 +129,39 @@
 									"type": "DateTime"
 								},
 								{
-									"name": "Mes",
+									"name": "Cod_Art_Bodega",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Bodega",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Articulo",
+									"type": "String"
+								},
+								{
+									"name": "Cantidad_Disponible",
+									"type": "Double"
+								},
+								{
+									"name": "Minimo",
+									"type": "Double"
+								},
+								{
+									"name": "Maximo",
+									"type": "Double"
+								},
+								{
+									"name": "Costo_Compra",
+									"type": "Double"
+								},
+								{
+									"name": "Costo_Inventario",
+									"type": "Double"
+								},
+								{
+									"name": "Estado",
 									"type": "Int32"
 								},
 								{
@@ -121,33 +169,17 @@
 									"type": "Int32"
 								},
 								{
-									"name": "Estado",
-									"type": "Int32"
-								},
-								{
-									"name": "Cod_Estado",
-									"type": "String"
-								},
-								{
-									"name": "Cod_Restaurante",
-									"type": "Int32"
-								},
-								{
-									"name": "Fecha_Creacion",
-									"type": "DateTime"
-								},
-								{
 									"name": "Region",
 									"type": "String"
 								}
 							],
-							"cw_tableName": "[dsa_ecu_sg].[Estado_PyG]"
+							"cw_tableName": "[dsa_ecu_sg].[ArticuloBodega]"
 						}
 					}
 				]
 			},
 			{
-				"name": "PyG",
+				"name": "DetPedidos",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -160,18 +192,18 @@
 				"userProperties": [
 					{
 						"name": "Source",
-						"value": "[dbo].[PyG]"
+						"value": "[dbo].[DetPedidos]"
 					},
 					{
 						"name": "Destination",
-						"value": "[dsa_ecu_sg].[PyG]"
+						"value": "[dsa_ecu_sg].[DetPedidos]"
 					}
 				],
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT GETDATE() AS FechaCarga,Cod_Estado,Grupo,Descripcion,Valor,Porcentaje,Nivel,Orden,Fecha_Creacion,Mes,Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.PyG WHERE DATEFROMPARTS(anio,mes,1) >= '@{pipeline().parameters.FechaDesde}' AND DATEFROMPARTS(anio,mes,1) < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+							"value": "SELECT GETDATE() AS FechaCarga,det.Cod_DetPedido,det.Cod_Pedido,det.Cod_Art_Bodega,det.Cantidad_Item,det.Costo_Pedido,YEAR(cab.Fecha_Pedido) AS Anio,'@{pipeline().parameters.Region}' AS Region FROM dbo.DetPedidos det INNER JOIN dbo.CabPedidos cab ON cab.Cod_Pedido=det.Cod_Pedido WHERE cab.Fecha_Pedido >= '@{pipeline().parameters.FechaDesde}' AND cab.Fecha_Pedido < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 							"type": "Expression"
 						},
 						"partitionOption": "None"
@@ -206,40 +238,24 @@
 									"type": "DateTime"
 								},
 								{
-									"name": "Cod_Estado",
+									"name": "Cod_DetPedido",
 									"type": "String"
 								},
 								{
-									"name": "Grupo",
+									"name": "Cod_Pedido",
 									"type": "String"
 								},
 								{
-									"name": "Descripcion",
-									"type": "String"
+									"name": "Cod_Art_Bodega",
+									"type": "Int32"
 								},
 								{
-									"name": "Valor",
+									"name": "Cantidad_Item",
 									"type": "Double"
 								},
 								{
-									"name": "Porcentaje",
+									"name": "Costo_Pedido",
 									"type": "Double"
-								},
-								{
-									"name": "Nivel",
-									"type": "Int32"
-								},
-								{
-									"name": "Orden",
-									"type": "Int32"
-								},
-								{
-									"name": "Fecha_Creacion",
-									"type": "DateTime"
-								},
-								{
-									"name": "Mes",
-									"type": "Int32"
 								},
 								{
 									"name": "Anio",
@@ -250,7 +266,7 @@
 									"type": "String"
 								}
 							],
-							"cw_tableName": "[dbo].[PyG]",
+							"cw_tableName": "[dbo].[DetPedidos]",
 							"cw_servidor": {
 								"value": "@pipeline().parameters.Servidor",
 								"type": "Expression"
@@ -273,40 +289,24 @@
 									"type": "DateTime"
 								},
 								{
-									"name": "Cod_Estado",
+									"name": "Cod_DetPedido",
 									"type": "String"
 								},
 								{
-									"name": "Grupo",
+									"name": "Cod_Pedido",
 									"type": "String"
 								},
 								{
-									"name": "Descripcion",
-									"type": "String"
+									"name": "Cod_Art_Bodega",
+									"type": "Int32"
 								},
 								{
-									"name": "Valor",
+									"name": "Cantidad_Item",
 									"type": "Double"
 								},
 								{
-									"name": "Porcentaje",
+									"name": "Costo_Pedido",
 									"type": "Double"
-								},
-								{
-									"name": "Nivel",
-									"type": "Int32"
-								},
-								{
-									"name": "Orden",
-									"type": "Int32"
-								},
-								{
-									"name": "Fecha_Creacion",
-									"type": "DateTime"
-								},
-								{
-									"name": "Mes",
-									"type": "Int32"
 								},
 								{
 									"name": "Anio",
@@ -317,7 +317,183 @@
 									"type": "String"
 								}
 							],
-							"cw_tableName": "[dsa_ecu_sg].[PyG]"
+							"cw_tableName": "[dsa_ecu_sg].[DetPedidos]"
+						}
+					}
+				]
+			},
+			{
+				"name": "CabPedidos",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[CabPedidos]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_sg].[CabPedidos]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT GETDATE() AS FechaCarga,Cod_Pedido,Cod_Estado,Cod_Restaurante,Cod_Proveedor,Fecha_Pedido,Fecha_Recepcion,Relacionado,Tipo,YEAR(Fecha_Pedido) AS Anio,'@{pipeline().parameters.Region}' AS Region, Cod_Usuario FROM dbo.CabPedidos WHERE Fecha_Pedido >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Pedido < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+							"type": "Expression"
+						},
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBatchSize": 10000,
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_SistemaGerenteEcu",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_Pedido",
+									"type": "String"
+								},
+								{
+									"name": "Cod_Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Proveedor",
+									"type": "Int32"
+								},
+								{
+									"name": "Fecha_Pedido",
+									"type": "DateTime"
+								},
+								{
+									"name": "Fecha_Recepcion",
+									"type": "DateTime"
+								},
+								{
+									"name": "Relacionado",
+									"type": "String"
+								},
+								{
+									"name": "Tipo",
+									"type": "String"
+								},
+								{
+									"name": "Anio",
+									"type": "Int32"
+								},
+								{
+									"name": "Region",
+									"type": "String"
+								},
+								{
+									"name": "Cod_Usuario",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dbo].[CabPedidos]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatos",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_Pedido",
+									"type": "String"
+								},
+								{
+									"name": "Cod_Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Proveedor",
+									"type": "Int32"
+								},
+								{
+									"name": "Fecha_Pedido",
+									"type": "DateTime"
+								},
+								{
+									"name": "Fecha_Recepcion",
+									"type": "DateTime"
+								},
+								{
+									"name": "Relacionado",
+									"type": "String"
+								},
+								{
+									"name": "Tipo",
+									"type": "String"
+								},
+								{
+									"name": "Anio",
+									"type": "Int32"
+								},
+								{
+									"name": "Region",
+									"type": "String"
+								},
+								{
+									"name": "Cod_Usuario",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sg].[CabPedidos]"
 						}
 					}
 				]
