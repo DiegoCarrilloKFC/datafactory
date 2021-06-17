@@ -23,56 +23,31 @@
 				}
 			},
 			{
-				"name": "Carga Contabilidad Ecu",
+				"name": "Carga Operaciones Control Pedido Ecu",
 				"type": "ExecutePipeline",
 				"dependsOn": [
-					{
-						"activity": "Carga Dimension Ecu",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_dwh_ReprocesoPyG",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"IDCadenaSistemaGerente": 0,
-						"Pais": "ECU",
-						"TipoCarga": "MANUAL"
-					}
-				}
-			},
-			{
-				"name": "Carga Dimension Ecu",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Carga DSA SG ECU",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
 					{
 						"activity": "Carga DSA SAP ECU",
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "Carga DSA SG ECU",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_dwh_Dimensiones_ReprocesoPyG",
+						"referenceName": "pl_dwh_Operaciones_ControlPedido_Reproceso_Ecu",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true,
 					"parameters": {
-						"IDCadenaSistemaGerente": 0,
+						"IDCadenaSistemaGerente": "0",
 						"Pais": "ECU",
 						"TipoCarga": "MANUAL"
 					}
@@ -92,7 +67,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidadPyG",
+						"referenceName": "pl_dsa_SistemaGerente_Ecu_ReprocesoControlPedido",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -127,7 +102,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Carga Contabilidad Ecu",
+						"activity": "Carga Planta Control Pedido Ecu",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -150,6 +125,31 @@
 					"dataset": {
 						"referenceName": "ds_dwh_general",
 						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Carga Planta Control Pedido Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Operaciones Control Pedido Ecu",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Planta_Ecu_ControlPedido_Reproceso",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ECU",
+						"TipoCarga": "MANUAL"
 					}
 				}
 			}
