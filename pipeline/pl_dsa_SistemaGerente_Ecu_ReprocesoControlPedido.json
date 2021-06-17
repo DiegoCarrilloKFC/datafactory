@@ -49,7 +49,7 @@
 				"type": "IfCondition",
 				"dependsOn": [
 					{
-						"activity": "Truncar Transaccional",
+						"activity": "Cargar Catalogo Reproceso",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -385,6 +385,44 @@
 					"dataset": {
 						"referenceName": "ds_dwh_general",
 						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Cargar Catalogo Reproceso",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Truncar Transaccional",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_SistemaGerente_Ecu_CatalogoReproceso",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ServidorQuito": {
+							"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+							"type": "Expression"
+						},
+						"BaseDatosQuito": {
+							"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+							"type": "Expression"
+						},
+						"ServidorGuayaquil": {
+							"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+							"type": "Expression"
+						},
+						"BaseDatosGuayaquil": {
+							"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+							"type": "Expression"
+						}
 					}
 				}
 			}
