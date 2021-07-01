@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_dsa_Sap_Ecu_ReprocesoPyG",
+						"referenceName": "pl_dsa_Sap_Ecu_ReprocesoPyG_Pedidos",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -113,7 +113,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlDWSource",
-						"sqlReaderQuery": "UPDATE admin_btc.LogEjecucionEtapa SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND IDEtapa IN ('DIMENSIONECU','FACTCONTABILIDADECU')\n\nUPDATE admin_btc.LogEjecucionTabla SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND Tabla IN ('FacPyG','FacPyGUniforme','FacPyGContabilidad')\nAND Esquema in ('dwh_ecu_cubo','dwh_ecu_conta')\n\n--Control de Cargas\nDELETE FROM admin_btc.CargaDataFactory\nWHERE FechaPeriodo = CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'REPROCESO PYG ECUADOR'\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'REPROCESO PYG ECUADOR',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
+						"sqlReaderQuery": "UPDATE admin_btc.LogEjecucionEtapa SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND IDEtapa IN ('DIMENSIONECU','FACTCONTABILIDADECU')\n\nUPDATE admin_btc.LogEjecucionTabla SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND Tabla IN ('FacPyG','FacPyGUniforme','FacPyGContabilidad')\nAND Esquema in ('dwh_ecu_cubo','dwh_ecu_conta')\n\n--Control de Cargas\nDELETE FROM admin_btc.CargaDataFactory\nWHERE FechaPeriodo = CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'REPROCESO PYG - CONTROL PEDIDO ECUADOR'\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'REPROCESO PYG - CONTROL PEDIDO ECUADOR',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
 						"partitionOption": "None"
 					},
 					"dataset": {
@@ -127,7 +127,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Carga Contabilidad Ecu",
+						"activity": "Carga Planta Control Pedido Ecu",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -144,12 +144,68 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlDWSource",
-						"sqlReaderQuery": "UPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'REPROCESO PYG ECUADOR'\n\nSELECT 'ok' AS Resultado",
+						"sqlReaderQuery": "UPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'REPROCESO PYG - CONTROL PEDIDO ECUADOR'\n\nSELECT 'ok' AS Resultado",
 						"partitionOption": "None"
 					},
 					"dataset": {
 						"referenceName": "ds_dwh_general",
 						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Carga Operaciones Control Pedido Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimension Ecu",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_ControlPedido_Reproceso_Ecu",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ECU",
+						"TipoCarga": "MANUAL"
+					}
+				}
+			},
+			{
+				"name": "Carga Planta Control Pedido Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Contabilidad Ecu",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Carga Operaciones Control Pedido Ecu",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Planta_Ecu_ControlPedido_Reproceso",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ECU",
+						"TipoCarga": "MANUAL"
 					}
 				}
 			}
