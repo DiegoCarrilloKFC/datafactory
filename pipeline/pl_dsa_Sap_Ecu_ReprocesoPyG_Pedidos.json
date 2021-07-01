@@ -1,0 +1,123 @@
+{
+	"name": "pl_dsa_Sap_Ecu_ReprocesoPyG_Pedidos",
+	"properties": {
+		"activities": [
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "Select Anio=year(dateadd(hh,-5,getdate()))\n,Mes=convert (char(2),dateadd(hh,-5,getdate()),101)\n,Dia=convert (char(2),dateadd(hh,-5,getdate()),103)",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "CatalogoReproceso",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Catalogo_PyG",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "TransaccionalReproceso",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "CatalogoReproceso",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_PyG",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "TransaccionalHistoricoReproceso",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "TransaccionalReproceso",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_Historico_PyG",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "dsa_Sap"
+		},
+		"annotations": []
+	}
+}
