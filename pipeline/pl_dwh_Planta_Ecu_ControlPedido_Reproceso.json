@@ -6,7 +6,14 @@
 			{
 				"name": "plt_FacPedidoTransferencia",
 				"type": "SqlServerStoredProcedure",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -16,11 +23,21 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureName": "dwh_ecu_plt.usp_CargaFacPedidoTransferencia",
 					"storedProcedureParameters": {
-						"Esquema": {
-							"value": "dwh_ecu_plt",
-							"type": "String"
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
 						},
 						"IDCadenaSistemaGerente": {
 							"value": {
@@ -34,10 +51,6 @@
 								"value": "@pipeline().parameters.Pais",
 								"type": "Expression"
 							},
-							"type": "String"
-						},
-						"Procedimiento": {
-							"value": "usp_CargaFacPedidoTransferencia",
 							"type": "String"
 						},
 						"TipoCarga": {
@@ -74,11 +87,21 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureName": "dwh_ecu_plt.usp_CargaFacVenta",
 					"storedProcedureParameters": {
-						"Esquema": {
-							"value": "dwh_ecu_plt",
-							"type": "String"
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
 						},
 						"IDCadenaSistemaGerente": {
 							"value": {
@@ -92,10 +115,6 @@
 								"value": "@pipeline().parameters.Pais",
 								"type": "Expression"
 							},
-							"type": "String"
-						},
-						"Procedimiento": {
-							"value": "usp_CargaFacVenta",
 							"type": "String"
 						},
 						"TipoCarga": {
@@ -132,11 +151,21 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureName": "dwh_ecu_plt.usp_CargaFacTransferencia",
 					"storedProcedureParameters": {
-						"Esquema": {
-							"value": "dwh_ecu_plt",
-							"type": "String"
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
 						},
 						"IDCadenaSistemaGerente": {
 							"value": {
@@ -150,10 +179,6 @@
 								"value": "@pipeline().parameters.Pais",
 								"type": "Expression"
 							},
-							"type": "String"
-						},
-						"Procedimiento": {
-							"value": "usp_CargaFacTransferencia",
 							"type": "String"
 						},
 						"TipoCarga": {
@@ -173,7 +198,14 @@
 			{
 				"name": "plt_FacPedidoVenta",
 				"type": "SqlServerStoredProcedure",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -183,11 +215,21 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureName": "dwh_ecu_plt.usp_CargaFacPedidoVenta",
 					"storedProcedureParameters": {
-						"Esquema": {
-							"value": "dwh_ecu_plt",
-							"type": "String"
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
 						},
 						"IDCadenaSistemaGerente": {
 							"value": {
@@ -203,10 +245,6 @@
 							},
 							"type": "String"
 						},
-						"Procedimiento": {
-							"value": "usp_CargaFacPedidoVenta",
-							"type": "String"
-						},
 						"TipoCarga": {
 							"value": {
 								"value": "@pipeline().parameters.TipoCarga",
@@ -219,6 +257,48 @@
 				"linkedServiceName": {
 					"referenceName": "linked_dwh",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
+						"storedProcedureParameters": {
+							"Dias": {
+								"type": "Int32",
+								"value": null
+							},
+							"FechaDesde": {
+								"type": "Datetime",
+								"value": null
+							},
+							"FechaFin": {
+								"type": "Datetime",
+								"value": null
+							},
+							"FechaHasta": {
+								"type": "Datetime",
+								"value": null
+							}
+						},
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
 				}
 			}
 		],
