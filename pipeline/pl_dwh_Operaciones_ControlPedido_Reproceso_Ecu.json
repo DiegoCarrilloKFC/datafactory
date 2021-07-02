@@ -6,7 +6,14 @@
 			{
 				"name": "ope_FacSgArticuloBodega",
 				"type": "SqlServerStoredProcedure",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -16,11 +23,21 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureName": "dwh_ecu_ope.usp_CargaFacSgArticuloBodega",
 					"storedProcedureParameters": {
-						"Esquema": {
-							"value": "dwh_ecu_ope",
-							"type": "String"
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
 						},
 						"IDCadenaSistemaGerente": {
 							"value": {
@@ -34,10 +51,6 @@
 								"value": "@pipeline().parameters.Pais",
 								"type": "Expression"
 							},
-							"type": "String"
-						},
-						"Procedimiento": {
-							"value": "usp_CargaFacSgArticuloBodega",
 							"type": "String"
 						},
 						"TipoCarga": {
@@ -74,11 +87,21 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[admin_btc].[usp_EjecutaSP]",
+					"storedProcedureName": "dwh_ecu_ope.usp_CargaFacSgMovimientoInventarioPedidos",
 					"storedProcedureParameters": {
-						"Esquema": {
-							"value": "dwh_ecu_ope",
-							"type": "String"
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
 						},
 						"IDCadenaSistemaGerente": {
 							"value": {
@@ -94,10 +117,6 @@
 							},
 							"type": "String"
 						},
-						"Procedimiento": {
-							"value": "usp_CargaFacSgMovimientoInventarioPedidos",
-							"type": "String"
-						},
 						"TipoCarga": {
 							"value": {
 								"value": "@pipeline().parameters.TipoCarga",
@@ -110,6 +129,48 @@
 				"linkedServiceName": {
 					"referenceName": "linked_dwh",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
+						"storedProcedureParameters": {
+							"Dias": {
+								"type": "Int32",
+								"value": null
+							},
+							"FechaDesde": {
+								"type": "Datetime",
+								"value": null
+							},
+							"FechaFin": {
+								"type": "Datetime",
+								"value": null
+							},
+							"FechaHasta": {
+								"type": "Datetime",
+								"value": null
+							}
+						},
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
 				}
 			}
 		],
