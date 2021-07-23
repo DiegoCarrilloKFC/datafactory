@@ -1,6 +1,395 @@
 {
 	"name": "prueba_carga_RINT",
 	"properties": {
+		"activities": [
+			{
+				"name": "MARA",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/MARA",
+							"wildcardFileName": {
+								"value": "@Concat('MARA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[MARA]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/MARA"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "MATERIAL",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALNAME",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "CREATIONDATE",
+									"type": "String"
+								},
+								{
+									"name": "LASTCHANGEDATE",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTOLDID",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTTYPE",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTGROUP",
+									"type": "String"
+								},
+								{
+									"name": "BASEUNIT",
+									"type": "String"
+								},
+								{
+									"name": "NETWEIGHT",
+									"type": "Decimal"
+								},
+								{
+									"name": "WEIGHTUNIT",
+									"type": "String"
+								},
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "GROSSWEIGHT",
+									"type": "Decimal"
+								},
+								{
+									"name": "DIVISION",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTHIERARCHY",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sap].[MARA]"
+						}
+					}
+				]
+			},
+			{
+				"name": "Delete_MARA",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "MARA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/MARA"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/catalogo/MARA"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "MVKE",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/MVKE",
+							"wildcardFileName": {
+								"value": "@Concat('MVKE_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[MVKE]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/MVKE"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "MATERIAL",
+									"type": "String"
+								},
+								{
+									"name": "MATERIALNAME",
+									"type": "String"
+								},
+								{
+									"name": "LANGUAGE",
+									"type": "String"
+								},
+								{
+									"name": "CREATIONDATE",
+									"type": "String"
+								},
+								{
+									"name": "LASTCHANGEDATE",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTOLDID",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTTYPE",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTGROUP",
+									"type": "String"
+								},
+								{
+									"name": "BASEUNIT",
+									"type": "String"
+								},
+								{
+									"name": "NETWEIGHT",
+									"type": "Decimal"
+								},
+								{
+									"name": "WEIGHTUNIT",
+									"type": "String"
+								},
+								{
+									"name": "FECHACARGA",
+									"type": "String"
+								},
+								{
+									"name": "GROSSWEIGHT",
+									"type": "Decimal"
+								},
+								{
+									"name": "DIVISION",
+									"type": "String"
+								},
+								{
+									"name": "PRODUCTHIERARCHY",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sap].[MVKE]"
+						}
+					}
+				]
+			},
+			{
+				"name": "Delete_MVKE",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "MVKE",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/MVKE"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/catalogo/MVKE"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "update_FECHACARGA",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Delete_MVKE",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Delete_MARA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "update [dsa_ecu_sap].[MARA] SET FECHACARGA=GETDATE() WHERE FECHACARGA IS NULL;\nupdate [dsa_ecu_sap].[MVKE] SET FECHACARGA=GETDATE() WHERE FECHACARGA IS NULL;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"Anio": {
+				"type": "string",
+				"defaultValue": "2021"
+			},
+			"Mes": {
+				"type": "string",
+				"defaultValue": "07"
+			},
+			"Dia": {
+				"type": "string",
+				"defaultValue": "23"
+			}
+		},
+		"folder": {
+			"name": "dsa_Sap"
+		},
 		"annotations": []
 	}
 }
