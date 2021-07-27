@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "MATDOC_BLOB",
+				"name": "MCHB_BLOB",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -20,9 +20,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/MATDOC",
+							"wildcardFolderPath": "produccionplanta/MCHB",
 							"wildcardFileName": {
-								"value": "@Concat('MATDOC_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('MCHB_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -32,7 +32,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[MATDOC_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[MCHB_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -42,29 +42,16 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/MATDOC"
+							"cw_carpeta": "produccionplanta/MCHB"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_MATDOC_BLOB",
+						"referenceName": "ds_sap_MCHB_BLOB",
 						"type": "DatasetReference"
 					}
 				]
-			},
-			{
-				"name": "FECHACARGA",
-				"type": "SetVariable",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "FECHACARGA",
-					"value": {
-						"value": "@Concat(pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia)",
-						"type": "Expression"
-					}
-				}
 			}
 		],
 		"parameters": {
@@ -78,7 +65,7 @@
 			},
 			"Dia": {
 				"type": "string",
-				"defaultValue": "23"
+				"defaultValue": "26"
 			}
 		},
 		"variables": {
