@@ -16,11 +16,11 @@
 				}
 			},
 			{
-				"name": "EKBE",
+				"name": "ACDOCA",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "EKBE_BLOB",
+						"activity": "ACDOCA_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -38,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.EKBE\nINSERT INTO [dsa_ecu_sap].[EKBE]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[EKBE_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.ACDOCA\nINSERT INTO [dsa_ecu_sap].[ACDOCA]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[ACDOCA_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -51,11 +51,11 @@
 				}
 			},
 			{
-				"name": "DeleteEKBE",
+				"name": "DeleteACDOCA",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "EKBE",
+						"activity": "ACDOCA",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -74,7 +74,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKBE"
+							"cw_carpeta": "produccionplanta/ACDOCA"
 						}
 					},
 					"logStorageSettings": {
@@ -97,7 +97,7 @@
 				}
 			},
 			{
-				"name": "EKBE_BLOB",
+				"name": "ACDOCA_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -121,9 +121,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/EKBE",
+							"wildcardFolderPath": "produccionplanta/ACDOCA",
 							"wildcardFileName": {
-								"value": "@Concat('EKBE_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('ACDOCA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -133,7 +133,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.EKBE_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.ACDOCA_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -143,13 +143,13 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKBE"
+							"cw_carpeta": "produccionplanta/ACDOCA"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_EKBE_BLOB",
+						"referenceName": "ds_sap_ACDOCA_BLOB",
 						"type": "DatasetReference"
 					}
 				]
