@@ -61,7 +61,7 @@
 				}
 			},
 			{
-				"name": "Transaccional",
+				"name": "Transaccional_1",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
@@ -80,7 +80,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_RINT",
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_RINT_1",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true,
@@ -115,6 +115,40 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_dsa_Sap_Ecu_Catalogo_RINT_2",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Transaccional_2",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Transaccional_1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_RINT_2",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true,
