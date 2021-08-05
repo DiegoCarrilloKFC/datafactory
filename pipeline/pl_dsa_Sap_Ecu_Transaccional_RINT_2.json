@@ -3,11 +3,24 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "MATDOC",
+				"name": "FECHACARGA",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "FECHACARGA",
+					"value": {
+						"value": "@Concat(pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "AFKO",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "MATDOC_BLOB",
+						"activity": "AFKO_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -25,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[MATDOC]\nINSERT INTO [dsa_ecu_sap].[MATDOC]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[MATDOC_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.AFKO\nINSERT INTO [dsa_ecu_sap].[AFKO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[AFKO_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -38,20 +51,53 @@
 				}
 			},
 			{
-				"name": "FECHACARGA",
-				"type": "SetVariable",
-				"dependsOn": [],
+				"name": "DeleteAFKO",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "AFKO",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": "FECHACARGA",
-					"value": {
-						"value": "@Concat(pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia)",
-						"type": "Expression"
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/AFKO"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/produccionplanta/AFKO"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
 					}
 				}
 			},
 			{
-				"name": "MATDOC_BLOB",
+				"name": "AFKO_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -75,9 +121,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/MATDOC",
+							"wildcardFolderPath": "produccionplanta/AFKO",
 							"wildcardFileName": {
-								"value": "@Concat('MATDOC_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('AFKO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -87,7 +133,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[MATDOC_BLOB]",
+						"preCopyScript": "truncate table dsa_ecu_sap.AFKO_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -97,62 +143,16 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/MATDOC"
+							"cw_carpeta": "produccionplanta/AFKO"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_MATDOC_BLOB",
+						"referenceName": "ds_sap_AFKO_BLOB",
 						"type": "DatasetReference"
 					}
 				]
-			},
-			{
-				"name": "DeleteMATDOC",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "MATDOC",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "produccionplanta/MATDOC"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/produccionplanta/MATDOC"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
 			}
 		],
 		"parameters": {
