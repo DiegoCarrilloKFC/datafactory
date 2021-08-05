@@ -1062,6 +1062,214 @@
 						"enablePartitionDiscovery": false
 					}
 				}
+			},
+			{
+				"name": "COKEY_BLOB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "FECHACARGA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/COKEY",
+							"wildcardFileName": {
+								"value": "@Concat('COKEY_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[COKEY_BLOB]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/COKEY"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "HRKFT",
+									"type": "String"
+								},
+								{
+									"name": "WERKS",
+									"type": "String"
+								},
+								{
+									"name": "MATNR",
+									"type": "String"
+								},
+								{
+									"name": "HKGRP",
+									"type": "String"
+								},
+								{
+									"name": "PCVER",
+									"type": "String"
+								},
+								{
+									"name": "CBRKE",
+									"type": "String"
+								},
+								{
+									"name": "CBRKI",
+									"type": "String"
+								},
+								{
+									"name": "CBART",
+									"type": "String"
+								},
+								{
+									"name": "DRVTP",
+									"type": "String"
+								},
+								{
+									"name": "CBAT",
+									"type": "String"
+								},
+								{
+									"name": "RECIND",
+									"type": "String"
+								},
+								{
+									"name": "BEMOT",
+									"type": "String"
+								},
+								{
+									"name": "PERNR",
+									"type": "String"
+								},
+								{
+									"name": "RSRCE",
+									"type": "String"
+								},
+								{
+									"name": "SUBKEY2",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sap].[COKEY_BLOB]"
+						}
+					}
+				]
+			},
+			{
+				"name": "COKEY",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "COKEY_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[COKEY]\nINSERT INTO [dsa_ecu_sap].[COKEY]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[COKEY_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteCOKEY",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "COKEY",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/COKEY"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/catalogo/COKEY"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
 			}
 		],
 		"parameters": {
