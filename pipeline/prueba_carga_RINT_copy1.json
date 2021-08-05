@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "TVTW_BLOB",
+				"name": "COKEY_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/TVTW",
+							"wildcardFolderPath": "catalogo/COKEY",
 							"wildcardFileName": {
-								"value": "@Concat('TVTW_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('COKEY_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[TVTW_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[COKEY_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TVTW"
+							"cw_carpeta": "catalogo/COKEY"
 						}
 					}
 				],
@@ -64,11 +64,67 @@
 									"type": "String"
 								},
 								{
-									"name": "VTWEG",
+									"name": "HRKFT",
+									"type": "String"
+								},
+								{
+									"name": "WERKS",
+									"type": "String"
+								},
+								{
+									"name": "MATNR",
+									"type": "String"
+								},
+								{
+									"name": "HKGRP",
+									"type": "String"
+								},
+								{
+									"name": "PCVER",
+									"type": "String"
+								},
+								{
+									"name": "CBRKE",
+									"type": "String"
+								},
+								{
+									"name": "CBRKI",
+									"type": "String"
+								},
+								{
+									"name": "CBART",
+									"type": "String"
+								},
+								{
+									"name": "DRVTP",
+									"type": "String"
+								},
+								{
+									"name": "CBAT",
+									"type": "String"
+								},
+								{
+									"name": "RECIND",
+									"type": "String"
+								},
+								{
+									"name": "BEMOT",
+									"type": "String"
+								},
+								{
+									"name": "PERNR",
+									"type": "String"
+								},
+								{
+									"name": "RSRCE",
+									"type": "String"
+								},
+								{
+									"name": "SUBKEY2",
 									"type": "String"
 								}
 							],
-							"cw_tableName": "[dsa_ecu_sap].[TVTW_BLOB]"
+							"cw_tableName": "[dsa_ecu_sap].[COKEY_BLOB]"
 						}
 					}
 				]
@@ -87,11 +143,11 @@
 				}
 			},
 			{
-				"name": "TVTW",
+				"name": "COKEY",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "TVTW_BLOB",
+						"activity": "COKEY_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -109,7 +165,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[TVTW]\nINSERT INTO [dsa_ecu_sap].[TVTW]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[TVTW_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[COKEY]\nINSERT INTO [dsa_ecu_sap].[COKEY]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[COKEY_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -122,11 +178,11 @@
 				}
 			},
 			{
-				"name": "DeleteTVTW",
+				"name": "DeleteCOKEY",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "TVTW",
+						"activity": "COKEY",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -145,7 +201,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TVTW"
+							"cw_carpeta": "catalogo/COKEY"
 						}
 					},
 					"logStorageSettings": {
@@ -153,7 +209,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/TVTW"
+						"path": "almacenamientosap/catalogo/COKEY"
 					},
 					"enableLogging": true,
 					"storeSettings": {
