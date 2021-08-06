@@ -5436,7 +5436,7 @@
 				}
 			},
 			{
-				"name": "T161_BLOB",
+				"name": "T161T_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -5460,9 +5460,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/T001K",
+							"wildcardFolderPath": "catalogo/T161T",
 							"wildcardFileName": {
-								"value": "@Concat('T001K_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('T161T_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -5482,7 +5482,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T001K"
+							"cw_carpeta": "catalogo/T0161T"
 						}
 					}
 				],
@@ -5591,11 +5591,11 @@
 				]
 			},
 			{
-				"name": "T161",
+				"name": "T161T",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "T161_BLOB",
+						"activity": "T161T_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -5613,7 +5613,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T001K]\nINSERT INTO [dsa_ecu_sap].[T001K]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T001K_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T161T]\nINSERT INTO [dsa_ecu_sap].[T161T]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T161T_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -5626,11 +5626,11 @@
 				}
 			},
 			{
-				"name": "DeleteT161",
+				"name": "DeleteT161T",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "T161",
+						"activity": "T161T",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -5649,7 +5649,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T001K"
+							"cw_carpeta": "catalogo/T161T"
 						}
 					},
 					"logStorageSettings": {
@@ -5657,7 +5657,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/T001K"
+						"path": "almacenamientosap/catalogo/T161T"
 					},
 					"enableLogging": true,
 					"storeSettings": {
