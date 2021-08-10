@@ -1,0 +1,275 @@
+{
+	"name": "pl_dsa_Sap_Ecu_Catalogo_RINT_3",
+	"properties": {
+		"activities": [
+			{
+				"name": "FECHACARGA",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "FECHACARGA",
+					"value": {
+						"value": "@Concat(pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "T683T_BLOB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "FECHACARGA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/T683T",
+							"wildcardFileName": {
+								"value": "@Concat('T683T_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[T683T_BLOB]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/T683T"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "WERKS",
+									"type": "String"
+								},
+								{
+									"name": "LGORT",
+									"type": "String"
+								},
+								{
+									"name": "LGOBE",
+									"type": "String"
+								},
+								{
+									"name": "SPART",
+									"type": "String"
+								},
+								{
+									"name": "XLONG",
+									"type": "String"
+								},
+								{
+									"name": "XBUFX",
+									"type": "String"
+								},
+								{
+									"name": "DISKZ",
+									"type": "String"
+								},
+								{
+									"name": "XBLGO",
+									"type": "String"
+								},
+								{
+									"name": "XRESS",
+									"type": "String"
+								},
+								{
+									"name": "XHUPF",
+									"type": "String"
+								},
+								{
+									"name": "PARLG",
+									"type": "String"
+								},
+								{
+									"name": "VKORG",
+									"type": "String"
+								},
+								{
+									"name": "VTWEG",
+									"type": "String"
+								},
+								{
+									"name": "VSTEL",
+									"type": "String"
+								},
+								{
+									"name": "LIFNR",
+									"type": "String"
+								},
+								{
+									"name": "KUNNR",
+									"type": "String"
+								},
+								{
+									"name": "MESBS",
+									"type": "String"
+								},
+								{
+									"name": "MESST",
+									"type": "String"
+								},
+								{
+									"name": "OIH_LICNO",
+									"type": "String"
+								},
+								{
+									"name": "OIG_ITRFL",
+									"type": "String"
+								},
+								{
+									"name": "OIB_TNKASSIGN",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sap].[T683T_BLOB]"
+						}
+					}
+				]
+			},
+			{
+				"name": "T683T",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "T683T_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T683T]\nINSERT INTO [dsa_ecu_sap].[T683T]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T683T_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteT683T",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "T683T",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/T683T"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/catalogo/T683T"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"parameters": {
+			"Anio": {
+				"type": "string",
+				"defaultValue": "2021"
+			},
+			"Mes": {
+				"type": "string",
+				"defaultValue": "07"
+			},
+			"Dia": {
+				"type": "string",
+				"defaultValue": "23"
+			}
+		},
+		"variables": {
+			"FECHACARGA": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "dsa_Sap"
+		},
+		"annotations": []
+	}
+}
