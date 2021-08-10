@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "COKEY_BLOB",
+				"name": "T683S_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/COKEY",
+							"wildcardFolderPath": "catalogo/T683S",
 							"wildcardFileName": {
-								"value": "@Concat('COKEY_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('T683S_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[COKEY_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[T683S_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/COKEY"
+							"cw_carpeta": "catalogo/T683S"
 						}
 					}
 				],
@@ -58,73 +58,8 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "HRKFT",
-									"type": "String"
-								},
-								{
-									"name": "WERKS",
-									"type": "String"
-								},
-								{
-									"name": "MATNR",
-									"type": "String"
-								},
-								{
-									"name": "HKGRP",
-									"type": "String"
-								},
-								{
-									"name": "PCVER",
-									"type": "String"
-								},
-								{
-									"name": "CBRKE",
-									"type": "String"
-								},
-								{
-									"name": "CBRKI",
-									"type": "String"
-								},
-								{
-									"name": "CBART",
-									"type": "String"
-								},
-								{
-									"name": "DRVTP",
-									"type": "String"
-								},
-								{
-									"name": "CBAT",
-									"type": "String"
-								},
-								{
-									"name": "RECIND",
-									"type": "String"
-								},
-								{
-									"name": "BEMOT",
-									"type": "String"
-								},
-								{
-									"name": "PERNR",
-									"type": "String"
-								},
-								{
-									"name": "RSRCE",
-									"type": "String"
-								},
-								{
-									"name": "SUBKEY2",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[COKEY_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"KVEWE\",\"type\":\"String\"} [{\"name\":\"KAPPL\",\"type\":\"String\"} [{\"name\":\"KALSM\",\"type\":\"String\"} [{\"name\":\"STUNR\",\"type\":\"String\"} [{\"name\":\"ZAEHK\",\"type\":\"String\"} [{\"name\":\"KSCHL\",\"type\":\"String\"} [{\"name\":\"STUNB\",\"type\":\"String\"} [{\"name\":\"STUN2\",\"type\":\"String\"} [{\"name\":\"KAUTO\",\"type\":\"String\"} [{\"name\":\"KOBED\",\"type\":\"String\"} [{\"name\":\"KZWIW\",\"type\":\"String\"} [{\"name\":\"KSTAT\",\"type\":\"String\"} [{\"name\":\"KOFRM\",\"type\":\"String\"} [{\"name\":\"KOFRA\",\"type\":\"String\"} [{\"name\":\"KVSL1\",\"type\":\"String\"} [{\"name\":\"KVSL2\",\"type\":\"String\"} [{\"name\":\"DRUKZ\",\"type\":\"String\"} [{\"name\":\"KOBLI\",\"type\":\"String\"} [{\"name\":\"IS_ACCT_DETN_RELEVANT\",\"type\":\"String\"} [{\"name\":\"/SAPCEM/CONV_ME\",\"type\":\"String\"}",
+							"cw_tableName": "[dsa_ecu_sap].[T683S_BLOB]"
 						}
 					}
 				]
@@ -143,11 +78,11 @@
 				}
 			},
 			{
-				"name": "COKEY",
+				"name": "T683S",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "COKEY_BLOB",
+						"activity": "T683S_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -165,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[COKEY]\nINSERT INTO [dsa_ecu_sap].[COKEY]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[COKEY_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T683S]\nINSERT INTO [dsa_ecu_sap].[T683S]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T683S_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -178,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteCOKEY",
+				"name": "DeleteT683S",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "COKEY",
+						"activity": "T683S",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -201,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/COKEY"
+							"cw_carpeta": "catalogo/T683S"
 						}
 					},
 					"logStorageSettings": {
@@ -209,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/COKEY"
+						"path": "almacenamientosap/catalogo/T683S"
 					},
 					"enableLogging": true,
 					"storeSettings": {
