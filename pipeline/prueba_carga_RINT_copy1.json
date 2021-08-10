@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "T683S_BLOB",
+				"name": "T179T_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/T683S",
+							"wildcardFolderPath": "catalogo/T179T",
 							"wildcardFileName": {
-								"value": "@Concat('T683S_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('T179T_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T683S_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[T179T_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T683S"
+							"cw_carpeta": "catalogo/T179T"
 						}
 					}
 				],
@@ -58,8 +58,25 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"KVEWE\",\"type\":\"String\"} [{\"name\":\"KAPPL\",\"type\":\"String\"} [{\"name\":\"KALSM\",\"type\":\"String\"} [{\"name\":\"STUNR\",\"type\":\"String\"} [{\"name\":\"ZAEHK\",\"type\":\"String\"} [{\"name\":\"KSCHL\",\"type\":\"String\"} [{\"name\":\"STUNB\",\"type\":\"String\"} [{\"name\":\"STUN2\",\"type\":\"String\"} [{\"name\":\"KAUTO\",\"type\":\"String\"} [{\"name\":\"KOBED\",\"type\":\"String\"} [{\"name\":\"KZWIW\",\"type\":\"String\"} [{\"name\":\"KSTAT\",\"type\":\"String\"} [{\"name\":\"KOFRM\",\"type\":\"String\"} [{\"name\":\"KOFRA\",\"type\":\"String\"} [{\"name\":\"KVSL1\",\"type\":\"String\"} [{\"name\":\"KVSL2\",\"type\":\"String\"} [{\"name\":\"DRUKZ\",\"type\":\"String\"} [{\"name\":\"KOBLI\",\"type\":\"String\"} [{\"name\":\"IS_ACCT_DETN_RELEVANT\",\"type\":\"String\"} [{\"name\":\"/SAPCEM/CONV_ME\",\"type\":\"String\"}",
-							"cw_tableName": "[dsa_ecu_sap].[T683S_BLOB]"
+							"cw_structure": [
+								{
+									"name": "MANDT",
+									"type": "String"
+								},
+								{
+									"name": "SPRAS",
+									"type": "String"
+								},
+								{
+									"name": "PRODH",
+									"type": "String"
+								},
+								{
+									"name": "VTEXT",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sap].[T179T_BLOB]"
 						}
 					}
 				]
@@ -78,11 +95,11 @@
 				}
 			},
 			{
-				"name": "T683S",
+				"name": "T179T",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "T683S_BLOB",
+						"activity": "T179T_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +117,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T683S]\nINSERT INTO [dsa_ecu_sap].[T683S]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T683S_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T179T]\nINSERT INTO [dsa_ecu_sap].[T179T]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T179T_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -113,11 +130,11 @@
 				}
 			},
 			{
-				"name": "DeleteT683S",
+				"name": "DeleteT179T",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "T683S",
+						"activity": "T179T",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -136,7 +153,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T683S"
+							"cw_carpeta": "catalogo/T179T"
 						}
 					},
 					"logStorageSettings": {
@@ -144,7 +161,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/T683S"
+						"path": "almacenamientosap/catalogo/T179T"
 					},
 					"enableLogging": true,
 					"storeSettings": {
