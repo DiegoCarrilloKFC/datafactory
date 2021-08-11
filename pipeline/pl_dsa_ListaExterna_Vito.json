@@ -8,7 +8,7 @@
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
-					"retry": 0,
+					"retry": 2,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -26,13 +26,14 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDFreidora,IDTipo,Modelo,Descripcion,CapacidadLitros,UsuarioInsert,FechaRegistro FROM app.Freidora"
+						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDFreidora,IDTipo,Modelo,Descripcion,CapacidadLitros,UsuarioInsert,FechaRegistro FROM app.Freidora",
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"allowPolyBase": true,
 						"writeBatchSize": 10000,
 						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[Freidora]",
+						"allowPolyBase": true,
 						"polyBaseSettings": {
 							"rejectValue": 0,
 							"rejectType": "value",
@@ -149,7 +150,7 @@
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
-					"retry": 0,
+					"retry": 2,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -167,13 +168,14 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDFreidoraLocal,IDFreidora,UsuarioLocal,NumeroFreidora,Estado,FechaCreado FROM app.FreidoraLocal"
+						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDFreidoraLocal,IDFreidora,UsuarioLocal,NumeroFreidora,Estado,FechaCreado FROM app.FreidoraLocal",
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"allowPolyBase": true,
 						"writeBatchSize": 10000,
 						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[FreidoraLocal]",
+						"allowPolyBase": true,
 						"polyBaseSettings": {
 							"rejectValue": 0,
 							"rejectType": "value",
@@ -282,7 +284,7 @@
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
-					"retry": 0,
+					"retry": 2,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -300,13 +302,14 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDTipoFreidora,Tipo FROM app.TipoFreidora"
+						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDTipoFreidora,Tipo FROM app.TipoFreidora",
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"allowPolyBase": true,
 						"writeBatchSize": 10000,
 						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[TipoFreidora]",
+						"allowPolyBase": true,
 						"polyBaseSettings": {
 							"rejectValue": 0,
 							"rejectType": "value",
@@ -383,7 +386,7 @@
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
-					"retry": 0,
+					"retry": 2,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -401,13 +404,14 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Login,IDCentroCosto,CodigoCentroCosto,Pais FROM app.UsuarioLocal"
+						"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Login,IDCentroCosto,CodigoCentroCosto,Pais FROM app.UsuarioLocal",
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"allowPolyBase": true,
 						"writeBatchSize": 10000,
 						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[UsuarioLocal]",
+						"allowPolyBase": true,
 						"polyBaseSettings": {
 							"rejectValue": 0,
 							"rejectType": "value",
@@ -507,7 +511,7 @@
 				],
 				"policy": {
 					"timeout": "7.00:00:00",
-					"retry": 0,
+					"retry": 2,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -528,13 +532,14 @@
 						"sqlReaderQuery": {
 							"value": "SELECT GETDATE() AS FechaCarga,IDReposicionAceite,IDFreidoraLocal,FechaRegistro,ReposicionAceite,NivelacionAceiteLtrs,PorcentajeVitoAm,UsuarioLocal,Estado,EstadoAlerta FROM app.ReposicionAceite WHERE FechaRegistro >= '@{activity('Fecha Carga').output.firstRow.FechaDesde}' AND FechaRegistro <= DATEADD(DAY,2,'@{activity('Fecha Carga').output.firstRow.FechaHasta}')",
 							"type": "Expression"
-						}
+						},
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"allowPolyBase": true,
 						"writeBatchSize": 10000,
 						"preCopyScript": "TRUNCATE TABLE [dsa_int_lst].[ReposicionAceite]",
+						"allowPolyBase": true,
 						"polyBaseSettings": {
 							"rejectValue": 0,
 							"rejectType": "value",
@@ -694,7 +699,8 @@
 								"type": "DateTime",
 								"value": null
 							}
-						}
+						},
+						"partitionOption": "None"
 					},
 					"dataset": {
 						"referenceName": "ds_dwh_general",
