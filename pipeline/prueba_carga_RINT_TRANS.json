@@ -16,11 +16,11 @@
 				}
 			},
 			{
-				"name": "AFKO",
+				"name": "VBRP",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "AFKO_BLOB",
+						"activity": "VBRP_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -38,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.AFKO\nINSERT INTO [dsa_ecu_sap].[AFKO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[AFKO_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.VBRP\nINSERT INTO [dsa_ecu_sap].[VBRP]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[VBRP_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -51,11 +51,11 @@
 				}
 			},
 			{
-				"name": "DeleteAFKO",
+				"name": "DeleteVBRP",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "AFKO",
+						"activity": "VBRP",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -74,7 +74,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/AFKO"
+							"cw_carpeta": "produccionplanta/VBRP"
 						}
 					},
 					"logStorageSettings": {
@@ -82,7 +82,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/AFKO"
+						"path": "almacenamientosap/produccionplanta/VBRP"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -97,7 +97,7 @@
 				}
 			},
 			{
-				"name": "AFKO_BLOB",
+				"name": "VBRP_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -121,9 +121,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/AFKO",
+							"wildcardFolderPath": "produccionplanta/VBRP",
 							"wildcardFileName": {
-								"value": "@Concat('AFKO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('VBRP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -133,7 +133,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.AFKO_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.VBRP_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -143,13 +143,13 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/AFKO"
+							"cw_carpeta": "produccionplanta/VBRP"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_AFKO_BLOB",
+						"referenceName": "ds_sap_VBRP_BLOB",
 						"type": "DatasetReference"
 					}
 				]
