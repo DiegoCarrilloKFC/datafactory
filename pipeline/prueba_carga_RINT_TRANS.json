@@ -16,11 +16,11 @@
 				}
 			},
 			{
-				"name": "VBRP",
+				"name": "VBAK",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "VBRP_BLOB",
+						"activity": "VBAK_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -38,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.VBRP\nINSERT INTO [dsa_ecu_sap].[VBRP]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[VBRP_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.VBAK\nINSERT INTO [dsa_ecu_sap].[VBAK]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[VBAK_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -51,11 +51,11 @@
 				}
 			},
 			{
-				"name": "DeleteVBRP",
+				"name": "DeleteVBAK",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "VBRP",
+						"activity": "VBAK",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -74,7 +74,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/VBRP"
+							"cw_carpeta": "produccionplanta/VBAK"
 						}
 					},
 					"logStorageSettings": {
@@ -82,7 +82,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/VBRP"
+						"path": "almacenamientosap/produccionplanta/VBAK"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -97,7 +97,7 @@
 				}
 			},
 			{
-				"name": "VBRP_BLOB",
+				"name": "VBAK_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -121,9 +121,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/VBRP",
+							"wildcardFolderPath": "produccionplanta/VBAK",
 							"wildcardFileName": {
-								"value": "@Concat('VBRP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('VBAK_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -133,7 +133,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.VBRP_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.VBAK_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -143,13 +143,13 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/VBRP"
+							"cw_carpeta": "produccionplanta/VBAK"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_VBRP_BLOB",
+						"referenceName": "ds_sap_VBAK_BLOB",
 						"type": "DatasetReference"
 					}
 				]
