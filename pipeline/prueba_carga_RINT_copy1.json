@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "T179T_BLOB",
+				"name": "TVSTT_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/T179T",
+							"wildcardFolderPath": "catalogo/TVSTT",
 							"wildcardFileName": {
-								"value": "@Concat('T179T_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('TVSTT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T179T_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[TVSTT_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T179T"
+							"cw_carpeta": "catalogo/TVSTT"
 						}
 					}
 				],
@@ -58,25 +58,8 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "SPRAS",
-									"type": "String"
-								},
-								{
-									"name": "PRODH",
-									"type": "String"
-								},
-								{
-									"name": "VTEXT",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[T179T_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"VSTEL\",\"type\":\"String\"} [{\"name\":\"VTEXT\",\"type\":\"String\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[TVSTT_BLOB]"
 						}
 					}
 				]
@@ -95,11 +78,11 @@
 				}
 			},
 			{
-				"name": "T179T",
+				"name": "TVSTT",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "T179T_BLOB",
+						"activity": "TVSTT_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -117,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T179T]\nINSERT INTO [dsa_ecu_sap].[T179T]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T179T_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[TVSTT]\nINSERT INTO [dsa_ecu_sap].[TVSTT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[TVSTT_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -130,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteT179T",
+				"name": "DeleteTVSTT",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "T179T",
+						"activity": "TVSTT",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -153,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T179T"
+							"cw_carpeta": "catalogo/TVSTT"
 						}
 					},
 					"logStorageSettings": {
@@ -161,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/T179T"
+						"path": "almacenamientosap/catalogo/TVSTT"
 					},
 					"enableLogging": true,
 					"storeSettings": {
