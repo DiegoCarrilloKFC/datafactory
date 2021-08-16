@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "TVSTT_BLOB",
+				"name": "IFLOTX_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/TVSTT",
+							"wildcardFolderPath": "catalogo/IFLOTX",
 							"wildcardFileName": {
-								"value": "@Concat('TVSTT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('IFLOTX_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[TVSTT_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[IFLOTX_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TVSTT"
+							"cw_carpeta": "catalogo/IFLOTX"
 						}
 					}
 				],
@@ -58,8 +58,8 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"VSTEL\",\"type\":\"String\"} [{\"name\":\"VTEXT\",\"type\":\"String\"} ]",
-							"cw_tableName": "[dsa_ecu_sap].[TVSTT_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"TPLNR\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"PLTXT\",\"type\":\"String\"} [{\"name\":\"KZLTX\",\"type\":\"String\"} [{\"name\":\"KZMLA\",\"type\":\"String\"} [{\"name\":\"PLTXU\",\"type\":\"String\"} [{\"name\":\"TEXTCHANGEDDATETIME\",\"type\":\"Decimal\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[IFLOTX_BLOB]"
 						}
 					}
 				]
@@ -78,11 +78,11 @@
 				}
 			},
 			{
-				"name": "TVSTT",
+				"name": "IFLOTX",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "TVSTT_BLOB",
+						"activity": "IFLOTX_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[TVSTT]\nINSERT INTO [dsa_ecu_sap].[TVSTT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[TVSTT_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[IFLOTX]\nINSERT INTO [dsa_ecu_sap].[IFLOTX]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[IFLOTX_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -113,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteTVSTT",
+				"name": "DeleteIFLOTX",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "TVSTT",
+						"activity": "IFLOTX",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -136,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TVSTT"
+							"cw_carpeta": "catalogo/IFLOTX"
 						}
 					},
 					"logStorageSettings": {
@@ -144,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/TVSTT"
+						"path": "almacenamientosap/catalogo/IFLOTX"
 					},
 					"enableLogging": true,
 					"storeSettings": {
