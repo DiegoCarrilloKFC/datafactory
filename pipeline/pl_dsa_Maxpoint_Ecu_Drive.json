@@ -8,7 +8,7 @@
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
-					"retry": 0,
+					"retry": 2,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -26,7 +26,8 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "select GETDATE() as FechaCarga,'6F9619FF-8B86-D011-B42D-00C04FC964FF' AS IDRegaliasYUM,Cod_Restaurante,Transaccion,VentaBruta,VentaNeta,FechaPeriodo from [dwh_ecu_ope].[RegaliasYUM]"
+						"sqlReaderQuery": "select GETDATE() as FechaCarga,'6F9619FF-8B86-D011-B42D-00C04FC964FF' AS IDRegaliasYUM,Cod_Restaurante,Transaccion,VentaBruta,VentaNeta,FechaPeriodo from [dwh_ecu_ope].[RegaliasYUM]",
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlDWSink",
@@ -159,7 +160,8 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": "UPDATE reg SET VentaNeta = ISNULL( VentaBruta / (((SELECT Porcentaje FROM dwh_dim.Impuesto WHERE Impuesto = 'IVA' AND CAST(reg.FechaPeriodo AS DATE) BETWEEN FechaInicio AND FechaFin AND Pais = 'ECU') / 100) + 1),0) FROM dsa_ecu_mp.RegaliasYUM reg\n\nSELECT 'ok' AS Resultado",
-						"queryTimeout": "02:00:00"
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
 					},
 					"dataset": {
 						"referenceName": "ds_dwh_general",
