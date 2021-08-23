@@ -1158,6 +1158,149 @@
 						"enablePartitionDiscovery": false
 					}
 				}
+			},
+			{
+				"name": "T003O_BLOB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "FECHACARGA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/T003O",
+							"wildcardFileName": {
+								"value": "@Concat('T003O_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[T003O_BLOB]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/T003O"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": "[{\"name\":\"CLIENT\",\"type\":\"String\"} [{\"name\":\"AUART\",\"type\":\"String\"} [{\"name\":\"AUTYP\",\"type\":\"String\"} [{\"name\":\"NUMKR\",\"type\":\"String\"} [{\"name\":\"OBLIGO\",\"type\":\"String\"} [{\"name\":\"ERLOESE\",\"type\":\"String\"} [{\"name\":\"STSMA\",\"type\":\"String\"} [{\"name\":\"APROF\",\"type\":\"String\"} [{\"name\":\"PPROF\",\"type\":\"String\"} [{\"name\":\"COPAR\",\"type\":\"String\"} [{\"name\":\"RESZ1\",\"type\":\"String\"} [{\"name\":\"RESZ2\",\"type\":\"String\"} [{\"name\":\"AUFKL\",\"type\":\"String\"} [{\"name\":\"RELKZ\",\"type\":\"String\"} [{\"name\":\"CHGKZ\",\"type\":\"String\"} [{\"name\":\"BPROF\",\"type\":\"String\"} [{\"name\":\"PLINT\",\"type\":\"String\"} [{\"name\":\"NABPF\",\"type\":\"String\"} [{\"name\":\"VORPL\",\"type\":\"String\"} [{\"name\":\"LAYOUT\",\"type\":\"String\"} [{\"name\":\"TDFORM\",\"type\":\"String\"} [{\"name\":\"SCOPE\",\"type\":\"String\"} [{\"name\":\"COLORDPROC\",\"type\":\"String\"} [{\"name\":\"VRG_STSMA\",\"type\":\"String\"} [{\"name\":\"FUNC_AREA\",\"type\":\"String\"} [{\"name\":\"EXEC_PROFILE\",\"type\":\"String\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[T003O_BLOB]"
+						}
+					}
+				]
+			},
+			{
+				"name": "T003O",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "T003O_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T003O]\nINSERT INTO [dsa_ecu_sap].[T003O]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T003O_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteT003O",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "T003O",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/T003O"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/catalogo/T003O"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
 			}
 		],
 		"parameters": {
