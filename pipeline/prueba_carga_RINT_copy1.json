@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "TJ01T_BLOB",
+				"name": "T003O_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/TJ01T",
+							"wildcardFolderPath": "catalogo/T003O",
 							"wildcardFileName": {
-								"value": "@Concat('TJ01T_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('T003O_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[TJ01T_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[T003O_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TJ01T"
+							"cw_carpeta": "catalogo/T003O"
 						}
 					}
 				],
@@ -59,7 +59,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"BLART\",\"type\":\"String\"} [{\"name\":\"LTEXT\",\"type\":\"String\"} ]",
-							"cw_tableName": "[dsa_ecu_sap].[TJ01T_BLOB]"
+							"cw_tableName": "[dsa_ecu_sap].[T003O_BLOB]"
 						}
 					}
 				]
@@ -78,11 +78,11 @@
 				}
 			},
 			{
-				"name": "TJ01T",
+				"name": "T003O",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "TJ01T_BLOB",
+						"activity": "T003O_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[TJ01T]\nINSERT INTO [dsa_ecu_sap].[TJ01T]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[TJ01T_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T003O]\nINSERT INTO [dsa_ecu_sap].[T003O]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T003O_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -113,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteTJ01T",
+				"name": "DeleteT003O",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "TJ01T",
+						"activity": "T003O",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -136,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TJ01T"
+							"cw_carpeta": "catalogo/T003O"
 						}
 					},
 					"logStorageSettings": {
@@ -144,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/TJ01T"
+						"path": "almacenamientosap/catalogo/T003O"
 					},
 					"enableLogging": true,
 					"storeSettings": {
