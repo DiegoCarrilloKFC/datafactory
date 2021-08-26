@@ -1301,6 +1301,149 @@
 						"enablePartitionDiscovery": false
 					}
 				}
+			},
+			{
+				"name": "CSKS_BLOB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "FECHACARGA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "produccionplanta/CSKS",
+							"wildcardFileName": {
+								"value": "@Concat('CSKS_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[CSKS_BLOB]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/CSKS"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"KOKRS\",\"type\":\"String\"} [{\"name\":\"KOSTL\",\"type\":\"String\"} [{\"name\":\"DATBI\",\"type\":\"String\"} [{\"name\":\"DATAB\",\"type\":\"String\"} [{\"name\":\"BKZKP\",\"type\":\"String\"} [{\"name\":\"PKZKP\",\"type\":\"String\"} [{\"name\":\"BUKRS\",\"type\":\"String\"} [{\"name\":\"GSBER\",\"type\":\"String\"} [{\"name\":\"KOSAR\",\"type\":\"String\"} [{\"name\":\"VERAK\",\"type\":\"String\"} [{\"name\":\"VERAK_USER\",\"type\":\"String\"} [{\"name\":\"WAERS\",\"type\":\"String\"} [{\"name\":\"KALSM\",\"type\":\"String\"} [{\"name\":\"TXJCD\",\"type\":\"String\"} [{\"name\":\"PRCTR\",\"type\":\"String\"} [{\"name\":\"WERKS\",\"type\":\"String\"} [{\"name\":\"LOGSYSTEM\",\"type\":\"String\"} [{\"name\":\"ERSDA\",\"type\":\"String\"} [{\"name\":\"USNAM\",\"type\":\"String\"} [{\"name\":\"BKZKS\",\"type\":\"String\"} [{\"name\":\"BKZER\",\"type\":\"String\"} [{\"name\":\"BKZOB\",\"type\":\"String\"} [{\"name\":\"PKZKS\",\"type\":\"String\"} [{\"name\":\"PKZER\",\"type\":\"String\"} [{\"name\":\"VMETH\",\"type\":\"String\"} [{\"name\":\"MGEFL\",\"type\":\"String\"} [{\"name\":\"ABTEI\",\"type\":\"String\"} [{\"name\":\"NKOST\",\"type\":\"String\"} [{\"name\":\"KVEWE\",\"type\":\"String\"} [{\"name\":\"KAPPL\",\"type\":\"String\"} [{\"name\":\"KOSZSCHL\",\"type\":\"String\"} [{\"name\":\"LAND1\",\"type\":\"String\"} [{\"name\":\"ANRED\",\"type\":\"String\"} [{\"name\":\"NAME1\",\"type\":\"String\"} [{\"name\":\"NAME2\",\"type\":\"String\"} [{\"name\":\"NAME3\",\"type\":\"String\"} [{\"name\":\"NAME4\",\"type\":\"String\"} [{\"name\":\"ORT01\",\"type\":\"String\"} [{\"name\":\"ORT02\",\"type\":\"String\"} [{\"name\":\"STRAS\",\"type\":\"String\"} [{\"name\":\"PFACH\",\"type\":\"String\"} [{\"name\":\"PSTLZ\",\"type\":\"String\"} [{\"name\":\"PSTL2\",\"type\":\"String\"} [{\"name\":\"REGIO\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"TELBX\",\"type\":\"String\"} [{\"name\":\"TELF1\",\"type\":\"String\"} [{\"name\":\"TELF2\",\"type\":\"String\"} [{\"name\":\"TELFX\",\"type\":\"String\"} [{\"name\":\"TELTX\",\"type\":\"String\"} [{\"name\":\"TELX1\",\"type\":\"String\"} [{\"name\":\"DATLT\",\"type\":\"String\"} [{\"name\":\"DRNAM\",\"type\":\"String\"} [{\"name\":\"KHINR\",\"type\":\"String\"} [{\"name\":\"CCKEY\",\"type\":\"String\"} [{\"name\":\"KOMPL\",\"type\":\"String\"} [{\"name\":\"STAKZ\",\"type\":\"String\"} [{\"name\":\"OBJNR\",\"type\":\"String\"} [{\"name\":\"FUNKT\",\"type\":\"String\"} [{\"name\":\"AFUNK\",\"type\":\"String\"} [{\"name\":\"CPI_TEMPL\",\"type\":\"String\"} [{\"name\":\"CPD_TEMPL\",\"type\":\"String\"} [{\"name\":\"FUNC_AREA\",\"type\":\"String\"} [{\"name\":\"SCI_TEMPL\",\"type\":\"String\"} [{\"name\":\"SCD_TEMPL\",\"type\":\"String\"} [{\"name\":\"SKI_TEMPL\",\"type\":\"String\"} [{\"name\":\"SKD_TEMPL\",\"type\":\"String\"} [{\"name\":\"EEW_CSKS_PS_DUMMY\",\"type\":\"String\"} [{\"name\":\"VNAME\",\"type\":\"String\"} [{\"name\":\"RECID\",\"type\":\"String\"} [{\"name\":\"ETYPE\",\"type\":\"String\"} [{\"name\":\"JV_OTYPE\",\"type\":\"String\"} [{\"name\":\"JV_JIBCL\",\"type\":\"String\"} [{\"name\":\"JV_JIBSA\",\"type\":\"String\"} [{\"name\":\"FERC_IND\",\"type\":\"String\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[CSKS_BLOB]"
+						}
+					}
+				]
+			},
+			{
+				"name": "CSKS",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "CSKS_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[CSKS]\nINSERT INTO [dsa_ecu_sap].[CSKS]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[CSKS_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteCSKS",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "CSKS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/CSKS"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/produccionplanta/CSKS"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
 			}
 		],
 		"parameters": {
