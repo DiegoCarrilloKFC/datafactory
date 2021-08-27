@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "TTYP_BLOB",
+				"name": "CSKT_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/TTYP",
+							"wildcardFolderPath": "catalogo/CSKT",
 							"wildcardFileName": {
-								"value": "@Concat('TTYP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('CSKT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[TTYP_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[CSKT_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TTYP"
+							"cw_carpeta": "catalogo/CSKT"
 						}
 					}
 				],
@@ -58,8 +58,8 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": "[{\"name\":\"CLIENT\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"AUART\",\"type\":\"String\"} [{\"name\":\"TXT\",\"type\":\"String\"} ]",
-							"cw_tableName": "[dsa_ecu_sap].[TTYP_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"KOKRS\",\"type\":\"String\"} [{\"name\":\"KOSTL\",\"type\":\"String\"} [{\"name\":\"DATBI\",\"type\":\"String\"} [{\"name\":\"KTEXT\",\"type\":\"String\"} [{\"name\":\"LTEXT\",\"type\":\"String\"} [{\"name\":\"MCTXT\",\"type\":\"String\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[CSKT_BLOB]"
 						}
 					}
 				]
@@ -78,11 +78,11 @@
 				}
 			},
 			{
-				"name": "TTYP",
+				"name": "CSKT",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "TTYP_BLOB",
+						"activity": "CSKT_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[TTYP]\nINSERT INTO [dsa_ecu_sap].[TTYP]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[TTYP_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[CSKT]\nINSERT INTO [dsa_ecu_sap].[CSKT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[CSKT_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -113,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteTTYP",
+				"name": "DeleteCSKT",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "TTYP",
+						"activity": "CSKT",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -136,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TTYP"
+							"cw_carpeta": "catalogo/CSKT"
 						}
 					},
 					"logStorageSettings": {
@@ -144,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/TTYP"
+						"path": "almacenamientosap/catalogo/CSKT"
 					},
 					"enableLogging": true,
 					"storeSettings": {
