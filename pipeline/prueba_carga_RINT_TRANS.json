@@ -16,11 +16,11 @@
 				}
 			},
 			{
-				"name": "AUFK",
+				"name": "ACDOCA",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "AUFK_BLOB",
+						"activity": "ACDOCA_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -38,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.AUFK\nINSERT INTO [dsa_ecu_sap].[AUFK]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[AUFK_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.[ACDOCA]\nINSERT INTO [dsa_ecu_sap].[ACDOCA]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[ACDOCA_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -51,7 +51,7 @@
 				}
 			},
 			{
-				"name": "AUFK_BLOB",
+				"name": "ACDOCA_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -75,9 +75,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/AUFK",
+							"wildcardFolderPath": "produccionplanta/ACDOCA",
 							"wildcardFileName": {
-								"value": "@Concat('AUFK_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('ACDOCA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -87,7 +87,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.AUFK_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.ACDOCA_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -97,13 +97,13 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/AUFK"
+							"cw_carpeta": "produccionplanta/ACDOCA"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_AUFK_BLOB",
+						"referenceName": "ds_sap_ACDOCA_BLOB",
 						"type": "DatasetReference"
 					}
 				]
