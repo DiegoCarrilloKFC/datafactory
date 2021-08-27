@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "T003_BLOB",
+				"name": "T003P_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/T003",
+							"wildcardFolderPath": "catalogo/T003P",
 							"wildcardFileName": {
-								"value": "@Concat('T003_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('T003P_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T003_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[T003P_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T003"
+							"cw_carpeta": "catalogo/T003P"
 						}
 					}
 				],
@@ -58,8 +58,8 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"BLART\",\"type\":\"String\"} [{\"name\":\"NUMKR\",\"type\":\"String\"} [{\"name\":\"KOARS\",\"type\":\"String\"} [{\"name\":\"STBLA\",\"type\":\"String\"} [{\"name\":\"XNETB\",\"type\":\"String\"} [{\"name\":\"XRVUP\",\"type\":\"String\"} [{\"name\":\"XSYBL\",\"type\":\"String\"} [{\"name\":\"XVORK\",\"type\":\"String\"} [{\"name\":\"XKKPR\",\"type\":\"String\"} [{\"name\":\"XGSUB\",\"type\":\"String\"} [{\"name\":\"XMGES\",\"type\":\"String\"} [{\"name\":\"BRGRU\",\"type\":\"String\"} [{\"name\":\"RECID\",\"type\":\"String\"} [{\"name\":\"RECIC\",\"type\":\"String\"} [{\"name\":\"XMTXT\",\"type\":\"String\"} [{\"name\":\"XMREF\",\"type\":\"String\"} [{\"name\":\"XNGBK\",\"type\":\"String\"} [{\"name\":\"KURST\",\"type\":\"String\"} [{\"name\":\"XNEGP\",\"type\":\"String\"} [{\"name\":\"XKOAA\",\"type\":\"String\"} [{\"name\":\"XKOAD\",\"type\":\"String\"} [{\"name\":\"XKOAK\",\"type\":\"String\"} [{\"name\":\"XKOAM\",\"type\":\"String\"} [{\"name\":\"XKOAS\",\"type\":\"String\"} [{\"name\":\"XNMRL\",\"type\":\"String\"} [{\"name\":\"XAUSG\",\"type\":\"String\"} [{\"name\":\"XDTCH\",\"type\":\"String\"} [{\"name\":\"BLKLS\",\"type\":\"String\"} [{\"name\":\"XROLLUP\",\"type\":\"String\"} [{\"name\":\"XPLAN\",\"type\":\"String\"} [{\"name\":\"XALLOCACT\",\"type\":\"String\"} [{\"name\":\"XALLOCPLAN\",\"type\":\"String\"} [{\"name\":\"X_PP_PROCESS\",\"type\":\"String\"} [{\"name\":\"XKURSX\",\"type\":\"String\"} [{\"name\":\"XPOSACC\",\"type\":\"String\"} [{\"name\":\"XUACPA\",\"type\":\"String\"} [{\"name\":\"XKOASECC\",\"type\":\"String\"} [{\"name\":\"XMREF2\",\"type\":\"String\"} ]",
-							"cw_tableName": "[dsa_ecu_sap].[T003_BLOB]"
+							"cw_structure": "[{\"name\":\"CLIENT\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"AUART\",\"type\":\"String\"} [{\"name\":\"TXT\",\"type\":\"String\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[T003P_BLOB]"
 						}
 					}
 				]
@@ -78,11 +78,11 @@
 				}
 			},
 			{
-				"name": "T003",
+				"name": "T003P",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "T003_BLOB",
+						"activity": "T003P_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T003]\nINSERT INTO [dsa_ecu_sap].[T003]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T003_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T003P]\nINSERT INTO [dsa_ecu_sap].[T003P]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T003P_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -113,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteT003",
+				"name": "DeleteT003P",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "T003",
+						"activity": "T003P",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -136,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T003"
+							"cw_carpeta": "catalogo/T003P"
 						}
 					},
 					"logStorageSettings": {
@@ -144,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/T003"
+						"path": "almacenamientosap/catalogo/T003P"
 					},
 					"enableLogging": true,
 					"storeSettings": {
