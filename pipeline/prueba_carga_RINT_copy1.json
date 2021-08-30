@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "CSKT_BLOB",
+				"name": "CSLA_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/CSKT",
+							"wildcardFolderPath": "catalogo/CSLA",
 							"wildcardFileName": {
-								"value": "@Concat('CSKT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('CSLA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[CSKT_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[CSLA_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CSKT"
+							"cw_carpeta": "catalogo/CSLA"
 						}
 					}
 				],
@@ -58,8 +58,8 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"KOKRS\",\"type\":\"String\"} [{\"name\":\"KOSTL\",\"type\":\"String\"} [{\"name\":\"DATBI\",\"type\":\"String\"} [{\"name\":\"KTEXT\",\"type\":\"String\"} [{\"name\":\"LTEXT\",\"type\":\"String\"} [{\"name\":\"MCTXT\",\"type\":\"String\"} ]",
-							"cw_tableName": "[dsa_ecu_sap].[CSKT_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"KOKRS\",\"type\":\"String\"} [{\"name\":\"LSTAR\",\"type\":\"String\"} [{\"name\":\"DATBI\",\"type\":\"String\"} [{\"name\":\"DATAB\",\"type\":\"String\"} [{\"name\":\"LEINH\",\"type\":\"String\"} [{\"name\":\"LATYP\",\"type\":\"String\"} [{\"name\":\"LATYPI\",\"type\":\"String\"} [{\"name\":\"ERSDA\",\"type\":\"String\"} [{\"name\":\"USNAM\",\"type\":\"String\"} [{\"name\":\"KSTTY\",\"type\":\"String\"} [{\"name\":\"AUSEH\",\"type\":\"String\"} [{\"name\":\"AUSFK\",\"type\":\"Decimal\"} [{\"name\":\"VKSTA\",\"type\":\"String\"} [{\"name\":\"LARK1\",\"type\":\"String\"} [{\"name\":\"LARK2\",\"type\":\"String\"} [{\"name\":\"SPRKZ\",\"type\":\"String\"} [{\"name\":\"HRKFT\",\"type\":\"String\"} [{\"name\":\"FIXVO\",\"type\":\"String\"} [{\"name\":\"TARKZ\",\"type\":\"String\"} [{\"name\":\"YRATE\",\"type\":\"String\"} [{\"name\":\"TARKZ_I\",\"type\":\"String\"} [{\"name\":\"MANIST\",\"type\":\"String\"} [{\"name\":\"MANPLAN\",\"type\":\"String\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[CSLA_BLOB]"
 						}
 					}
 				]
@@ -78,11 +78,11 @@
 				}
 			},
 			{
-				"name": "CSKT",
+				"name": "CSLA",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "CSKT_BLOB",
+						"activity": "CSLA_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[CSKT]\nINSERT INTO [dsa_ecu_sap].[CSKT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[CSKT_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[CSLA]\nINSERT INTO [dsa_ecu_sap].[CSLA]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[CSLA_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -113,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteCSKT",
+				"name": "DeleteCSLA",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "CSKT",
+						"activity": "CSLA",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -136,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CSKT"
+							"cw_carpeta": "catalogo/CSLA"
 						}
 					},
 					"logStorageSettings": {
@@ -144,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/CSKT"
+						"path": "almacenamientosap/catalogo/CSLA"
 					},
 					"enableLogging": true,
 					"storeSettings": {
