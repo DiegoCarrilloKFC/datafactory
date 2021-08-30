@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "CSLA_BLOB",
+				"name": "TJ02T_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/CSLA",
+							"wildcardFolderPath": "catalogo/TJ02T",
 							"wildcardFileName": {
-								"value": "@Concat('CSLA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('TJ02T_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[CSLA_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[TJ02T_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CSLA"
+							"cw_carpeta": "catalogo/TJ02T"
 						}
 					}
 				],
@@ -58,8 +58,8 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"KOKRS\",\"type\":\"String\"} [{\"name\":\"LSTAR\",\"type\":\"String\"} [{\"name\":\"DATBI\",\"type\":\"String\"} [{\"name\":\"DATAB\",\"type\":\"String\"} [{\"name\":\"LEINH\",\"type\":\"String\"} [{\"name\":\"LATYP\",\"type\":\"String\"} [{\"name\":\"LATYPI\",\"type\":\"String\"} [{\"name\":\"ERSDA\",\"type\":\"String\"} [{\"name\":\"USNAM\",\"type\":\"String\"} [{\"name\":\"KSTTY\",\"type\":\"String\"} [{\"name\":\"AUSEH\",\"type\":\"String\"} [{\"name\":\"AUSFK\",\"type\":\"Decimal\"} [{\"name\":\"VKSTA\",\"type\":\"String\"} [{\"name\":\"LARK1\",\"type\":\"String\"} [{\"name\":\"LARK2\",\"type\":\"String\"} [{\"name\":\"SPRKZ\",\"type\":\"String\"} [{\"name\":\"HRKFT\",\"type\":\"String\"} [{\"name\":\"FIXVO\",\"type\":\"String\"} [{\"name\":\"TARKZ\",\"type\":\"String\"} [{\"name\":\"YRATE\",\"type\":\"String\"} [{\"name\":\"TARKZ_I\",\"type\":\"String\"} [{\"name\":\"MANIST\",\"type\":\"String\"} [{\"name\":\"MANPLAN\",\"type\":\"String\"} ]",
-							"cw_tableName": "[dsa_ecu_sap].[CSLA_BLOB]"
+							"cw_structure": "[{\"name\":\"ISTAT\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"TXT04\",\"type\":\"String\"} [{\"name\":\"TXT30\",\"type\":\"String\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[TJ02T_BLOB]"
 						}
 					}
 				]
@@ -78,11 +78,11 @@
 				}
 			},
 			{
-				"name": "CSLA",
+				"name": "TJ02T",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "CSLA_BLOB",
+						"activity": "TJ02T_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[CSLA]\nINSERT INTO [dsa_ecu_sap].[CSLA]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[CSLA_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[TJ02T]\nINSERT INTO [dsa_ecu_sap].[TJ02T]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[TJ02T_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -113,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteCSLA",
+				"name": "DeleteTJ02T",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "CSLA",
+						"activity": "TJ02T",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -136,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/CSLA"
+							"cw_carpeta": "catalogo/TJ02T"
 						}
 					},
 					"logStorageSettings": {
@@ -144,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/CSLA"
+						"path": "almacenamientosap/catalogo/TJ02T"
 					},
 					"enableLogging": true,
 					"storeSettings": {
