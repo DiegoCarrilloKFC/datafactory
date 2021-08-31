@@ -786,7 +786,7 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"BNAME\",\"type\":\"String\"} [{\"name\":\"PERSNUMBER\",\"type\":\"String\"} [{\"name\":\"ADDRNUMBER\",\"type\":\"String\"} [{\"name\":\"KOSTL\",\"type\":\"String\"} [{\"name\":\"START_MENU\",\"type\":\"String\"} [{\"name\":\"IDADTYPE\",\"type\":\"String\"} [{\"name\":\"BPPERSON\",\"type\":\"String\"} [{\"name\":\"ORGANIZATION\",\"type\":\"String\"} [{\"name\":\"RESPONSIBLE\",\"type\":\"String\"} [{\"name\":\"TECHDESC\",\"type\":\"String\"} [{\"name\":\"IDENTITY_GUID\",\"type\":\"String\"} [{\"name\":\"TEMPLATE_ORGTYPE\",\"type\":\"String\"} [{\"name\":\"TEMPLATE_ORGADDR\",\"type\":\"String\"} ]",
+							"cw_structure": "[{\"name\":\"CLIENT\",\"type\":\"String\"} [{\"name\":\"PERSNUMBER\",\"type\":\"String\"} [{\"name\":\"DATE_FROM\",\"type\":\"String\"} [{\"name\":\"NATION\",\"type\":\"String\"} [{\"name\":\"DATE_TO\",\"type\":\"String\"} [{\"name\":\"TITLE\",\"type\":\"String\"} [{\"name\":\"NAME_FIRST\",\"type\":\"String\"} [{\"name\":\"NAME_LAST\",\"type\":\"String\"} [{\"name\":\"NAME2\",\"type\":\"String\"} [{\"name\":\"NAMEMIDDLE\",\"type\":\"String\"} [{\"name\":\"NAME_LAST2\",\"type\":\"String\"} [{\"name\":\"NAME_TEXT\",\"type\":\"String\"} [{\"name\":\"CONVERTED\",\"type\":\"String\"} [{\"name\":\"TITLE_ACA1\",\"type\":\"String\"} [{\"name\":\"TITLE_ACA2\",\"type\":\"String\"} [{\"name\":\"PREFIX1\",\"type\":\"String\"} [{\"name\":\"PREFIX2\",\"type\":\"String\"} [{\"name\":\"TITLE_SPPL\",\"type\":\"String\"} [{\"name\":\"NICKNAME\",\"type\":\"String\"} [{\"name\":\"INITIALS\",\"type\":\"String\"} [{\"name\":\"NAMEFORMAT\",\"type\":\"String\"} [{\"name\":\"NAMCOUNTRY\",\"type\":\"String\"} [{\"name\":\"PROFESSION\",\"type\":\"String\"} [{\"name\":\"SEX\",\"type\":\"String\"} [{\"name\":\"LANGU\",\"type\":\"String\"} [{\"name\":\"PERS_GROUP\",\"type\":\"String\"} [{\"name\":\"FLAGGROUPS\",\"type\":\"String\"} [{\"name\":\"SORT1\",\"type\":\"String\"} [{\"name\":\"SORT2\",\"type\":\"String\"} [{\"name\":\"SORT_PHN\",\"type\":\"String\"} [{\"name\":\"ADDR_COMP\",\"type\":\"String\"} [{\"name\":\"ADDR_PERS\",\"type\":\"String\"} [{\"name\":\"FLPERSTEL\",\"type\":\"String\"} [{\"name\":\"FLPERSCOMM\",\"type\":\"String\"} [{\"name\":\"PERSORIGIN\",\"type\":\"String\"} [{\"name\":\"MC_NAMEFIR\",\"type\":\"String\"} [{\"name\":\"MC_NAMELAS\",\"type\":\"String\"} [{\"name\":\"MC_NAME2\",\"type\":\"String\"} [{\"name\":\"LANGU_CREA\",\"type\":\"String\"} [{\"name\":\"ADRP_UUID\",\"type\":\"String\"} [{\"name\":\"UUID_BELATED\",\"type\":\"String\"} [{\"name\":\"ID_CATEGORY\",\"type\":\"String\"} [{\"name\":\"ADRP_ERR_STATUS\",\"type\":\"String\"} [{\"name\":\"_DATAAGING\",\"type\":\"String\"} ]",
 							"cw_tableName": "[dsa_ecu_sap].[ADRP_BLOB]"
 						}
 					}
@@ -860,6 +860,149 @@
 							"type": "LinkedServiceReference"
 						},
 						"path": "almacenamientosap/catalogo/ADRP"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "ADCP_BLOB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "FECHACARGA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/ADCP",
+							"wildcardFileName": {
+								"value": "@Concat('ADCP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[ADCP_BLOB]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/ADCP"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": "[{\"name\":\"CLIENT\",\"type\":\"String\"} [{\"name\":\"ADDRNUMBER\",\"type\":\"String\"} [{\"name\":\"PERSNUMBER\",\"type\":\"String\"} [{\"name\":\"DATE_FROM\",\"type\":\"String\"} [{\"name\":\"NATION\",\"type\":\"String\"} [{\"name\":\"DATE_TO\",\"type\":\"String\"} [{\"name\":\"COMP_PERS\",\"type\":\"String\"} [{\"name\":\"SO_KEY\",\"type\":\"String\"} [{\"name\":\"DEPARTMENT\",\"type\":\"String\"} [{\"name\":\"FUNCTION\",\"type\":\"String\"} [{\"name\":\"BUILDING\",\"type\":\"String\"} [{\"name\":\"FLOOR\",\"type\":\"String\"} [{\"name\":\"ROOMNUMBER\",\"type\":\"String\"} [{\"name\":\"ID_CODE\",\"type\":\"String\"} [{\"name\":\"IH_MAIL\",\"type\":\"String\"} [{\"name\":\"SORT1\",\"type\":\"String\"} [{\"name\":\"SORT2\",\"type\":\"String\"} [{\"name\":\"SORT_PHN\",\"type\":\"String\"} [{\"name\":\"ALT_COMPNY\",\"type\":\"String\"} [{\"name\":\"DEFLT_COMM\",\"type\":\"String\"} [{\"name\":\"TEL_NUMBER\",\"type\":\"String\"} [{\"name\":\"TEL_EXTENS\",\"type\":\"String\"} [{\"name\":\"FAX_NUMBER\",\"type\":\"String\"} [{\"name\":\"FAX_EXTENS\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM2\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM3\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM4\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM5\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM6\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM7\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM8\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM9\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM10\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM11\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM12\",\"type\":\"String\"} [{\"name\":\"FLAGCOMM13\",\"type\":\"String\"} [{\"name\":\"ADCP_UUID\",\"type\":\"String\"} [{\"name\":\"UUID_BELATED\",\"type\":\"String\"} [{\"name\":\"ID_CATEGORY\",\"type\":\"String\"} [{\"name\":\"ADCP_ERR_STATUS\",\"type\":\"String\"} [{\"name\":\"XPCPT\",\"type\":\"String\"} [{\"name\":\"_DATAAGING\",\"type\":\"String\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[ADCP_BLOB]"
+						}
+					}
+				]
+			},
+			{
+				"name": "ADCP",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "ADCP_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[ADCP]\nINSERT INTO [dsa_ecu_sap].[ADCP]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[ADCP_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteADCP",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "ADCP",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/ADCP"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/catalogo/ADCP"
 					},
 					"enableLogging": true,
 					"storeSettings": {
