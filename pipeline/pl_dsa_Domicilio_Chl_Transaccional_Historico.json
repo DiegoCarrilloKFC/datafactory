@@ -2526,7 +2526,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT GETDATE() AS FechaCarga,ffp.Cod_FFormasPago,ffp.Cod_Factura,ffp.Cod_FormaPago,ffp.Num_Tarjeta,ffp.Num_Seguridad,ffp.Fecha_Caducidad,ffp.Billete,ffp.NumeroCheque,ffp.Banco,ffp.Titular,ffp.Referencia_Billete,ffp.Valor_Billete,ffp.Total_Pagar,ffp.Propina,ffp.ClienteAx,ffp.Cod_Desasignacion,0 IDTipoEnvio,0 Transaction_id FROM dbo.Factura_FormasPago ffp INNER JOIN dbo.Factura_Domicilio_resp fac ON ffp.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo_resp per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+							"value": "SELECT GETDATE() AS FechaCarga,ffp.Cod_FFormasPago,ffp.Cod_Factura,ffp.Cod_FormaPago,ffp.Num_Tarjeta,ffp.Num_Seguridad,ffp.Fecha_Caducidad,ffp.Billete,ffp.NumeroCheque,ffp.Banco,ffp.Titular,ffp.Referencia_Billete,ffp.Valor_Billete,ffp.Total_Pagar,ffp.Propina,ffp.ClienteAx,ffp.Cod_Desasignacion,0 IDTipoEnvio,0 Transaction_id FROM dbo.Factura_FormasPago_resp ffp INNER JOIN dbo.Factura_Domicilio_resp fac ON ffp.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo_resp per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
 							"type": "Expression"
 						},
 						"partitionOption": "None"
@@ -3515,7 +3515,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Factura_FormasPago_copy1",
+						"activity": "Factura_FormasPago",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -3542,7 +3542,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "SELECT GETDATE() AS FechaCarga,ffp.Cod_FFormasPago,ffp.Cod_Factura,ffp.Cod_FormaPago,ffp.Num_Tarjeta,ffp.Num_Seguridad,ffp.Fecha_Caducidad,ffp.Billete,ffp.NumeroCheque,ffp.Banco,ffp.Titular,ffp.Referencia_Billete,ffp.Valor_Billete,ffp.Total_Pagar,ffp.Propina,ffp.ClienteAx,ffp.Cod_Desasignacion,0 IDTipoEnvio,0 Transaction_id FROM dbo.Factura_FormasPago ffp INNER JOIN dbo.Factura_Domicilio_resp fac ON ffp.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo_resp per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
+							"value": "SELECT GETDATE() AS FechaCarga,ffp.Cod_FFormasPago,ffp.Cod_Factura,ffp.Cod_FormaPago,ffp.Num_Tarjeta,ffp.Num_Seguridad,ffp.Fecha_Caducidad,ffp.Billete,ffp.NumeroCheque,ffp.Banco,ffp.Titular,ffp.Referencia_Billete,ffp.Valor_Billete,ffp.Total_Pagar,ffp.Propina,ffp.ClienteAx,ffp.Cod_Desasignacion,0 IDTipoEnvio,0 Transaction_id FROM dbo.Factura_FormasPago_resp ffp INNER JOIN dbo.Factura_Domicilio_resp fac ON ffp.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo_resp per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND per.Fecha >'20210330'",
 							"type": "Expression"
 						},
 						"partitionOption": "None"
@@ -4363,246 +4363,6 @@
 								}
 							],
 							"cw_tableName": "[dsa_chl_domi].[Periodo]"
-						}
-					}
-				]
-			},
-			{
-				"name": "Factura_FormasPago_copy1",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "Factura_FormasPago",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 2,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [
-					{
-						"name": "Source",
-						"value": "[dbo].[Factura_FormasPago]"
-					},
-					{
-						"name": "Destination",
-						"value": "[dsa_chl_domi].[Factura_FormasPago]"
-					}
-				],
-				"typeProperties": {
-					"source": {
-						"type": "SqlServerSource",
-						"sqlReaderQuery": {
-							"value": "SELECT GETDATE() AS FechaCarga,ffp.Cod_FFormasPago,ffp.Cod_Factura,ffp.Cod_FormaPago,ffp.Num_Tarjeta,ffp.Num_Seguridad,ffp.Fecha_Caducidad,ffp.Billete,ffp.NumeroCheque,ffp.Banco,ffp.Titular,ffp.Referencia_Billete,ffp.Valor_Billete,ffp.Total_Pagar,ffp.Propina,ffp.ClienteAx,ffp.Cod_Desasignacion,0 IDTipoEnvio,0 Transaction_id FROM dbo.Factura_FormasPago ffp INNER JOIN dbo.Factura_Domicilio_resp fac ON ffp.Cod_Factura=fac.Cod_Factura INNER JOIN dbo.Periodo_resp per ON fac.Cod_Periodo=per.Cod_Periodo WHERE per.Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'\nAND per.Fecha >'20200331'",
-							"type": "Expression"
-						},
-						"partitionOption": "None"
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"writeBatchSize": 10000,
-						"allowPolyBase": true,
-						"polyBaseSettings": {
-							"rejectValue": 0,
-							"rejectType": "value",
-							"useTypeDefault": true
-						},
-						"disableMetricsCollection": false
-					},
-					"enableStaging": true,
-					"stagingSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "contenedor"
-					}
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_DomicilioChl",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "FechaCarga",
-									"type": "DateTime"
-								},
-								{
-									"name": "Cod_FFormasPago",
-									"type": "Int32"
-								},
-								{
-									"name": "Cod_Factura",
-									"type": "String"
-								},
-								{
-									"name": "Cod_FormaPago",
-									"type": "Int32"
-								},
-								{
-									"name": "Num_Tarjeta",
-									"type": "String"
-								},
-								{
-									"name": "Num_Seguridad",
-									"type": "String"
-								},
-								{
-									"name": "Fecha_Caducidad",
-									"type": "String"
-								},
-								{
-									"name": "Billete",
-									"type": "Double"
-								},
-								{
-									"name": "NumeroCheque",
-									"type": "String"
-								},
-								{
-									"name": "Banco",
-									"type": "String"
-								},
-								{
-									"name": "Titular",
-									"type": "String"
-								},
-								{
-									"name": "Referencia_Billete",
-									"type": "String"
-								},
-								{
-									"name": "Valor_Billete",
-									"type": "Double"
-								},
-								{
-									"name": "Total_Pagar",
-									"type": "Double"
-								},
-								{
-									"name": "Propina",
-									"type": "Double"
-								},
-								{
-									"name": "ClienteAx",
-									"type": "Int32"
-								},
-								{
-									"name": "Cod_Desasignacion",
-									"type": "Int32"
-								},
-								{
-									"name": "IDTipoEnvio",
-									"type": "Int32"
-								},
-								{
-									"name": "Transaction_id",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dbo].[Factura_FormasPago]",
-							"cw_servidor": {
-								"value": "@pipeline().parameters.Servidor",
-								"type": "Expression"
-							},
-							"cw_baseDatos": {
-								"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "FechaCarga",
-									"type": "DateTime"
-								},
-								{
-									"name": "Cod_FFormasPago",
-									"type": "Int32"
-								},
-								{
-									"name": "Cod_Factura",
-									"type": "String"
-								},
-								{
-									"name": "Cod_FormaPago",
-									"type": "Int32"
-								},
-								{
-									"name": "Num_Tarjeta",
-									"type": "String"
-								},
-								{
-									"name": "Num_Seguridad",
-									"type": "String"
-								},
-								{
-									"name": "Fecha_Caducidad",
-									"type": "String"
-								},
-								{
-									"name": "Billete",
-									"type": "Double"
-								},
-								{
-									"name": "NumeroCheque",
-									"type": "String"
-								},
-								{
-									"name": "Banco",
-									"type": "String"
-								},
-								{
-									"name": "Titular",
-									"type": "String"
-								},
-								{
-									"name": "Referencia_Billete",
-									"type": "String"
-								},
-								{
-									"name": "Valor_Billete",
-									"type": "Double"
-								},
-								{
-									"name": "Total_Pagar",
-									"type": "Double"
-								},
-								{
-									"name": "Propina",
-									"type": "Double"
-								},
-								{
-									"name": "ClienteAx",
-									"type": "Int32"
-								},
-								{
-									"name": "Cod_Desasignacion",
-									"type": "Int32"
-								},
-								{
-									"name": "IDTipoEnvio",
-									"type": "Int32"
-								},
-								{
-									"name": "Transaction_id",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_chl_domi].[Factura_FormasPago]"
 						}
 					}
 				]
