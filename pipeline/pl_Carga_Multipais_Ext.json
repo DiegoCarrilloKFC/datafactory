@@ -5,7 +5,14 @@
 			{
 				"name": "Finalizar Carga UyC",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Verificar Proceso Cubos Col",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -25,6 +32,100 @@
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "Carga COL DOMI OPE CAR",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_Carga_COL_DOMI_OPE_CAR",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Verificar Proceso Cubos Col",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Carga CHL DOMI",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "Carga COL DOMI OPE CAR",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Verificar Carga Venta COL').output.firstRow.Resultado, 'OK')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Verificar Carga Venta COL",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Espera_copy1",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA COL' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "ds_dwh_general",
+									"type": "DatasetReference"
+								}
+							}
+						},
+						{
+							"name": "Espera_copy1",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 180
+							}
+						}
+					],
+					"timeout": "00.12:00:00"
+				}
+			},
+			{
+				"name": "Carga CHL DOMI",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_Carga_Chl_Domicilio",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
 				}
 			}
 		],
