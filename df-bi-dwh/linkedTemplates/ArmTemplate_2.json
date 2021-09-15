@@ -13,6 +13,43 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_BlobSap_Delete')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_storage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"cw_carpeta": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_Sap"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": {
+							"value": "@dataset().cw_carpeta",
+							"type": "Expression"
+						},
+						"container": "almacenamientosap"
+					},
+					"columnDelimiter": "\t",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_BlobSap_Dinamico')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1599,27 +1636,6 @@
 				],
 				"typeProperties": {
 					"tableName": "[[dsa_ecu_sap].[REPORTEPROYECTOS]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_ReservaMaterial')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Dataset parametrizado DWH\n",
-				"linkedServiceName": {
-					"referenceName": "linked_dwh",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "dwh_General/ds_Sap"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[RESERVALISTAMATERIAL]"
 				}
 			},
 			"dependsOn": []

@@ -13,6 +13,206 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Operaciones_ControlPedido_Reproceso_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Operaciones",
+				"activities": [
+					{
+						"name": "ope_FacSgArticuloBodega",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "dwh_ecu_ope.usp_CargaFacSgArticuloBodega",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "ope_FacSgMovimientoInventarioPedidos",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "ope_FacSgArticuloBodega",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "dwh_ecu_ope.usp_CargaFacSgMovimientoInventarioPedidos",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": null
+									},
+									"FechaDesde": {
+										"type": "Datetime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "Datetime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "Datetime",
+										"value": null
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					}
+				],
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "String",
+						"defaultValue": "0"
+					},
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_OperacionesEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dwh_Operaciones_Venta_Ecu')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -4321,37 +4521,6 @@
 							"waitOnCompletion": true,
 							"parameters": {
 								"DWU": "DW500c"
-							}
-						}
-					}
-				],
-				"folder": {
-					"name": "Carga_dwh_Triggers"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_Escalar_DWH_8AM')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Ejecuta proceso de escalado del DWH\nSe debe setear el parametro DWU.",
-				"activities": [
-					{
-						"name": "Escalar DWH",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_admin_Escalar_DWH",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"DWU": "DW100c"
 							}
 						}
 					}
