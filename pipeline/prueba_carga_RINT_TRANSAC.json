@@ -16,11 +16,11 @@
 				}
 			},
 			{
-				"name": "HORAS_ACT",
+				"name": "QPCD",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "HORAS_ACT_BLOB",
+						"activity": "QPCD_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -38,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.HORAS_ACT\nINSERT INTO [dsa_ecu_sap].[HORAS_ACT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[HORAS_ACT_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.QPCD\nINSERT INTO [dsa_ecu_sap].[QPCD]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[QPCD_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -51,11 +51,11 @@
 				}
 			},
 			{
-				"name": "DeleteHORAS_ACT",
+				"name": "DeleteQPCD",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "HORAS_ACT",
+						"activity": "QPCD",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -74,7 +74,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/HORAS_ACT"
+							"cw_carpeta": "produccionplanta/QPCD"
 						}
 					},
 					"logStorageSettings": {
@@ -82,7 +82,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/HORAS_ACT"
+						"path": "almacenamientosap/produccionplanta/QPCD"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -97,7 +97,7 @@
 				}
 			},
 			{
-				"name": "HORAS_ACT_BLOB",
+				"name": "QPCD_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -121,9 +121,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/HORAS_ACT",
+							"wildcardFolderPath": "produccionplanta/QPCD",
 							"wildcardFileName": {
-								"value": "@Concat('HORAS_ACT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('QPCD_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -133,7 +133,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.HORAS_ACT_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.QPCD_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -143,13 +143,13 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/HORAS_ACT"
+							"cw_carpeta": "produccionplanta/QPCD"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_HORAS_ACT_BLOB",
+						"referenceName": "ds_sap_QPCD_BLOB",
 						"type": "DatasetReference"
 					}
 				]
