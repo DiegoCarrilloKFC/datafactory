@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "FINSC_BTTYPE_T_BLOB",
+				"name": "FAGL_011ZC_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/FINSC_BTTYPE_T",
+							"wildcardFolderPath": "catalogo/FAGL_011ZC",
 							"wildcardFileName": {
-								"value": "@Concat('FINSC_BTTYPE_T_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('FAGL_011ZC_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[FINSC_BTTYPE_T_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[FAGL_011ZC_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/FINSC_BTTYPE_T"
+							"cw_carpeta": "catalogo/FAGL_011ZC"
 						}
 					}
 				],
@@ -58,8 +58,8 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"LANGU\",\"type\":\"String\"} [{\"name\":\"BTTYPE\",\"type\":\"String\"} [{\"name\":\"TXT\",\"type\":\"String\"} ]",
-							"cw_tableName": "[dsa_ecu_sap].[FINSC_BTTYPE_T_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"VERSN\",\"type\":\"String\"} [{\"name\":\"ERGSL\",\"type\":\"String\"} [{\"name\":\"KTOPL\",\"type\":\"String\"} [{\"name\":\"VONKT\",\"type\":\"String\"} [{\"name\":\"BISKT\",\"type\":\"String\"} [{\"name\":\"XSOLL\",\"type\":\"String\"} [{\"name\":\"XHABN\",\"type\":\"String\"} [{\"name\":\"XVERD\",\"type\":\"String\"} ]",
+							"cw_tableName": "[dsa_ecu_sap].[FAGL_011ZC_BLOB]"
 						}
 					}
 				]
@@ -78,11 +78,11 @@
 				}
 			},
 			{
-				"name": "FINSC_BTTYPE_T",
+				"name": "FAGL_011ZC",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "FINSC_BTTYPE_T_BLOB",
+						"activity": "FAGL_011ZC_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[FINSC_BTTYPE_T]\nINSERT INTO [dsa_ecu_sap].[FINSC_BTTYPE_T]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[FINSC_BTTYPE_T_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[FAGL_011ZC]\nINSERT INTO [dsa_ecu_sap].[FAGL_011ZC]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[FAGL_011ZC_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -113,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteFINSC_BTTYPE_T",
+				"name": "DeleteFAGL_011ZC",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "FINSC_BTTYPE_T",
+						"activity": "FAGL_011ZC",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -136,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/FINSC_BTTYPE_T"
+							"cw_carpeta": "catalogo/FAGL_011ZC"
 						}
 					},
 					"logStorageSettings": {
@@ -144,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/FINSC_BTTYPE_T"
+						"path": "almacenamientosap/catalogo/FAGL_011ZC"
 					},
 					"enableLogging": true,
 					"storeSettings": {
