@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "FAGL_011ZC_BLOB",
+				"name": "FAGL_011QT_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -27,9 +27,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/FAGL_011ZC",
+							"wildcardFolderPath": "catalogo/FAGL_011QT",
 							"wildcardFileName": {
-								"value": "@Concat('FAGL_011ZC_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('FAGL_011QT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -39,7 +39,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[FAGL_011ZC_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[FAGL_011QT_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -49,7 +49,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/FAGL_011ZC"
+							"cw_carpeta": "catalogo/FAGL_011QT"
 						}
 					}
 				],
@@ -58,8 +58,8 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"VERSN\",\"type\":\"String\"} [{\"name\":\"ERGSL\",\"type\":\"String\"} [{\"name\":\"KTOPL\",\"type\":\"String\"} [{\"name\":\"VONKT\",\"type\":\"String\"} [{\"name\":\"BISKT\",\"type\":\"String\"} [{\"name\":\"XSOLL\",\"type\":\"String\"} [{\"name\":\"XHABN\",\"type\":\"String\"} [{\"name\":\"XVERD\",\"type\":\"String\"} ]",
-							"cw_tableName": "[dsa_ecu_sap].[FAGL_011ZC_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"VERSN\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"ERGSL\",\"type\":\"String\"} [{\"name\":\"TXTYP\",\"type\":\"String\"} [{\"name\":\"ZEILE\",\"type\":\"String\"} [{\"name\":\"TXT45\",\"type\":\"String\"}]",
+							"cw_tableName": "[dsa_ecu_sap].[FAGL_011QT_BLOB]"
 						}
 					}
 				]
@@ -78,11 +78,11 @@
 				}
 			},
 			{
-				"name": "FAGL_011ZC",
+				"name": "FAGL_011QT",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "FAGL_011ZC_BLOB",
+						"activity": "FAGL_011QT_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +100,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[FAGL_011ZC]\nINSERT INTO [dsa_ecu_sap].[FAGL_011ZC]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[FAGL_011ZC_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[FAGL_011QT]\nINSERT INTO [dsa_ecu_sap].[FAGL_011QT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[FAGL_011QT_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -113,11 +113,11 @@
 				}
 			},
 			{
-				"name": "DeleteFAGL_011ZC",
+				"name": "DeleteFAGL_011QT",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "FAGL_011ZC",
+						"activity": "FAGL_011QT",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -136,7 +136,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/FAGL_011ZC"
+							"cw_carpeta": "catalogo/FAGL_011QT"
 						}
 					},
 					"logStorageSettings": {
@@ -144,7 +144,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/FAGL_011ZC"
+						"path": "almacenamientosap/catalogo/FAGL_011QT"
 					},
 					"enableLogging": true,
 					"storeSettings": {
