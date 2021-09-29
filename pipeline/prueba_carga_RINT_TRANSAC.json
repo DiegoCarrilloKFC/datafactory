@@ -16,11 +16,11 @@
 				}
 			},
 			{
-				"name": "STATUS",
+				"name": "PLPO",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "STATUS_BLOB",
+						"activity": "PLPO_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -38,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.STATUS\nINSERT INTO [dsa_ecu_sap].[STATUS]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[STATUS_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.PLPO\nINSERT INTO [dsa_ecu_sap].[PLPO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[PLPO_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -51,11 +51,11 @@
 				}
 			},
 			{
-				"name": "DeleteSTATUS",
+				"name": "DeletePLPO",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "STATUS",
+						"activity": "PLPO",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -74,7 +74,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/STATUS"
+							"cw_carpeta": "produccionplanta/PLPO"
 						}
 					},
 					"logStorageSettings": {
@@ -82,7 +82,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/STATUS"
+						"path": "almacenamientosap/produccionplanta/PLPO"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -97,7 +97,7 @@
 				}
 			},
 			{
-				"name": "STATUS_BLOB",
+				"name": "PLPO_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -121,9 +121,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/STATUS",
+							"wildcardFolderPath": "produccionplanta/PLPO",
 							"wildcardFileName": {
-								"value": "@Concat('STATUS_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('PLPO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -133,7 +133,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.STATUS_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.PLPO_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -143,13 +143,13 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/STATUS"
+							"cw_carpeta": "produccionplanta/PLPO"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_STATUS_BLOB",
+						"referenceName": "ds_sap_PLPO_BLOB",
 						"type": "DatasetReference"
 					}
 				]
