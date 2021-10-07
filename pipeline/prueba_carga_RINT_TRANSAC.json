@@ -16,11 +16,11 @@
 				}
 			},
 			{
-				"name": "PLPO",
+				"name": "COSS_BAK",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "PLPO_BLOB",
+						"activity": "COSS_BAK_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -38,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.PLPO\nINSERT INTO [dsa_ecu_sap].[PLPO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[PLPO_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.COSS_BAK\nINSERT INTO [dsa_ecu_sap].[COSS_BAK]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[COSS_BAK_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -51,11 +51,11 @@
 				}
 			},
 			{
-				"name": "DeletePLPO",
+				"name": "DeleteCOSS_BAK",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "PLPO",
+						"activity": "COSS_BAK",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -74,7 +74,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/PLPO"
+							"cw_carpeta": "produccionplanta/COSS_BAK"
 						}
 					},
 					"logStorageSettings": {
@@ -82,7 +82,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/PLPO"
+						"path": "almacenamientosap/produccionplanta/COSS_BAK"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -97,7 +97,7 @@
 				}
 			},
 			{
-				"name": "PLPO_BLOB",
+				"name": "COSS_BAK_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -121,9 +121,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/PLPO",
+							"wildcardFolderPath": "produccionplanta/COSS_BAK",
 							"wildcardFileName": {
-								"value": "@Concat('PLPO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('COSS_BAK_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -133,7 +133,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.PLPO_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.COSS_BAK_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -143,13 +143,13 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/PLPO"
+							"cw_carpeta": "produccionplanta/COSS_BAK"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_PLPO_BLOB",
+						"referenceName": "ds_sap_COSS_BAK_BLOB",
 						"type": "DatasetReference"
 					}
 				]
