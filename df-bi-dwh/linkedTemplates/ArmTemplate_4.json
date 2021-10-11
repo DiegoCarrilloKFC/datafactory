@@ -11356,7 +11356,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Articulo,Nombre,Cod_GrupoArt,Unidad_Compra,Unidad_Inventario,Unidad_Receta,GrupoDespacho,Impuesto,Convert_INV,Convert_REC,ImpuestoC FROM dbo.Articulos",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Articulo,Nombre,Cod_GrupoArt,GrupoDespacho,Impuesto,ImpuestoC \nFROM dbo.Articulos",
 								"partitionOption": "None"
 							},
 							"sink": {
@@ -11402,32 +11402,12 @@
 											"type": "String"
 										},
 										{
-											"name": "Unidad_Compra",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Inventario",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Receta",
-											"type": "String"
-										},
-										{
 											"name": "GrupoDespacho",
 											"type": "String"
 										},
 										{
 											"name": "Impuesto",
 											"type": "String"
-										},
-										{
-											"name": "Convert_INV",
-											"type": "Double"
-										},
-										{
-											"name": "Convert_REC",
-											"type": "Double"
 										},
 										{
 											"name": "ImpuestoC",
@@ -11469,32 +11449,12 @@
 											"type": "String"
 										},
 										{
-											"name": "Unidad_Compra",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Inventario",
-											"type": "String"
-										},
-										{
-											"name": "Unidad_Receta",
-											"type": "String"
-										},
-										{
 											"name": "GrupoDespacho",
 											"type": "String"
 										},
 										{
 											"name": "Impuesto",
 											"type": "String"
-										},
-										{
-											"name": "Convert_INV",
-											"type": "Double"
-										},
-										{
-											"name": "Convert_REC",
-											"type": "Double"
 										},
 										{
 											"name": "ImpuestoC",
@@ -18211,6 +18171,221 @@
 								}
 							}
 						]
+					},
+					{
+						"name": "Costos_Articulos",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 1,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[TipoFormaPago]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_col_sg].[TipoFormaPago]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Articulo,Cod_Cadena,Unidad_Compra,Unidad_Inventario,Unidad_Receta,Costo_Compra,Costo_Inventario,Costo_Receta,Sitio,Convert_INV,Convert_REC,GrupoDespacho,Fecha_Creacion,Estado,Cod_GrupoArt, Maestro_Cod_Articulo FROM dbo.Costos_Articulos",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_col_sg].[Costos_Articulos]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteCol",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Articulo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Unidad_Compra",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Inventario",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Receta",
+											"type": "String"
+										},
+										{
+											"name": "Costo_Compra",
+											"type": "Double"
+										},
+										{
+											"name": "Costo_Inventario",
+											"type": "Double"
+										},
+										{
+											"name": "Costo_Receta",
+											"type": "Double"
+										},
+										{
+											"name": "Sitio",
+											"type": "String"
+										},
+										{
+											"name": "Convert_INV",
+											"type": "Double"
+										},
+										{
+											"name": "Convert_REC",
+											"type": "Double"
+										},
+										{
+											"name": "GrupoDespacho",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_GrupoArt",
+											"type": "String"
+										},
+										{
+											"name": "Maestro_Cod_Articulo",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[Costos_Articulos]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Articulo",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Cadena",
+											"type": "Int32"
+										},
+										{
+											"name": "Unidad_Compra",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Inventario",
+											"type": "String"
+										},
+										{
+											"name": "Unidad_Receta",
+											"type": "String"
+										},
+										{
+											"name": "Costo_Compra",
+											"type": "Double"
+										},
+										{
+											"name": "Costo_Inventario",
+											"type": "Double"
+										},
+										{
+											"name": "Costo_Receta",
+											"type": "Double"
+										},
+										{
+											"name": "Sitio",
+											"type": "String"
+										},
+										{
+											"name": "Convert_INV",
+											"type": "Double"
+										},
+										{
+											"name": "Convert_REC",
+											"type": "Double"
+										},
+										{
+											"name": "GrupoDespacho",
+											"type": "String"
+										},
+										{
+											"name": "Fecha_Creacion",
+											"type": "DateTime"
+										},
+										{
+											"name": "Estado",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_GrupoArt",
+											"type": "String"
+										},
+										{
+											"name": "Maestro_Cod_Articulo",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_col_sg].[Costos_Articulos]"
+								}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -20561,7 +20736,7 @@
 							"source": {
 								"type": "SqlServerSource",
 								"sqlReaderQuery": {
-									"value": "SELECT GETDATE() AS FechaCarga,Cod_Gasto,Cod_Restaurante,Cod_Rubros,Cod_Proveedor,Fecha,Cta_Axapta,Num_Factura,Subtotal,Iva,Porcen_Iva,Total,Descripcion,Estado,YEAR(Fecha) AS Anio FROM dbo.GastosGenerales WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Gasto,Cod_Restaurante,Cod_Rubros,Cod_Proveedor,Fecha,Cta_Axapta,Num_Factura,Subtotal,Iva,Porcen_Iva,Total,Descripcion,Estado, DiarioAx, Ruta,YEAR(Fecha) AS Anio FROM dbo.GastosGenerales WHERE Fecha >= '@{pipeline().parameters.FechaDesde}' AND Fecha < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 									"type": "Expression"
 								},
 								"partitionOption": "None"
@@ -20648,6 +20823,14 @@
 											"type": "Int32"
 										},
 										{
+											"name": "DiarioAx",
+											"type": "String"
+										},
+										{
+											"name": "Ruta",
+											"type": "String"
+										},
+										{
 											"name": "ANIO",
 											"type": "Int32"
 										}
@@ -20725,6 +20908,14 @@
 										{
 											"name": "Estado",
 											"type": "Int32"
+										},
+										{
+											"name": "DiarioAx",
+											"type": "String"
+										},
+										{
+											"name": "Ruta",
+											"type": "String"
 										},
 										{
 											"name": "ANIO",
@@ -21257,7 +21448,7 @@
 							"source": {
 								"type": "SqlServerSource",
 								"sqlReaderQuery": {
-									"value": "SELECT GETDATE() AS FechaCarga,Cod_Mov_Inv,Cod_Bodega,Cod_Proveedor,Cod_Restaurante,Cod_Contraparte,Cod_TipMovInv,Fecha_Creacion,Comentario,Estado,FacturaNumero,Relacionado,YEAR(Fecha_Creacion) AS Anio FROM dbo.MovInv WHERE Fecha_Creacion >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Creacion < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
+									"value": "SELECT GETDATE() AS FechaCarga,Cod_Mov_Inv,Cod_Bodega,Cod_Proveedor,Cod_Restaurante,Cod_Contraparte,Cod_TipMovInv,Fecha_Creacion,Comentario,Estado,FacturaNumero,Relacionado,DiarioAx, Ruta,YEAR(Fecha_Creacion) AS Anio FROM dbo.MovInv WHERE Fecha_Creacion >= '@{pipeline().parameters.FechaDesde}' AND Fecha_Creacion < DATEADD(DAY,1,'@{pipeline().parameters.FechaHasta}')",
 									"type": "Expression"
 								},
 								"partitionOption": "None"
@@ -21336,6 +21527,14 @@
 											"type": "String"
 										},
 										{
+											"name": "DiarioAx",
+											"type": "String"
+										},
+										{
+											"name": "Ruta",
+											"type": "String"
+										},
+										{
 											"name": "ANIO",
 											"type": "Int32"
 										}
@@ -21404,6 +21603,14 @@
 										},
 										{
 											"name": "Relacionado",
+											"type": "String"
+										},
+										{
+											"name": "DiarioAx",
+											"type": "String"
+										},
+										{
+											"name": "Ruta",
 											"type": "String"
 										},
 										{
