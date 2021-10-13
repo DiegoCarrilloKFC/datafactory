@@ -16,11 +16,11 @@
 				}
 			},
 			{
-				"name": "COSS_BAK",
+				"name": "QMTT",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "COSS_BAK_BLOB",
+						"activity": "QMTT_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -38,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.COSS_BAK\nINSERT INTO [dsa_ecu_sap].[COSS_BAK]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[COSS_BAK_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.QMTT\nINSERT INTO [dsa_ecu_sap].[QMTT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[QMTT_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -51,11 +51,11 @@
 				}
 			},
 			{
-				"name": "DeleteCOSS_BAK",
+				"name": "DeleteQMTT",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "COSS_BAK",
+						"activity": "QMTT",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -74,7 +74,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/COSS_BAK"
+							"cw_carpeta": "produccionplanta/QMTT"
 						}
 					},
 					"logStorageSettings": {
@@ -82,7 +82,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/COSS_BAK"
+						"path": "almacenamientosap/produccionplanta/QMTT"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -97,7 +97,7 @@
 				}
 			},
 			{
-				"name": "COSS_BAK_BLOB",
+				"name": "QMTT_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -121,9 +121,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/COSS_BAK",
+							"wildcardFolderPath": "produccionplanta/QMTT",
 							"wildcardFileName": {
-								"value": "@Concat('COSS_BAK_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('QMTT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -133,7 +133,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.COSS_BAK_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.QMTT_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -143,13 +143,13 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/COSS_BAK"
+							"cw_carpeta": "produccionplanta/QMTT"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sap_COSS_BAK_BLOB",
+						"referenceName": "ds_sap_QMTT_BLOB",
 						"type": "DatasetReference"
 					}
 				]
