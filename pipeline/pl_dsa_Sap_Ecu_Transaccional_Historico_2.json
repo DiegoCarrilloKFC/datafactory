@@ -1,0 +1,529 @@
+{
+	"name": "pl_dsa_Sap_Ecu_Transaccional_Historico_2",
+	"properties": {
+		"description": "Carga Información Sap",
+		"activities": [
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[admin_adm].[usp_CargaFecha]",
+						"storedProcedureParameters": {
+							"Dias": {
+								"type": "Int32",
+								"value": "1"
+							},
+							"FechaDesde": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaFin": {
+								"type": "DateTime",
+								"value": null
+							},
+							"FechaHasta": {
+								"type": "DateTime",
+								"value": null
+							}
+						},
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "VBAK",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaVBAKHistorico]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "VBAP",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaVBAPHistorico]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "VBEP",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaVBEPHistorico]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "VBFA",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaVBFAHistorico]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "VBKD",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaVBKDHistorico]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "VBRK",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaVBRKHistorico]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "VBRP",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaVBRPHistorico]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ZMARA_SIR",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaZMARA_SIRHistorico]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"Pais": {
+				"type": "String",
+				"defaultValue": "ECU"
+			},
+			"TipoCarga": {
+				"type": "String",
+				"defaultValue": "MANUAL"
+			}
+		},
+		"folder": {
+			"name": "dsa_Sap"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
