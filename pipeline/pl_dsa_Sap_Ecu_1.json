@@ -1,0 +1,647 @@
+{
+	"name": "pl_dsa_Sap_Ecu_1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Fecha Carga",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "Select Anio=year(dateadd(hh,-5,getdate()))\n,Mes=convert (char(2),dateadd(hh,-5,getdate()),101)\n,Dia=convert (char(2),dateadd(hh,-5,getdate()),103)",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Catalogo3",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Catalogo_3",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Transaccional_1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Catalogo1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo6",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo5",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo4",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_1",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Catalogo4",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Catalogo_4",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Transaccional_2",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Catalogo3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo4",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo5",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo6",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_2",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Catalogo5",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Catalogo_5",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Transaccional_3",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Catalogo3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo4",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo5",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo6",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_3",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Catalogo6",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Catalogo_6",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Transaccional_4",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Catalogo3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo4",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo5",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo6",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_4",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Transaccional_5",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Catalogo3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo4",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo5",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo6",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Catalogo2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_5",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Transaccional_Historico_1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Transaccional_2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Transaccional_1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Transaccional_3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Transaccional_4",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Transaccional_5",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_Historico_1",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Transaccional_Historico_2",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Transaccional_2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Transaccional_1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Transaccional_3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Transaccional_4",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Transaccional_5",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Transaccional_Historico_2",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Catalogo1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Catalogo_1",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Catalogo2",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fecha Carga",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dsa_Sap_Ecu_Catalogo_2",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Anio": {
+							"value": "@activity('Fecha Carga').output.firstRow.Anio",
+							"type": "Expression"
+						},
+						"Mes": {
+							"value": "@activity('Fecha Carga').output.firstRow.Mes",
+							"type": "Expression"
+						},
+						"Dia": {
+							"value": "@activity('Fecha Carga').output.firstRow.Dia",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "dsa_Sap"
+		},
+		"annotations": []
+	}
+}
