@@ -13,6 +13,451 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_ReprocesoControlPedido')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": null
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "DateTime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": null
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Carga Transaccional",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Cargar Catalogo Reproceso",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Fecha Carga').output.firstRow.AnioFechaInicio, activity('Fecha Carga').output.firstRow.AnioFechaFin)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Carga Anterior UIO",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Carga Anterior GYE",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ContabilidadPyG",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior1",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior1",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionAnterior1",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "Carga Actual UIO_",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ControlPedido",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual1",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "Carga Anterior GYE",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Carga Actual GYE_",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ControlPedido",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorAnterior2",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosAnterior2",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaAnioAnterior",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionAnterior2",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "Carga Actual GYE_",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Carga Actual UIO_",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ControlPedido",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesdeAnioActual",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual2",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Carga Actual UIO",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ControlPedido",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual1",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								{
+									"name": "Carga Actual GYE",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Carga Actual UIO",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_ControlPedido",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"Servidor": {
+												"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+												"type": "Expression"
+											},
+											"BaseDatos": {
+												"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+												"type": "Expression"
+											},
+											"FechaDesde": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+												"type": "Expression"
+											},
+											"FechaHasta": {
+												"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+												"type": "Expression"
+											},
+											"Region": {
+												"value": "@activity('Obtener Servidores').output.firstRow.RegionActual2",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Truncar Transaccional",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Obtener Servidores",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "TRUNCATE TABLE dsa_ecu_sg.DetPedidos\nTRUNCATE TABLE dsa_ecu_sg.CabPedidos\nTRUNCATE TABLE dsa_ecu_sg.ArticuloBodega\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Obtener Servidores",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_ObtenerLinkedBase]",
+								"storedProcedureParameters": {
+									"CodigoETL": {
+										"type": "String",
+										"value": "BD-SG-ECU"
+									},
+									"FechaDesde": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+											"type": "Expression"
+										}
+									},
+									"FechaHasta": {
+										"type": "DateTime",
+										"value": {
+											"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+											"type": "Expression"
+										}
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Cargar Catalogo Reproceso",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Truncar Transaccional",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Ecu_CatalogoReprocesoControlPedido",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"ServidorQuito": {
+									"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual1",
+									"type": "Expression"
+								},
+								"BaseDatosQuito": {
+									"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual1",
+									"type": "Expression"
+								},
+								"ServidorGuayaquil": {
+									"value": "@activity('Obtener Servidores').output.firstRow.ServidorActual2",
+									"type": "Expression"
+								},
+								"BaseDatosGuayaquil": {
+									"value": "@activity('Obtener Servidores').output.firstRow.BaseDatosActual2",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "dsa_SistemaGerenteEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Ecu_Transaccional')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -16810,6 +17255,64 @@
 							"referenceName": "linked_dwh",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "ope_FacSgPedido",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "ope_FacSgArticuloBodega",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_col_ope",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacSgPedido",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -19540,235 +20043,6 @@
 								"referenceName": "ds_dwh_general",
 								"type": "DatasetReference",
 								"parameters": {}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "Carga_dwh_Triggers"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_Recarga_ContabilidadPyG_Pedidos Ecuador')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Carga DSA SAP ECU",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_Sap_Ecu_ReprocesoPyG_Pedidos",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Carga Contabilidad Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Dimension Ecu",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_ReprocesoPyG",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": 0,
-								"Pais": "ECU",
-								"TipoCarga": "MANUAL"
-							}
-						}
-					},
-					{
-						"name": "Carga Dimension Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga DSA SG ECU",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "Carga DSA SAP ECU",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Dimensiones_ReprocesoPyG",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": 0,
-								"Pais": "ECU",
-								"TipoCarga": "MANUAL"
-							}
-						}
-					},
-					{
-						"name": "Carga DSA SG ECU",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_SistemaGerente_Ecu_ReprocesoContabilidadPyG_Pedidos",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Inicializar Etapas",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "UPDATE admin_btc.LogEjecucionEtapa SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND IDEtapa IN ('DIMENSIONECU','FACTCONTABILIDADECU')\n\nUPDATE admin_btc.LogEjecucionTabla SET Estado='PENDIENTE'\nWHERE Periodo=CONVERT(VARCHAR(11),DATEADD(HH,-5,GETDATE()),120) AND Tabla IN ('FacPyG','FacPyGUniforme','FacPyGContabilidad')\nAND Esquema in ('dwh_ecu_cubo','dwh_ecu_conta')\n\n--Control de Cargas\nDELETE FROM admin_btc.CargaDataFactory\nWHERE FechaPeriodo = CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'REPROCESO PYG - CONTROL PEDIDO ECUADOR'\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'REPROCESO PYG - CONTROL PEDIDO ECUADOR',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Finalizar Carga",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Carga Planta Control Pedido Ecu",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "UPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'REPROCESO PYG - CONTROL PEDIDO ECUADOR'\n\nSELECT 'ok' AS Resultado",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Carga Operaciones Control Pedido Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Dimension Ecu",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_ControlPedido_Reproceso_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "MANUAL"
-							}
-						}
-					},
-					{
-						"name": "Carga Planta Control Pedido Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Contabilidad Ecu",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "Carga Operaciones Control Pedido Ecu",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Planta_Ecu_ControlPedido_Reproceso",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "MANUAL"
 							}
 						}
 					}
