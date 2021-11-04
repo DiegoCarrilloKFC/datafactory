@@ -1821,6 +1821,145 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "COSP",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "COSP_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.COSP\nINSERT INTO [dsa_ecu_sap].[COSP]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[COSP_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteCOSP",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "COSP",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/COSP"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/produccionplanta/COSP"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "COSP_BLOB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "FECHACARGA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "produccionplanta/COSP",
+							"wildcardFileName": {
+								"value": "@Concat('COSP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table dsa_ecu_sap.COSP_BLOB",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/COSP"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_sap_COSP_BLOB",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
 		"parameters": {
