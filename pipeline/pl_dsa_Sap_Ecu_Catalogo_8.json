@@ -3,6 +3,68 @@
 	"properties": {
 		"activities": [
 			{
+				"name": "FAGL_011QT_BLOB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "FECHACARGA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "catalogo/FAGL_011QT",
+							"wildcardFileName": {
+								"value": "@Concat('FAGL_011QT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[FAGL_011QT_BLOB]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/FAGL_011QT"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"VERSN\",\"type\":\"String\"} [{\"name\":\"SPRAS\",\"type\":\"String\"} [{\"name\":\"ERGSL\",\"type\":\"String\"} [{\"name\":\"TXTYP\",\"type\":\"String\"} [{\"name\":\"ZEILE\",\"type\":\"String\"} [{\"name\":\"TXT45\",\"type\":\"String\"}]",
+							"cw_tableName": "[dsa_ecu_sap].[FAGL_011QT_BLOB]"
+						}
+					}
+				]
+			},
+			{
 				"name": "FECHACARGA",
 				"type": "SetVariable",
 				"dependsOn": [],
@@ -16,7 +78,123 @@
 				}
 			},
 			{
-				"name": "T001L_BLOB",
+				"name": "FAGL_011QT",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "FAGL_011QT_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE [dsa_ecu_sap].[FAGL_011QT]\nINSERT INTO [dsa_ecu_sap].[FAGL_011QT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[FAGL_011QT_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteFAGL_011QT",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "FAGL_011QT",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/FAGL_011QT"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/catalogo/FAGL_011QT"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "KONP",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "KONP_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.[KONP]\nINSERT INTO [dsa_ecu_sap].[KONP]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[KONP_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "KONP_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -40,9 +218,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/T001L",
+							"wildcardFolderPath": "catalogo/KONP",
 							"wildcardFileName": {
-								"value": "@Concat('T001L_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('KONP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -52,7 +230,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T001L_BLOB]",
+						"preCopyScript": "truncate table [dsa_ecu_sap].[KONP_BLOB]",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -62,7 +240,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T001L"
+							"cw_carpeta": "catalogo/KONP"
 						}
 					}
 				],
@@ -71,142 +249,18 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "WERKS",
-									"type": "String"
-								},
-								{
-									"name": "LGORT",
-									"type": "String"
-								},
-								{
-									"name": "LGOBE",
-									"type": "String"
-								},
-								{
-									"name": "SPART",
-									"type": "String"
-								},
-								{
-									"name": "XLONG",
-									"type": "String"
-								},
-								{
-									"name": "XBUFX",
-									"type": "String"
-								},
-								{
-									"name": "DISKZ",
-									"type": "String"
-								},
-								{
-									"name": "XBLGO",
-									"type": "String"
-								},
-								{
-									"name": "XRESS",
-									"type": "String"
-								},
-								{
-									"name": "XHUPF",
-									"type": "String"
-								},
-								{
-									"name": "PARLG",
-									"type": "String"
-								},
-								{
-									"name": "VKORG",
-									"type": "String"
-								},
-								{
-									"name": "VTWEG",
-									"type": "String"
-								},
-								{
-									"name": "VSTEL",
-									"type": "String"
-								},
-								{
-									"name": "LIFNR",
-									"type": "String"
-								},
-								{
-									"name": "KUNNR",
-									"type": "String"
-								},
-								{
-									"name": "MESBS",
-									"type": "String"
-								},
-								{
-									"name": "MESST",
-									"type": "String"
-								},
-								{
-									"name": "OIH_LICNO",
-									"type": "String"
-								},
-								{
-									"name": "OIG_ITRFL",
-									"type": "String"
-								},
-								{
-									"name": "OIB_TNKASSIGN",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[T001L_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"KNUMH\",\"type\":\"String\"} [{\"name\":\"KOPOS\",\"type\":\"String\"} [{\"name\":\"KAPPL\",\"type\":\"String\"} [{\"name\":\"KSCHL\",\"type\":\"String\"} [{\"name\":\"KNUMT\",\"type\":\"String\"} [{\"name\":\"STFKZ\",\"type\":\"String\"} [{\"name\":\"KZBZG\",\"type\":\"String\"} [{\"name\":\"KSTBM\",\"type\":\"Decimal\"} [{\"name\":\"KONMS\",\"type\":\"String\"} [{\"name\":\"KSTBW\",\"type\":\"Decimal\"} [{\"name\":\"KONWS\",\"type\":\"String\"} [{\"name\":\"KRECH\",\"type\":\"String\"} [{\"name\":\"KBETR\",\"type\":\"Decimal\"} [{\"name\":\"KONWA\",\"type\":\"String\"} [{\"name\":\"KPEIN\",\"type\":\"Decimal\"} [{\"name\":\"KMEIN\",\"type\":\"String\"} [{\"name\":\"PRSCH\",\"type\":\"String\"} [{\"name\":\"KUMZA\",\"type\":\"Decimal\"} [{\"name\":\"KUMNE\",\"type\":\"Decimal\"} [{\"name\":\"MEINS\",\"type\":\"String\"} [{\"name\":\"MXWRT\",\"type\":\"Decimal\"} [{\"name\":\"GKWRT\",\"type\":\"Decimal\"} [{\"name\":\"PKWRT\",\"type\":\"Decimal\"} [{\"name\":\"FKWRT\",\"type\":\"Decimal\"} [{\"name\":\"RSWRT\",\"type\":\"Decimal\"} [{\"name\":\"KWAEH\",\"type\":\"String\"} [{\"name\":\"UKBAS\",\"type\":\"Decimal\"} [{\"name\":\"KZNEP\",\"type\":\"String\"} [{\"name\":\"KUNNR\",\"type\":\"String\"} [{\"name\":\"LIFNR\",\"type\":\"String\"} [{\"name\":\"MWSK1\",\"type\":\"String\"} [{\"name\":\"LOEVM_KO\",\"type\":\"String\"} [{\"name\":\"ZAEHK_IND\",\"type\":\"String\"} [{\"name\":\"BOMAT\",\"type\":\"String\"} [{\"name\":\"KBRUE\",\"type\":\"Decimal\"} [{\"name\":\"KSPAE\",\"type\":\"String\"} [{\"name\":\"BOSTA\",\"type\":\"String\"} [{\"name\":\"KNUMA_PI\",\"type\":\"String\"} [{\"name\":\"KNUMA_AG\",\"type\":\"String\"} [{\"name\":\"KNUMA_SQ\",\"type\":\"String\"} [{\"name\":\"VALTG\",\"type\":\"String\"} [{\"name\":\"VALDT\",\"type\":\"String\"} [{\"name\":\"ZTERM\",\"type\":\"String\"} [{\"name\":\"ANZAUF\",\"type\":\"String\"} [{\"name\":\"MIKBAS\",\"type\":\"Decimal\"} [{\"name\":\"MXKBAS\",\"type\":\"Decimal\"} [{\"name\":\"KOMXWRT\",\"type\":\"Decimal\"} [{\"name\":\"KLF_STG\",\"type\":\"String\"} [{\"name\":\"KLF_KAL\",\"type\":\"String\"} [{\"name\":\"VKKAL\",\"type\":\"String\"} [{\"name\":\"AKTNR\",\"type\":\"String\"} [{\"name\":\"KNUMA_BO\",\"type\":\"String\"} [{\"name\":\"MWSK2\",\"type\":\"String\"} [{\"name\":\"VERTT\",\"type\":\"String\"} [{\"name\":\"VERTN\",\"type\":\"String\"} [{\"name\":\"VBEWA\",\"type\":\"String\"} [{\"name\":\"MDFLG\",\"type\":\"String\"} [{\"name\":\"KFRST\",\"type\":\"String\"} [{\"name\":\"UASTA\",\"type\":\"String\"}]",
+							"cw_tableName": "[dsa_ecu_sap].[KONP_BLOB]"
 						}
 					}
 				]
 			},
 			{
-				"name": "T001L",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "T001L_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T001L]\nINSERT INTO [dsa_ecu_sap].[T001L]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T001L_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteT001L",
+				"name": "DeleteKONP",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "T001L",
+						"activity": "KONP",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -225,7 +279,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T001L"
+							"cw_carpeta": "catalogo/KONP"
 						}
 					},
 					"logStorageSettings": {
@@ -233,7 +287,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/T001L"
+						"path": "almacenamientosap/catalogo/KONP"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -248,7 +302,42 @@
 				}
 			},
 			{
-				"name": "T001W_BLOB",
+				"name": "A017",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "A017_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.[A017]\nINSERT INTO [dsa_ecu_sap].[A017]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[A017_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "A017_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -272,11 +361,12 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/T001W",
+							"wildcardFolderPath": "catalogo/A017",
 							"wildcardFileName": {
-								"value": "@Concat('T001W_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('A017_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
-							}
+							},
+							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
 							"type": "DelimitedTextReadSettings"
@@ -284,7 +374,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T001W_BLOB]",
+						"preCopyScript": "truncate table dsa_ecu_sap.A017_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -294,7 +384,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T001W"
+							"cw_carpeta": "catalogo/A017"
 						}
 					}
 				],
@@ -303,326 +393,18 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "WERKS",
-									"type": "String"
-								},
-								{
-									"name": "NAME1",
-									"type": "String"
-								},
-								{
-									"name": "BWKEY",
-									"type": "String"
-								},
-								{
-									"name": "KUNNR",
-									"type": "String"
-								},
-								{
-									"name": "LIFNR",
-									"type": "String"
-								},
-								{
-									"name": "FABKL",
-									"type": "String"
-								},
-								{
-									"name": "NAME2",
-									"type": "String"
-								},
-								{
-									"name": "STRAS",
-									"type": "String"
-								},
-								{
-									"name": "PFACH",
-									"type": "String"
-								},
-								{
-									"name": "PSTLZ",
-									"type": "String"
-								},
-								{
-									"name": "ORT01",
-									"type": "String"
-								},
-								{
-									"name": "EKORG",
-									"type": "String"
-								},
-								{
-									"name": "VKORG",
-									"type": "String"
-								},
-								{
-									"name": "CHAZV",
-									"type": "String"
-								},
-								{
-									"name": "KKOWK",
-									"type": "String"
-								},
-								{
-									"name": "KORDB",
-									"type": "String"
-								},
-								{
-									"name": "BEDPL",
-									"type": "String"
-								},
-								{
-									"name": "LAND1",
-									"type": "String"
-								},
-								{
-									"name": "REGIO",
-									"type": "String"
-								},
-								{
-									"name": "COUNC",
-									"type": "String"
-								},
-								{
-									"name": "CITYC",
-									"type": "String"
-								},
-								{
-									"name": "ADRNR",
-									"type": "String"
-								},
-								{
-									"name": "IWERK",
-									"type": "String"
-								},
-								{
-									"name": "TXJCD",
-									"type": "String"
-								},
-								{
-									"name": "VTWEG",
-									"type": "String"
-								},
-								{
-									"name": "SPART",
-									"type": "String"
-								},
-								{
-									"name": "SPRAS",
-									"type": "String"
-								},
-								{
-									"name": "WKSOP",
-									"type": "String"
-								},
-								{
-									"name": "AWSLS",
-									"type": "String"
-								},
-								{
-									"name": "CHAZV_OLD",
-									"type": "String"
-								},
-								{
-									"name": "VLFKZ",
-									"type": "String"
-								},
-								{
-									"name": "BZIRK",
-									"type": "String"
-								},
-								{
-									"name": "ZONE1",
-									"type": "String"
-								},
-								{
-									"name": "TAXIW",
-									"type": "String"
-								},
-								{
-									"name": "BZQHL",
-									"type": "String"
-								},
-								{
-									"name": "LET01",
-									"type": "Decimal"
-								},
-								{
-									"name": "LET02",
-									"type": "Decimal"
-								},
-								{
-									"name": "LET03",
-									"type": "Decimal"
-								},
-								{
-									"name": "TXNAM_MA1",
-									"type": "String"
-								},
-								{
-									"name": "TXNAM_MA2",
-									"type": "String"
-								},
-								{
-									"name": "TXNAM_MA3",
-									"type": "String"
-								},
-								{
-									"name": "BETOL",
-									"type": "String"
-								},
-								{
-									"name": "J_1BBRANCH",
-									"type": "String"
-								},
-								{
-									"name": "VTBFI",
-									"type": "String"
-								},
-								{
-									"name": "FPRFW",
-									"type": "String"
-								},
-								{
-									"name": "ACHVM",
-									"type": "String"
-								},
-								{
-									"name": "DVSART",
-									"type": "String"
-								},
-								{
-									"name": "NODETYPE",
-									"type": "String"
-								},
-								{
-									"name": "NSCHEMA",
-									"type": "String"
-								},
-								{
-									"name": "PKOSA",
-									"type": "String"
-								},
-								{
-									"name": "MISCH",
-									"type": "String"
-								},
-								{
-									"name": "MGVUPD",
-									"type": "String"
-								},
-								{
-									"name": "VSTEL",
-									"type": "String"
-								},
-								{
-									"name": "MGVLAUPD",
-									"type": "String"
-								},
-								{
-									"name": "MGVLAREVAL",
-									"type": "String"
-								},
-								{
-									"name": "SOURCING",
-									"type": "String"
-								},
-								{
-									"name": "NO_DEFAULT_BATCH_MANAGEMENT",
-									"type": "String"
-								},
-								{
-									"name": "FSH_MG_ARUN_REQ",
-									"type": "String"
-								},
-								{
-									"name": "FSH_SEAIM",
-									"type": "String"
-								},
-								{
-									"name": "FSH_BOM_MAINTENANCE",
-									"type": "String"
-								},
-								{
-									"name": "FSH_GROUP_PR",
-									"type": "String"
-								},
-								{
-									"name": "ARUN_FIX_BATCH",
-									"type": "String"
-								},
-								{
-									"name": "OILIVAL",
-									"type": "String"
-								},
-								{
-									"name": "OIHVTYPE",
-									"type": "String"
-								},
-								{
-									"name": "OIHCREDIPI",
-									"type": "String"
-								},
-								{
-									"name": "STORETYPE",
-									"type": "String"
-								},
-								{
-									"name": "DEP_STORE",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[T001W_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"KAPPL\",\"type\":\"String\"} [{\"name\":\"KSCHL\",\"type\":\"String\"} [{\"name\":\"LIFNR\",\"type\":\"String\"} [{\"name\":\"MATNR\",\"type\":\"String\"} [{\"name\":\"EKORG\",\"type\":\"String\"} [{\"name\":\"WERKS\",\"type\":\"String\"} [{\"name\":\"ESOKZ\",\"type\":\"String\"} [{\"name\":\"DATBI\",\"type\":\"String\"} [{\"name\":\"DATAB\",\"type\":\"String\"} [{\"name\":\"KNUMH\",\"type\":\"String\"}]",
+							"cw_tableName": "[dsa_ecu_sap].[A017_BLOB]"
 						}
 					}
 				]
 			},
 			{
-				"name": "T001W",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "T001W_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T001W]\nINSERT INTO [dsa_ecu_sap].[T001W]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T001W_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteT001W",
+				"name": "DeleteA017",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "T001W",
+						"activity": "A017",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -641,7 +423,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/T001W"
+							"cw_carpeta": "catalogo/A017"
 						}
 					},
 					"logStorageSettings": {
@@ -649,7 +431,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/T001W"
+						"path": "almacenamientosap/catalogo/A017"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -664,7 +446,42 @@
 				}
 			},
 			{
-				"name": "TVKO_BLOB",
+				"name": "A917",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "A917_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.[A917]\nINSERT INTO [dsa_ecu_sap].[A917]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[A917_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "A917_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -688,11 +505,12 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/TVKO",
+							"wildcardFolderPath": "catalogo/A917",
 							"wildcardFileName": {
-								"value": "@Concat('TVKO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('A917_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
-							}
+							},
+							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
 							"type": "DelimitedTextReadSettings"
@@ -700,7 +518,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[TVKO_BLOB]",
+						"preCopyScript": "truncate table dsa_ecu_sap.A917_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -710,7 +528,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TVKO"
+							"cw_carpeta": "catalogo/A917"
 						}
 					}
 				],
@@ -719,158 +537,18 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "VKORG",
-									"type": "String"
-								},
-								{
-									"name": "WAERS",
-									"type": "String"
-								},
-								{
-									"name": "BUKRS",
-									"type": "String"
-								},
-								{
-									"name": "ADRNR",
-									"type": "String"
-								},
-								{
-									"name": "TXNAM_ADR",
-									"type": "String"
-								},
-								{
-									"name": "TXNAM_KOP",
-									"type": "String"
-								},
-								{
-									"name": "TXNAM_FUS",
-									"type": "String"
-								},
-								{
-									"name": "TXNAM_GRU",
-									"type": "String"
-								},
-								{
-									"name": "VKOAU",
-									"type": "String"
-								},
-								{
-									"name": "KUNNR",
-									"type": "String"
-								},
-								{
-									"name": "BOAVO",
-									"type": "String"
-								},
-								{
-									"name": "VKOKL",
-									"type": "String"
-								},
-								{
-									"name": "EKORG",
-									"type": "String"
-								},
-								{
-									"name": "EKGRP",
-									"type": "String"
-								},
-								{
-									"name": "LIFNR",
-									"type": "String"
-								},
-								{
-									"name": "WERKS",
-									"type": "String"
-								},
-								{
-									"name": "BSART",
-									"type": "String"
-								},
-								{
-									"name": "BSTYP",
-									"type": "String"
-								},
-								{
-									"name": "BWART",
-									"type": "String"
-								},
-								{
-									"name": "LGORT",
-									"type": "String"
-								},
-								{
-									"name": "TXNAM_SDB",
-									"type": "String"
-								},
-								{
-									"name": "MWSKZ",
-									"type": "String"
-								},
-								{
-									"name": "XSTCEG",
-									"type": "String"
-								},
-								{
-									"name": "J_1ANUTIME",
-									"type": "String"
-								},
-								{
-									"name": "MAXBI",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[TVKO_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"KAPPL\",\"type\":\"String\"} [{\"name\":\"KSCHL\",\"type\":\"String\"} [{\"name\":\"VKORG\",\"type\":\"String\"} [{\"name\":\"WERKS\",\"type\":\"String\"} [{\"name\":\"KUNAG\",\"type\":\"String\"} [{\"name\":\"MATNR\",\"type\":\"String\"} [{\"name\":\"DATBI\",\"type\":\"String\"}]",
+							"cw_tableName": "[dsa_ecu_sap].[A917_BLOB]"
 						}
 					}
 				]
 			},
 			{
-				"name": "TVKO",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "TVKO_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[TVKO]\nINSERT INTO [dsa_ecu_sap].[TVKO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[TVKO_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteTVKO",
+				"name": "DeleteA917",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "TVKO",
+						"activity": "A917",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -889,7 +567,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TVKO"
+							"cw_carpeta": "catalogo/A917"
 						}
 					},
 					"logStorageSettings": {
@@ -897,7 +575,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/TVKO"
+						"path": "almacenamientosap/catalogo/A917"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -912,7 +590,88 @@
 				}
 			},
 			{
-				"name": "TVTW_BLOB",
+				"name": "QPCD",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "QPCD_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.QPCD\nINSERT INTO [dsa_ecu_sap].[QPCD]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[QPCD_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteQPCD",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "QPCD",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "catalogo/QPCD"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/catalogo/QPCD"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "QPCD_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -936,11 +695,12 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/TVTW",
+							"wildcardFolderPath": "catalogo/QPCD",
 							"wildcardFileName": {
-								"value": "@Concat('TVTW_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('QPCD_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
-							}
+							},
+							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
 							"type": "DelimitedTextReadSettings"
@@ -948,7 +708,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[TVTW_BLOB]",
+						"preCopyScript": "truncate table dsa_ecu_sap.QPCD_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -958,7 +718,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TVTW"
+							"cw_carpeta": "catalogo/QPCD"
 						}
 					}
 				],
@@ -967,27 +727,18 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "VTWEG",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[TVTW_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"KATALOGART\",\"type\":\"String\"} [{\"name\":\"CODEGRUPPE\",\"type\":\"String\"} [{\"name\":\"CODE\",\"type\":\"String\"} [{\"name\":\"VERSION\",\"type\":\"String\"} [{\"name\":\"GUELTIGAB\",\"type\":\"String\"} [{\"name\":\"FEHLKLASSE\",\"type\":\"String\"} [{\"name\":\"ERSTELLER\",\"type\":\"String\"} [{\"name\":\"E_DATUM\",\"type\":\"String\"} [{\"name\":\"AENDERER\",\"type\":\"String\"} [{\"name\":\"A_DATUM\",\"type\":\"String\"} [{\"name\":\"INAKTIV\",\"type\":\"String\"} [{\"name\":\"VERWENDUNG\",\"type\":\"String\"} [{\"name\":\"GELOESCHT\",\"type\":\"String\"} [{\"name\":\"FOLGEAKTI\",\"type\":\"String\"}]",
+							"cw_tableName": "dsa_ecu_sap.QPCD_BLOB"
 						}
 					}
 				]
 			},
 			{
-				"name": "TVTW",
+				"name": "CRCO",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "TVTW_BLOB",
+						"activity": "CRCO_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1005,7 +756,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[TVTW]\nINSERT INTO [dsa_ecu_sap].[TVTW]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[TVTW_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.CRCO\nINSERT INTO [dsa_ecu_sap].[CRCO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[CRCO_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -1018,11 +769,11 @@
 				}
 			},
 			{
-				"name": "DeleteTVTW",
+				"name": "DeleteCRCO",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "TVTW",
+						"activity": "CRCO",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1041,7 +792,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/TVTW"
+							"cw_carpeta": "catalogo/CRCO"
 						}
 					},
 					"logStorageSettings": {
@@ -1049,7 +800,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/catalogo/TVTW"
+						"path": "almacenamientosap/catalogo/CRCO"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -1064,7 +815,7 @@
 				}
 			},
 			{
-				"name": "COKEY_BLOB",
+				"name": "CRCO_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -1088,9 +839,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "catalogo/COKEY",
+							"wildcardFolderPath": "catalogo/CRCO",
 							"wildcardFileName": {
-								"value": "@Concat('COKEY_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('CRCO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -1100,7 +851,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[COKEY_BLOB]",
+						"preCopyScript": "truncate table dsa_ecu_sap.CRCO_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -1110,7 +861,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "catalogo/COKEY"
+							"cw_carpeta": "catalogo/CRCO"
 						}
 					}
 				],
@@ -1119,2517 +870,11 @@
 						"referenceName": "ds_dwh",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "HRKFT",
-									"type": "String"
-								},
-								{
-									"name": "WERKS",
-									"type": "String"
-								},
-								{
-									"name": "MATNR",
-									"type": "String"
-								},
-								{
-									"name": "HKGRP",
-									"type": "String"
-								},
-								{
-									"name": "PCVER",
-									"type": "String"
-								},
-								{
-									"name": "CBRKE",
-									"type": "String"
-								},
-								{
-									"name": "CBRKI",
-									"type": "String"
-								},
-								{
-									"name": "CBART",
-									"type": "String"
-								},
-								{
-									"name": "DRVTP",
-									"type": "String"
-								},
-								{
-									"name": "CBAT",
-									"type": "String"
-								},
-								{
-									"name": "RECIND",
-									"type": "String"
-								},
-								{
-									"name": "BEMOT",
-									"type": "String"
-								},
-								{
-									"name": "PERNR",
-									"type": "String"
-								},
-								{
-									"name": "RSRCE",
-									"type": "String"
-								},
-								{
-									"name": "SUBKEY2",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[COKEY_BLOB]"
+							"cw_structure": "[{\"name\":\"MANDT\",\"type\":\"String\"} [{\"name\":\"OBJTY\",\"type\":\"String\"} [{\"name\":\"OBJID\",\"type\":\"String\"} [{\"name\":\"LASET\",\"type\":\"String\"} [{\"name\":\"ENDDA\",\"type\":\"String\"} [{\"name\":\"LANUM\",\"type\":\"String\"} [{\"name\":\"BEGDA\",\"type\":\"String\"} [{\"name\":\"AEDAT_KOST\",\"type\":\"String\"} [{\"name\":\"AENAM_KOST\",\"type\":\"String\"} [{\"name\":\"KOKRS\",\"type\":\"String\"} [{\"name\":\"KOSTL\",\"type\":\"String\"} [{\"name\":\"LSTAR\",\"type\":\"String\"} [{\"name\":\"LSTAR_REF\",\"type\":\"String\"} [{\"name\":\"FORML\",\"type\":\"String\"} [{\"name\":\"PRZ\",\"type\":\"String\"} [{\"name\":\"ACTXY\",\"type\":\"String\"} [{\"name\":\"ACTXK\",\"type\":\"String\"} [{\"name\":\"LEINH\",\"type\":\"String\"} [{\"name\":\"BDE\",\"type\":\"String\"} [{\"name\":\"SAKL\",\"type\":\"String\"}]",
+							"cw_tableName": "dsa_ecu_sap.CRCO_BLOB"
 						}
 					}
 				]
-			},
-			{
-				"name": "COKEY",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "COKEY_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[COKEY]\nINSERT INTO [dsa_ecu_sap].[COKEY]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[COKEY_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteCOKEY",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "COKEY",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/COKEY"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/catalogo/COKEY"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "T161T_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "catalogo/T161T",
-							"wildcardFileName": {
-								"value": "@Concat('T161T_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T161T_BLOB]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T0161T"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "SPRAS",
-									"type": "String"
-								},
-								{
-									"name": "BSART",
-									"type": "String"
-								},
-								{
-									"name": "BSTYP",
-									"type": "String"
-								},
-								{
-									"name": "BATXT",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "dsa_ecu_sap.T161T_BLOB"
-						}
-					}
-				]
-			},
-			{
-				"name": "T161T",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "T161T_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T161T]\nINSERT INTO [dsa_ecu_sap].[T161T]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T161T_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteT161T",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "T161T",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T161T"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/catalogo/T161T"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "T025T_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "catalogo/T025T",
-							"wildcardFileName": {
-								"value": "@Concat('T025T_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T025T_BLOB]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T025T"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "SPRAS",
-									"type": "String"
-								},
-								{
-									"name": "BKLAS",
-									"type": "String"
-								},
-								{
-									"name": "BKBEZ",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "dsa_ecu_sap.T025T_BLOB"
-						}
-					}
-				]
-			},
-			{
-				"name": "T025T",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "T025T_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T025T]\nINSERT INTO [dsa_ecu_sap].[T025T]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T025T_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteT025T",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "T025T",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T025T"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/catalogo/T025T"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "LFM1",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "LFM1_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.LFM1\nINSERT INTO [dsa_ecu_sap].[LFM1]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[LFM1_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteLFM1",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "LFM1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/LFM1"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/catalogo/LFM1"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "LFM1_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "catalogo/LFM1",
-							"wildcardFileName": {
-								"value": "@Concat('LFM1_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.LFM1_BLOB",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/LFM1"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "LIFNR",
-									"type": "String"
-								},
-								{
-									"name": "EKORG",
-									"type": "String"
-								},
-								{
-									"name": "ERDAT",
-									"type": "String"
-								},
-								{
-									"name": "ERNAM",
-									"type": "String"
-								},
-								{
-									"name": "SPERM",
-									"type": "String"
-								},
-								{
-									"name": "LOEVM",
-									"type": "String"
-								},
-								{
-									"name": "LFABC",
-									"type": "String"
-								},
-								{
-									"name": "WAERS",
-									"type": "String"
-								},
-								{
-									"name": "VERKF",
-									"type": "String"
-								},
-								{
-									"name": "TELF1",
-									"type": "String"
-								},
-								{
-									"name": "MINBW",
-									"type": "Decimal"
-								},
-								{
-									"name": "ZTERM",
-									"type": "String"
-								},
-								{
-									"name": "INCO1",
-									"type": "String"
-								},
-								{
-									"name": "INCO2",
-									"type": "String"
-								},
-								{
-									"name": "WEBRE",
-									"type": "String"
-								},
-								{
-									"name": "KZABS",
-									"type": "String"
-								},
-								{
-									"name": "KALSK",
-									"type": "String"
-								},
-								{
-									"name": "KZAUT",
-									"type": "String"
-								},
-								{
-									"name": "EXPVZ",
-									"type": "String"
-								},
-								{
-									"name": "ZOLLA",
-									"type": "String"
-								},
-								{
-									"name": "MEPRF",
-									"type": "String"
-								},
-								{
-									"name": "EKGRP",
-									"type": "String"
-								},
-								{
-									"name": "XERSY",
-									"type": "String"
-								},
-								{
-									"name": "PLIFZ",
-									"type": "Decimal"
-								},
-								{
-									"name": "MRPPP",
-									"type": "String"
-								},
-								{
-									"name": "LFRHY",
-									"type": "String"
-								},
-								{
-									"name": "LIBES",
-									"type": "String"
-								},
-								{
-									"name": "LIPRE",
-									"type": "String"
-								},
-								{
-									"name": "LISER",
-									"type": "String"
-								},
-								{
-									"name": "INCOV",
-									"type": "String"
-								},
-								{
-									"name": "INCO2_L",
-									"type": "String"
-								},
-								{
-									"name": "INCO3_L",
-									"type": "String"
-								},
-								{
-									"name": "PRFRE",
-									"type": "String"
-								},
-								{
-									"name": "NRGEW",
-									"type": "String"
-								},
-								{
-									"name": "BOIND",
-									"type": "String"
-								},
-								{
-									"name": "BLIND",
-									"type": "String"
-								},
-								{
-									"name": "KZRET",
-									"type": "String"
-								},
-								{
-									"name": "SKRIT",
-									"type": "String"
-								},
-								{
-									"name": "BSTAE",
-									"type": "String"
-								},
-								{
-									"name": "RDPRF",
-									"type": "String"
-								},
-								{
-									"name": "MEGRU",
-									"type": "String"
-								},
-								{
-									"name": "VENSL",
-									"type": "Decimal"
-								},
-								{
-									"name": "BOPNR",
-									"type": "String"
-								},
-								{
-									"name": "XERSR",
-									"type": "String"
-								},
-								{
-									"name": "EIKTO",
-									"type": "String"
-								},
-								{
-									"name": "ABUEB",
-									"type": "String"
-								},
-								{
-									"name": "PAPRF",
-									"type": "String"
-								},
-								{
-									"name": "AGREL",
-									"type": "String"
-								},
-								{
-									"name": "XNBWY",
-									"type": "String"
-								},
-								{
-									"name": "VSBED",
-									"type": "String"
-								},
-								{
-									"name": "LEBRE",
-									"type": "String"
-								},
-								{
-									"name": "BOLRE",
-									"type": "String"
-								},
-								{
-									"name": "UMSAE",
-									"type": "String"
-								},
-								{
-									"name": "VENDOR_RMA_REQ",
-									"type": "String"
-								},
-								{
-									"name": "LFM1_EEW_PS",
-									"type": "String"
-								},
-								{
-									"name": "J_1NBOESL",
-									"type": "String"
-								},
-								{
-									"name": "AUBEL",
-									"type": "String"
-								},
-								{
-									"name": "VALID_PRO",
-									"type": "String"
-								},
-								{
-									"name": "HSCABS",
-									"type": "Decimal"
-								},
-								{
-									"name": "HSCPE",
-									"type": "Decimal"
-								},
-								{
-									"name": "HSCMIN",
-									"type": "Decimal"
-								},
-								{
-									"name": "HSCMAX",
-									"type": "Decimal"
-								},
-								{
-									"name": "FSH_SC_CID",
-									"type": "String"
-								},
-								{
-									"name": "FSH_VAS_DETC",
-									"type": "String"
-								},
-								{
-									"name": "UPPRS",
-									"type": "String"
-								},
-								{
-									"name": "ACTIVITY_PROFIL",
-									"type": "String"
-								},
-								{
-									"name": "TRANSPORT_CHAIN",
-									"type": "String"
-								},
-								{
-									"name": "STAGING_TIME",
-									"type": "Decimal"
-								}
-							],
-							"cw_tableName": "dsa_ecu_sap.LFM1_BLOB"
-						}
-					}
-				]
-			},
-			{
-				"name": "BUT000_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "catalogo/BUT000",
-							"wildcardFileName": {
-								"value": "@Concat('BUT000_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[BUT000_BLOB]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/BUT000"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "CLIENT",
-									"type": "String"
-								},
-								{
-									"name": "PARTNER",
-									"type": "String"
-								},
-								{
-									"name": "TYPE",
-									"type": "String"
-								},
-								{
-									"name": "BPKIND",
-									"type": "String"
-								},
-								{
-									"name": "BU_GROUP",
-									"type": "String"
-								},
-								{
-									"name": "BPEXT",
-									"type": "String"
-								},
-								{
-									"name": "BU_SORT1",
-									"type": "String"
-								},
-								{
-									"name": "BU_SORT2",
-									"type": "String"
-								},
-								{
-									"name": "SOURCE",
-									"type": "String"
-								},
-								{
-									"name": "TITLE",
-									"type": "String"
-								},
-								{
-									"name": "XDELE",
-									"type": "String"
-								},
-								{
-									"name": "XBLCK",
-									"type": "String"
-								},
-								{
-									"name": "AUGRP",
-									"type": "String"
-								},
-								{
-									"name": "TITLE_LET",
-									"type": "String"
-								},
-								{
-									"name": "BU_LOGSYS",
-									"type": "String"
-								},
-								{
-									"name": "CONTACT",
-									"type": "String"
-								},
-								{
-									"name": "NOT_RELEASED",
-									"type": "String"
-								},
-								{
-									"name": "NOT_LG_COMPETENT",
-									"type": "String"
-								},
-								{
-									"name": "PRINT_MODE",
-									"type": "String"
-								},
-								{
-									"name": "BP_EEW_DUMMY",
-									"type": "String"
-								},
-								{
-									"name": "RATE",
-									"type": "String"
-								},
-								{
-									"name": "NAME_ORG1",
-									"type": "String"
-								},
-								{
-									"name": "NAME_ORG2",
-									"type": "String"
-								},
-								{
-									"name": "NAME_ORG3",
-									"type": "String"
-								},
-								{
-									"name": "NAME_ORG4",
-									"type": "String"
-								},
-								{
-									"name": "LEGAL_ENTY",
-									"type": "String"
-								},
-								{
-									"name": "IND_SECTOR",
-									"type": "String"
-								},
-								{
-									"name": "LEGAL_ORG",
-									"type": "String"
-								},
-								{
-									"name": "FOUND_DAT",
-									"type": "DateTime"
-								},
-								{
-									"name": "LIQUID_DAT",
-									"type": "DateTime"
-								},
-								{
-									"name": "LOCATION_1",
-									"type": "String"
-								},
-								{
-									"name": "LOCATION_2",
-									"type": "String"
-								},
-								{
-									"name": "LOCATION_3",
-									"type": "String"
-								},
-								{
-									"name": "NAME_LAST",
-									"type": "String"
-								},
-								{
-									"name": "NAME_FIRST",
-									"type": "String"
-								},
-								{
-									"name": "NAME_LST2",
-									"type": "String"
-								},
-								{
-									"name": "NAME_LAST2",
-									"type": "String"
-								},
-								{
-									"name": "NAMEMIDDLE",
-									"type": "String"
-								},
-								{
-									"name": "TITLE_ACA1",
-									"type": "String"
-								},
-								{
-									"name": "TITLE_ACA2",
-									"type": "String"
-								},
-								{
-									"name": "TITLE_ROYL",
-									"type": "String"
-								},
-								{
-									"name": "PREFIX1",
-									"type": "String"
-								},
-								{
-									"name": "PREFIX2",
-									"type": "String"
-								},
-								{
-									"name": "NAME1_TEXT",
-									"type": "String"
-								},
-								{
-									"name": "NICKNAME",
-									"type": "String"
-								},
-								{
-									"name": "INITIALS",
-									"type": "String"
-								},
-								{
-									"name": "NAMEFORMAT",
-									"type": "String"
-								},
-								{
-									"name": "NAMCOUNTRY",
-									"type": "String"
-								},
-								{
-									"name": "LANGU_CORR",
-									"type": "String"
-								},
-								{
-									"name": "XSEXM",
-									"type": "String"
-								},
-								{
-									"name": "XSEXF",
-									"type": "String"
-								},
-								{
-									"name": "BIRTHPL",
-									"type": "String"
-								},
-								{
-									"name": "MARST",
-									"type": "String"
-								},
-								{
-									"name": "EMPLO",
-									"type": "String"
-								},
-								{
-									"name": "JOBGR",
-									"type": "String"
-								},
-								{
-									"name": "NATIO",
-									"type": "String"
-								},
-								{
-									"name": "CNTAX",
-									"type": "String"
-								},
-								{
-									"name": "CNDSC",
-									"type": "String"
-								},
-								{
-									"name": "PERSNUMBER",
-									"type": "String"
-								},
-								{
-									"name": "XSEXU",
-									"type": "String"
-								},
-								{
-									"name": "XUBNAME",
-									"type": "String"
-								},
-								{
-									"name": "BU_LANGU",
-									"type": "String"
-								},
-								{
-									"name": "BIRTHDT",
-									"type": "DateTime"
-								},
-								{
-									"name": "DEATHDT",
-									"type": "DateTime"
-								},
-								{
-									"name": "PERNO",
-									"type": "String"
-								},
-								{
-									"name": "CHILDREN",
-									"type": "String"
-								},
-								{
-									"name": "MEM_HOUSE",
-									"type": "Decimal"
-								},
-								{
-									"name": "BIRTHDT_STATUS",
-									"type": "String"
-								},
-								{
-									"name": "PARTGRPTYP",
-									"type": "String"
-								},
-								{
-									"name": "NAME_GRP1",
-									"type": "String"
-								},
-								{
-									"name": "NAME_GRP2",
-									"type": "String"
-								},
-								{
-									"name": "MC_NAME1",
-									"type": "String"
-								},
-								{
-									"name": "MC_NAME2",
-									"type": "String"
-								},
-								{
-									"name": "CRUSR",
-									"type": "String"
-								},
-								{
-									"name": "CRDAT",
-									"type": "DateTime"
-								},
-								{
-									"name": "CRTIM",
-									"type": "DateTime"
-								},
-								{
-									"name": "CHUSR",
-									"type": "String"
-								},
-								{
-									"name": "CHDAT",
-									"type": "DateTime"
-								},
-								{
-									"name": "CHTIM",
-									"type": "DateTime"
-								},
-								{
-									"name": "PARTNER_GUID",
-									"type": "String"
-								},
-								{
-									"name": "ADDRCOMM",
-									"type": "String"
-								},
-								{
-									"name": "TD_SWITCH",
-									"type": "String"
-								},
-								{
-									"name": "IS_ORG_CENTRE",
-									"type": "String"
-								},
-								{
-									"name": "DB_KEY",
-									"type": "String"
-								},
-								{
-									"name": "VALID_FROM",
-									"type": "Decimal"
-								},
-								{
-									"name": "VALID_TO",
-									"type": "Decimal"
-								},
-								{
-									"name": "XPCPT",
-									"type": "String"
-								},
-								{
-									"name": "NATPERS",
-									"type": "String"
-								},
-								{
-									"name": "MILVE",
-									"type": "String"
-								},
-								{
-									"name": "NUC_SEC",
-									"type": "String"
-								},
-								{
-									"name": "PAR_REL",
-									"type": "String"
-								},
-								{
-									"name": "BP_SORT",
-									"type": "String"
-								},
-								{
-									"name": "KBANKS",
-									"type": "String"
-								},
-								{
-									"name": "KBANKL",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[BUT000_BLOB]"
-						}
-					}
-				]
-			},
-			{
-				"name": "BUT000",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "BUT000_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[BUT000]\nINSERT INTO [dsa_ecu_sap].[BUT000]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[BUT000_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteBUT000",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "BUT000",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/BUT000"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/catalogo/BUT000"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "T024_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "catalogo/T024",
-							"wildcardFileName": {
-								"value": "@Concat('T024_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T024_BLOB]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T024"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "CLIENT",
-									"type": "String"
-								},
-								{
-									"name": "PARTNER",
-									"type": "String"
-								},
-								{
-									"name": "TYPE",
-									"type": "String"
-								},
-								{
-									"name": "BPKIND",
-									"type": "String"
-								},
-								{
-									"name": "BU_GROUP",
-									"type": "String"
-								},
-								{
-									"name": "BPEXT",
-									"type": "String"
-								},
-								{
-									"name": "BU_SORT1",
-									"type": "String"
-								},
-								{
-									"name": "BU_SORT2",
-									"type": "String"
-								},
-								{
-									"name": "SOURCE",
-									"type": "String"
-								},
-								{
-									"name": "TITLE",
-									"type": "String"
-								},
-								{
-									"name": "XDELE",
-									"type": "String"
-								},
-								{
-									"name": "XBLCK",
-									"type": "String"
-								},
-								{
-									"name": "AUGRP",
-									"type": "String"
-								},
-								{
-									"name": "TITLE_LET",
-									"type": "String"
-								},
-								{
-									"name": "BU_LOGSYS",
-									"type": "String"
-								},
-								{
-									"name": "CONTACT",
-									"type": "String"
-								},
-								{
-									"name": "NOT_RELEASED",
-									"type": "String"
-								},
-								{
-									"name": "NOT_LG_COMPETENT",
-									"type": "String"
-								},
-								{
-									"name": "PRINT_MODE",
-									"type": "String"
-								},
-								{
-									"name": "BP_EEW_DUMMY",
-									"type": "String"
-								},
-								{
-									"name": "RATE",
-									"type": "String"
-								},
-								{
-									"name": "NAME_ORG1",
-									"type": "String"
-								},
-								{
-									"name": "NAME_ORG2",
-									"type": "String"
-								},
-								{
-									"name": "NAME_ORG3",
-									"type": "String"
-								},
-								{
-									"name": "NAME_ORG4",
-									"type": "String"
-								},
-								{
-									"name": "LEGAL_ENTY",
-									"type": "String"
-								},
-								{
-									"name": "IND_SECTOR",
-									"type": "String"
-								},
-								{
-									"name": "LEGAL_ORG",
-									"type": "String"
-								},
-								{
-									"name": "FOUND_DAT",
-									"type": "DateTime"
-								},
-								{
-									"name": "LIQUID_DAT",
-									"type": "DateTime"
-								},
-								{
-									"name": "LOCATION_1",
-									"type": "String"
-								},
-								{
-									"name": "LOCATION_2",
-									"type": "String"
-								},
-								{
-									"name": "LOCATION_3",
-									"type": "String"
-								},
-								{
-									"name": "NAME_LAST",
-									"type": "String"
-								},
-								{
-									"name": "NAME_FIRST",
-									"type": "String"
-								},
-								{
-									"name": "NAME_LST2",
-									"type": "String"
-								},
-								{
-									"name": "NAME_LAST2",
-									"type": "String"
-								},
-								{
-									"name": "NAMEMIDDLE",
-									"type": "String"
-								},
-								{
-									"name": "TITLE_ACA1",
-									"type": "String"
-								},
-								{
-									"name": "TITLE_ACA2",
-									"type": "String"
-								},
-								{
-									"name": "TITLE_ROYL",
-									"type": "String"
-								},
-								{
-									"name": "PREFIX1",
-									"type": "String"
-								},
-								{
-									"name": "PREFIX2",
-									"type": "String"
-								},
-								{
-									"name": "NAME1_TEXT",
-									"type": "String"
-								},
-								{
-									"name": "NICKNAME",
-									"type": "String"
-								},
-								{
-									"name": "INITIALS",
-									"type": "String"
-								},
-								{
-									"name": "NAMEFORMAT",
-									"type": "String"
-								},
-								{
-									"name": "NAMCOUNTRY",
-									"type": "String"
-								},
-								{
-									"name": "LANGU_CORR",
-									"type": "String"
-								},
-								{
-									"name": "XSEXM",
-									"type": "String"
-								},
-								{
-									"name": "XSEXF",
-									"type": "String"
-								},
-								{
-									"name": "BIRTHPL",
-									"type": "String"
-								},
-								{
-									"name": "MARST",
-									"type": "String"
-								},
-								{
-									"name": "EMPLO",
-									"type": "String"
-								},
-								{
-									"name": "JOBGR",
-									"type": "String"
-								},
-								{
-									"name": "NATIO",
-									"type": "String"
-								},
-								{
-									"name": "CNTAX",
-									"type": "String"
-								},
-								{
-									"name": "CNDSC",
-									"type": "String"
-								},
-								{
-									"name": "PERSNUMBER",
-									"type": "String"
-								},
-								{
-									"name": "XSEXU",
-									"type": "String"
-								},
-								{
-									"name": "XUBNAME",
-									"type": "String"
-								},
-								{
-									"name": "BU_LANGU",
-									"type": "String"
-								},
-								{
-									"name": "BIRTHDT",
-									"type": "DateTime"
-								},
-								{
-									"name": "DEATHDT",
-									"type": "DateTime"
-								},
-								{
-									"name": "PERNO",
-									"type": "String"
-								},
-								{
-									"name": "CHILDREN",
-									"type": "String"
-								},
-								{
-									"name": "MEM_HOUSE",
-									"type": "Decimal"
-								},
-								{
-									"name": "BIRTHDT_STATUS",
-									"type": "String"
-								},
-								{
-									"name": "PARTGRPTYP",
-									"type": "String"
-								},
-								{
-									"name": "NAME_GRP1",
-									"type": "String"
-								},
-								{
-									"name": "NAME_GRP2",
-									"type": "String"
-								},
-								{
-									"name": "MC_NAME1",
-									"type": "String"
-								},
-								{
-									"name": "MC_NAME2",
-									"type": "String"
-								},
-								{
-									"name": "CRUSR",
-									"type": "String"
-								},
-								{
-									"name": "CRDAT",
-									"type": "DateTime"
-								},
-								{
-									"name": "CRTIM",
-									"type": "DateTime"
-								},
-								{
-									"name": "CHUSR",
-									"type": "String"
-								},
-								{
-									"name": "CHDAT",
-									"type": "DateTime"
-								},
-								{
-									"name": "CHTIM",
-									"type": "DateTime"
-								},
-								{
-									"name": "PARTNER_GUID",
-									"type": "String"
-								},
-								{
-									"name": "ADDRCOMM",
-									"type": "String"
-								},
-								{
-									"name": "TD_SWITCH",
-									"type": "String"
-								},
-								{
-									"name": "IS_ORG_CENTRE",
-									"type": "String"
-								},
-								{
-									"name": "DB_KEY",
-									"type": "String"
-								},
-								{
-									"name": "VALID_FROM",
-									"type": "Decimal"
-								},
-								{
-									"name": "VALID_TO",
-									"type": "Decimal"
-								},
-								{
-									"name": "XPCPT",
-									"type": "String"
-								},
-								{
-									"name": "NATPERS",
-									"type": "String"
-								},
-								{
-									"name": "MILVE",
-									"type": "String"
-								},
-								{
-									"name": "NUC_SEC",
-									"type": "String"
-								},
-								{
-									"name": "PAR_REL",
-									"type": "String"
-								},
-								{
-									"name": "BP_SORT",
-									"type": "String"
-								},
-								{
-									"name": "KBANKS",
-									"type": "String"
-								},
-								{
-									"name": "KBANKL",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[T024_BLOB]"
-						}
-					}
-				]
-			},
-			{
-				"name": "T024",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "T024_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T024]\nINSERT INTO [dsa_ecu_sap].[T024]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T024_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteT024",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "T024",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T024"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/catalogo/T024"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "T024E_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "catalogo/T024E",
-							"wildcardFileName": {
-								"value": "@Concat('T024E_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T024E_BLOB]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T024E"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "EKORG",
-									"type": "String"
-								},
-								{
-									"name": "EKOTX",
-									"type": "String"
-								},
-								{
-									"name": "BUKRS",
-									"type": "String"
-								},
-								{
-									"name": "TXADR",
-									"type": "String"
-								},
-								{
-									"name": "TXKOP",
-									"type": "String"
-								},
-								{
-									"name": "TXFUS",
-									"type": "String"
-								},
-								{
-									"name": "TXGRU",
-									"type": "String"
-								},
-								{
-									"name": "KALSE",
-									"type": "String"
-								},
-								{
-									"name": "MKALS",
-									"type": "String"
-								},
-								{
-									"name": "BPEFF",
-									"type": "String"
-								},
-								{
-									"name": "BUKRS_NTR",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[T024E_BLOB]"
-						}
-					}
-				]
-			},
-			{
-				"name": "T024E",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "T024E_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T024E]\nINSERT INTO [dsa_ecu_sap].[T024E]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T024E_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteT024E",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "T024E",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T024E"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/catalogo/T024E"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "T024W_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "catalogo/T024W",
-							"wildcardFileName": {
-								"value": "@Concat('T024W_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T024W_BLOB]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T024W"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "WERKS",
-									"type": "String"
-								},
-								{
-									"name": "EKORG",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[T024W_BLOB]"
-						}
-					}
-				]
-			},
-			{
-				"name": "T024W",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "T024W_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T024W]\nINSERT INTO [dsa_ecu_sap].[T024W]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T024W_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteT024W",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "T024W",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T024W"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/catalogo/T024W"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "T683S_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "catalogo/T683S",
-							"wildcardFileName": {
-								"value": "@Concat('T683S_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[T683S_BLOB]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T683S"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_dwh",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_structure": [
-								{
-									"name": "MANDT",
-									"type": "String"
-								},
-								{
-									"name": "KVEWE",
-									"type": "String"
-								},
-								{
-									"name": "KAPPL",
-									"type": "String"
-								},
-								{
-									"name": "KALSM",
-									"type": "String"
-								},
-								{
-									"name": "STUNR",
-									"type": "String"
-								},
-								{
-									"name": "ZAEHK",
-									"type": "String"
-								},
-								{
-									"name": "KSCHL",
-									"type": "String"
-								},
-								{
-									"name": "STUNB",
-									"type": "String"
-								},
-								{
-									"name": "STUN2",
-									"type": "String"
-								},
-								{
-									"name": "KAUTO",
-									"type": "String"
-								},
-								{
-									"name": "KOBED",
-									"type": "String"
-								},
-								{
-									"name": "KZWIW",
-									"type": "String"
-								},
-								{
-									"name": "KSTAT",
-									"type": "String"
-								},
-								{
-									"name": "KOFRM",
-									"type": "String"
-								},
-								{
-									"name": "KOFRA",
-									"type": "String"
-								},
-								{
-									"name": "KVSL1",
-									"type": "String"
-								},
-								{
-									"name": "KVSL2",
-									"type": "String"
-								},
-								{
-									"name": "DRUKZ",
-									"type": "String"
-								},
-								{
-									"name": "KOBLI",
-									"type": "String"
-								},
-								{
-									"name": "IS_ACCT_DETN_RELEVANT",
-									"type": "String"
-								},
-								{
-									"name": "/SAPCEM/CONV_ME",
-									"type": "String"
-								}
-							],
-							"cw_tableName": "[dsa_ecu_sap].[T683S_BLOB]"
-						}
-					}
-				]
-			},
-			{
-				"name": "T683S",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "T683S_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[T683S]\nINSERT INTO [dsa_ecu_sap].[T683S]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[T683S_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteT683S",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "T683S",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "catalogo/T683S"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/catalogo/T683S"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
 			}
 		],
 		"parameters": {
