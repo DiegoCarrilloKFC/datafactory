@@ -3,41 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "MATDOC",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "MATDOC_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[MATDOC]\nINSERT INTO [dsa_ecu_sap].[MATDOC]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[MATDOC_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
 				"name": "FECHACARGA",
 				"type": "SetVariable",
 				"dependsOn": [],
@@ -51,115 +16,11 @@
 				}
 			},
 			{
-				"name": "MATDOC_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/MATDOC",
-							"wildcardFileName": {
-								"value": "@Concat('MATDOC_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[MATDOC_BLOB]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "produccionplanta/MATDOC"
-						}
-					}
-				]
-			},
-			{
-				"name": "MARD_BLOB",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "FECHACARGA",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/MARD",
-							"wildcardFileName": {
-								"value": "@Concat('MARD_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[MARD_BLOB]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "produccionplanta/MARD"
-						}
-					}
-				]
-			},
-			{
-				"name": "MARD",
+				"name": "AFPO",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "MARD_BLOB",
+						"activity": "AFPO_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -177,7 +38,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[MARD]\nINSERT INTO [dsa_ecu_sap].[MARD]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[MARD_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.AFPO\nINSERT INTO [dsa_ecu_sap].[AFPO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[AFPO_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -190,7 +51,53 @@
 				}
 			},
 			{
-				"name": "MCHB_BLOB",
+				"name": "DeleteAFPO",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "AFPO",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/AFPO"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/produccionplanta/AFPO"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "AFPO_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -214,9 +121,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/MCHB",
+							"wildcardFolderPath": "produccionplanta/AFPO",
 							"wildcardFileName": {
-								"value": "@Concat('MCHB_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('AFPO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -226,7 +133,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table [dsa_ecu_sap].[MCHB_BLOB]",
+						"preCopyScript": "truncate table dsa_ecu_sap.AFPO_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -236,17 +143,17 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/MCHB"
+							"cw_carpeta": "produccionplanta/AFPO"
 						}
 					}
 				]
 			},
 			{
-				"name": "MCHB",
+				"name": "AUFK",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "MCHB_BLOB",
+						"activity": "AUFK_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -264,7 +171,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE [dsa_ecu_sap].[MCHB]\nINSERT INTO [dsa_ecu_sap].[MCHB]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[MCHB_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.AUFK\nINSERT INTO [dsa_ecu_sap].[AUFK]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[AUFK_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -277,226 +184,7 @@
 				}
 			},
 			{
-				"name": "DeleteMATDOC",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "MATDOC",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "produccionplanta/MATDOC"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/produccionplanta/MATDOC"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "DeleteMARD",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "MARD",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "produccionplanta/MARD"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/produccionplanta/MARD"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "DeleteMCHB",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "MCHB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "produccionplanta/MCHB"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/produccionplanta/MCHB"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "MBEWH",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "MBEWH_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.MBEWH\nINSERT INTO [dsa_ecu_sap].[MBEWH]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[MBEWH_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteMBEWH",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "MBEWH",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "produccionplanta/MBEWH"
-						}
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "linked_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "almacenamientosap/produccionplanta/MBEWH"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"modifiedDatetimeEnd": {
-							"value": "@adddays(pipeline().TriggerTime,-7)",
-							"type": "Expression"
-						},
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
-				"name": "MBEWH_BLOB",
+				"name": "AUFK_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -520,9 +208,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/MBEWH",
+							"wildcardFolderPath": "produccionplanta/AUFK",
 							"wildcardFileName": {
-								"value": "@Concat('MBEWH_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('AUFK_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -532,7 +220,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.MBEWH_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.AUFK_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -542,52 +230,17 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/MBEWH"
+							"cw_carpeta": "produccionplanta/AUFK"
 						}
 					}
 				]
 			},
 			{
-				"name": "RSEG",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "RSEG_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.RSEG\nINSERT INTO [dsa_ecu_sap].[RSEG]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[RSEG_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteRSEG",
+				"name": "DeleteAUFK",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "RSEG",
+						"activity": "AUFK",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -606,7 +259,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/RSEG"
+							"cw_carpeta": "produccionplanta/AUFK"
 						}
 					},
 					"logStorageSettings": {
@@ -614,7 +267,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/RSEG"
+						"path": "almacenamientosap/produccionplanta/AUFK"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -629,7 +282,42 @@
 				}
 			},
 			{
-				"name": "RSEG_BLOB",
+				"name": "BKPF",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "BKPF_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.[BKPF]\nINSERT INTO [dsa_ecu_sap].[BKPF]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[BKPF_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "BKPF_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -653,9 +341,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/RSEG",
+							"wildcardFolderPath": "produccionplanta/BKPF",
 							"wildcardFileName": {
-								"value": "@Concat('RSEG_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('BKPF_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -665,7 +353,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.RSEG_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.BKPF_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -675,52 +363,17 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/RSEG"
+							"cw_carpeta": "produccionplanta/BKPF"
 						}
 					}
 				]
 			},
 			{
-				"name": "PRCD_ELEMENTS",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "PRCD_ELEMENTS_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.PRCD_ELEMENTS\nINSERT INTO [dsa_ecu_sap].[PRCD_ELEMENTS]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[PRCD_ELEMENTS_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeletePRCD_ELEMENTS",
+				"name": "DeleteBKPF",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "PRCD_ELEMENTS",
+						"activity": "BKPF",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -739,7 +392,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/PRCD_ELEMENTS"
+							"cw_carpeta": "produccionplanta/BKPF"
 						}
 					},
 					"logStorageSettings": {
@@ -747,7 +400,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/PRCD_ELEMENTS"
+						"path": "almacenamientosap/produccionplanta/BKPF"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -762,7 +415,42 @@
 				}
 			},
 			{
-				"name": "PRCD_ELEMENTS_BLOB",
+				"name": "AFRU",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "AFRU_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.[AFRU]\nINSERT INTO [dsa_ecu_sap].[AFRU]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[AFRU_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "AFRU_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -786,9 +474,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/PRCD_ELEMENTS",
+							"wildcardFolderPath": "produccionplanta/AFRU",
 							"wildcardFileName": {
-								"value": "@Concat('PRCD_ELEMENTS_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('AFRU_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -798,7 +486,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.PRCD_ELEMENTS_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.AFRU_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -808,52 +496,17 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/PRCD_ELEMENTS"
+							"cw_carpeta": "produccionplanta/AFRU"
 						}
 					}
 				]
 			},
 			{
-				"name": "EKPO",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "EKPO_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.EKPO\nINSERT INTO [dsa_ecu_sap].[EKPO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[EKPO_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteEKPO",
+				"name": "DeleteAFRU",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "EKPO",
+						"activity": "AFRU",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -872,7 +525,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKPO"
+							"cw_carpeta": "produccionplanta/AFRU"
 						}
 					},
 					"logStorageSettings": {
@@ -880,7 +533,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/EKPO"
+						"path": "almacenamientosap/produccionplanta/AFRU"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -895,7 +548,42 @@
 				}
 			},
 			{
-				"name": "EKPO_BLOB",
+				"name": "AFVC",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "AFVC_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.[AFVC]\nINSERT INTO [dsa_ecu_sap].[AFVC]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[AFVC_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "AFVC_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -919,9 +607,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/EKPO",
+							"wildcardFolderPath": "produccionplanta/AFVC",
 							"wildcardFileName": {
-								"value": "@Concat('EKPO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('AFVC_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -931,7 +619,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.EKPO_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.AFVC_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -941,52 +629,17 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKPO"
+							"cw_carpeta": "produccionplanta/AFVC"
 						}
 					}
 				]
 			},
 			{
-				"name": "EKKO",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "EKKO_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.EKKO\nINSERT INTO [dsa_ecu_sap].[EKKO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[EKKO_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "DeleteEKKO",
+				"name": "DeleteAFVC",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "EKKO",
+						"activity": "AFVC",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1005,7 +658,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKKO"
+							"cw_carpeta": "produccionplanta/AFVC"
 						}
 					},
 					"logStorageSettings": {
@@ -1013,7 +666,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/EKKO"
+						"path": "almacenamientosap/produccionplanta/AFVC"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -1028,7 +681,88 @@
 				}
 			},
 			{
-				"name": "EKKO_BLOB",
+				"name": "STATUS",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "STATUS_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.STATUS\nINSERT INTO [dsa_ecu_sap].[STATUS]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[STATUS_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteSTATUS",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "STATUS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/STATUS"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/produccionplanta/STATUS"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "STATUS_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -1052,9 +786,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/EKKO",
+							"wildcardFolderPath": "produccionplanta/STATUS",
 							"wildcardFileName": {
-								"value": "@Concat('EKKO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('STATUS_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -1064,7 +798,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.EKKO_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.STATUS_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -1074,17 +808,17 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKKO"
+							"cw_carpeta": "produccionplanta/STATUS"
 						}
 					}
 				]
 			},
 			{
-				"name": "EKBE",
+				"name": "HORAS_ACT",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "EKBE_BLOB",
+						"activity": "HORAS_ACT_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1102,7 +836,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.EKBE\nINSERT INTO [dsa_ecu_sap].[EKBE]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[EKBE_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.HORAS_ACT\nINSERT INTO [dsa_ecu_sap].[HORAS_ACT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[HORAS_ACT_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -1115,11 +849,11 @@
 				}
 			},
 			{
-				"name": "DeleteEKBE",
+				"name": "DeleteHORAS_ACT",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "EKBE",
+						"activity": "HORAS_ACT",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1138,7 +872,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKBE"
+							"cw_carpeta": "produccionplanta/HORAS_ACT"
 						}
 					},
 					"logStorageSettings": {
@@ -1146,7 +880,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/EKBE"
+						"path": "almacenamientosap/produccionplanta/HORAS_ACT"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -1161,7 +895,7 @@
 				}
 			},
 			{
-				"name": "EKBE_BLOB",
+				"name": "HORAS_ACT_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -1185,9 +919,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/EKBE",
+							"wildcardFolderPath": "produccionplanta/HORAS_ACT",
 							"wildcardFileName": {
-								"value": "@Concat('EKBE_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('HORAS_ACT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -1197,7 +931,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.EKBE_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.HORAS_ACT_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -1207,17 +941,52 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKBE"
+							"cw_carpeta": "produccionplanta/HORAS_ACT"
 						}
 					}
 				]
 			},
 			{
-				"name": "DeleteACDOCA",
+				"name": "COSS_BAK",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "COSS_BAK_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.COSS_BAK\nINSERT INTO [dsa_ecu_sap].[COSS_BAK]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[COSS_BAK_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteCOSS_BAK",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "ACDOCA",
+						"activity": "COSS_BAK",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1236,7 +1005,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "contabilidadcar/ACDOCA"
+							"cw_carpeta": "produccionplanta/COSS_BAK"
 						}
 					},
 					"logStorageSettings": {
@@ -1244,7 +1013,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/contabilidadcar/ACDOCA"
+						"path": "almacenamientosap/produccionplanta/COSS_BAK"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -1259,7 +1028,7 @@
 				}
 			},
 			{
-				"name": "RBKP_BLOB",
+				"name": "COSS_BAK_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -1283,9 +1052,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/RBKP",
+							"wildcardFolderPath": "produccionplanta/COSS_BAK",
 							"wildcardFileName": {
-								"value": "@Concat('RBKP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('COSS_BAK_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -1295,7 +1064,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.RBKP_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.COSS_BAK_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -1305,17 +1074,17 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/RBKP"
+							"cw_carpeta": "produccionplanta/COSS_BAK"
 						}
 					}
 				]
 			},
 			{
-				"name": "RBKP",
+				"name": "AFKO",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "RBKP_BLOB",
+						"activity": "AFKO_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1333,7 +1102,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.RBKP\nINSERT INTO [dsa_ecu_sap].[RBKP]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[RBKP_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.AFKO\nINSERT INTO [dsa_ecu_sap].[AFKO]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[AFKO_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -1346,11 +1115,11 @@
 				}
 			},
 			{
-				"name": "Delete RBKP",
+				"name": "DeleteAFKO",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "RBKP",
+						"activity": "AFKO",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1369,7 +1138,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/RBKP"
+							"cw_carpeta": "produccionplanta/AFKO"
 						}
 					},
 					"logStorageSettings": {
@@ -1377,7 +1146,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/RBKP"
+						"path": "almacenamientosap/produccionplanta/AFKO"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -1392,42 +1161,7 @@
 				}
 			},
 			{
-				"name": "ACDOCA",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "ACDOCA_BLOB",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.ACDOCA\nINSERT INTO [dsa_ecu_sap].[ACDOCA]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[ACDOCA_BLOB]\nSELECT 'ok' AS Resultado",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_dwh_general",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
-				"name": "ACDOCA_BLOB",
+				"name": "AFKO_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -1451,9 +1185,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "contabilidadcar/ACDOCA",
+							"wildcardFolderPath": "produccionplanta/AFKO",
 							"wildcardFileName": {
-								"value": "@Concat('ACDOCA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('AFKO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -1463,7 +1197,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.ACDOCA_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.AFKO_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -1473,17 +1207,17 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "contabilidadcar/ACDOCA"
+							"cw_carpeta": "produccionplanta/AFKO"
 						}
 					}
 				]
 			},
 			{
-				"name": "EKET",
+				"name": "AUFM",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "EKET_BLOB",
+						"activity": "AUFM_BLOB",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1501,7 +1235,7 @@
 					"source": {
 						"type": "SqlDWSource",
 						"sqlReaderQuery": {
-							"value": "TRUNCATE TABLE dsa_ecu_sap.EKET\nINSERT INTO [dsa_ecu_sap].[EKET]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[EKET_BLOB]\nSELECT 'ok' AS Resultado",
+							"value": "TRUNCATE TABLE dsa_ecu_sap.AUFM\nINSERT INTO [dsa_ecu_sap].[AUFM]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[AUFM_BLOB]\nSELECT 'ok' AS Resultado",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -1514,7 +1248,53 @@
 				}
 			},
 			{
-				"name": "EKET_BLOB",
+				"name": "DeleteAUFM",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "AUFM",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/AUFM"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/produccionplanta/AUFM"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "AUFM_BLOB",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -1538,9 +1318,9 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/EKET",
+							"wildcardFolderPath": "produccionplanta/AUFM",
 							"wildcardFileName": {
-								"value": "@Concat('EKET_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"value": "@Concat('AUFM_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
 							}
 						},
@@ -1550,7 +1330,7 @@
 					},
 					"sink": {
 						"type": "SqlDWSink",
-						"preCopyScript": "truncate table dsa_ecu_sap.EKET_BLOB",
+						"preCopyScript": "truncate table dsa_ecu_sap.AUFM_BLOB",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false
@@ -1560,17 +1340,52 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKET"
+							"cw_carpeta": "produccionplanta/AUFM"
 						}
 					}
 				]
 			},
 			{
-				"name": "DeleteEKET",
+				"name": "COSP",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "COSP_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.COSP\nINSERT INTO [dsa_ecu_sap].[COSP]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[COSP_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteCOSP",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "EKET",
+						"activity": "COSP",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1589,7 +1404,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/EKET"
+							"cw_carpeta": "produccionplanta/COSP"
 						}
 					},
 					"logStorageSettings": {
@@ -1597,7 +1412,7 @@
 							"referenceName": "linked_storage",
 							"type": "LinkedServiceReference"
 						},
-						"path": "almacenamientosap/produccionplanta/EKET"
+						"path": "almacenamientosap/produccionplanta/COSP"
 					},
 					"enableLogging": true,
 					"storeSettings": {
@@ -1610,6 +1425,58 @@
 						"enablePartitionDiscovery": false
 					}
 				}
+			},
+			{
+				"name": "COSP_BLOB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "FECHACARGA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "produccionplanta/COSP",
+							"wildcardFileName": {
+								"value": "@Concat('COSP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table dsa_ecu_sap.COSP_BLOB",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/COSP"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
