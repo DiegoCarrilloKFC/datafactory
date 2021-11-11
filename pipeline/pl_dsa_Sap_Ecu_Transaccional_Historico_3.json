@@ -225,7 +225,7 @@
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "Fecha Carga",
+						"activity": "QALS",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -473,6 +473,64 @@
 				"userProperties": [],
 				"typeProperties": {
 					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaQMTTHistorico]",
+					"storedProcedureParameters": {
+						"FechaDesde": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FechaHasta": {
+							"value": {
+								"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Pais": {
+							"value": {
+								"value": "@pipeline().parameters.Pais",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TipoCarga": {
+							"value": {
+								"value": "@pipeline().parameters.TipoCarga",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "AFVC",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "QAOP",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dsa_ecu_sap].[usp_CargaAFVCHistorico]",
 					"storedProcedureParameters": {
 						"FechaDesde": {
 							"value": {
