@@ -13,6 +13,141 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Planta_Ecu_Venta_Embutser')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Planta Ecuador",
+				"activities": [
+					{
+						"name": "cubo_FacVentaConsolidadaEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVentaConsolidadaEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cubo_FacVentaMensualConsolidadaEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_cubo",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVentaMensualConsolidadaEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "String",
+						"defaultValue": "0"
+					},
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_PlantaEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dwh_RecursosHumanos_Ecu')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -533,7 +668,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_Costos')]",
+			"name": "[concat(parameters('factoryName'), '/ds_sap_A017_BLOB')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -543,7 +678,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "dwh_General/ds_Sap"
+					"name": "dwh_General/ds_Sap/RINT"
 				},
 				"annotations": [],
 				"type": "AzureSqlDWTable",
@@ -553,11 +688,15 @@
 						"type": "String"
 					},
 					{
-						"name": "FECHACARGA",
+						"name": "KAPPL",
 						"type": "String"
 					},
 					{
-						"name": "BWKEY",
+						"name": "KSCHL",
+						"type": "String"
+					},
+					{
+						"name": "LIFNR",
 						"type": "String"
 					},
 					{
@@ -565,86 +704,1112 @@
 						"type": "String"
 					},
 					{
-						"name": "COSTO_INTERNO",
-						"type": "Decimal"
-					},
-					{
-						"name": "LBKUM",
-						"type": "Decimal"
-					},
-					{
-						"name": "UNIDAD",
+						"name": "EKORG",
 						"type": "String"
 					},
 					{
-						"name": "VALOR_PROVISIONAL",
+						"name": "WERKS",
+						"type": "String"
+					},
+					{
+						"name": "ESOKZ",
+						"type": "String"
+					},
+					{
+						"name": "DATBI",
+						"type": "String"
+					},
+					{
+						"name": "DATAB",
+						"type": "String"
+					},
+					{
+						"name": "KNUMH",
+						"type": "String"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dsa_ecu_sap].[A017_BLOB]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sap_A917_BLOB')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataset parametrizado DWH\n",
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dwh_General/ds_Sap/RINT"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"structure": [
+					{
+						"name": "MANDT",
+						"type": "String"
+					},
+					{
+						"name": "KAPPL",
+						"type": "String"
+					},
+					{
+						"name": "KSCHL",
+						"type": "String"
+					},
+					{
+						"name": "VKORG",
+						"type": "String"
+					},
+					{
+						"name": "WERKS",
+						"type": "String"
+					},
+					{
+						"name": "KUNAG",
+						"type": "String"
+					},
+					{
+						"name": "MATNR",
+						"type": "String"
+					},
+					{
+						"name": "DATBI",
+						"type": "String"
+					},
+					{
+						"name": "DATAB",
+						"type": "String"
+					},
+					{
+						"name": "KNUMH",
+						"type": "String"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dsa_ecu_sap].[A917_BLOB]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sap_ACDOCA_BLOB')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataset parametrizado DWH\n",
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dwh_General/ds_Sap/RINT"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"structure": [
+					{
+						"name": "RCLNT",
+						"type": "String"
+					},
+					{
+						"name": "RLDNR",
+						"type": "String"
+					},
+					{
+						"name": "RBUKRS",
+						"type": "String"
+					},
+					{
+						"name": "GJAHR",
+						"type": "String"
+					},
+					{
+						"name": "BELNR",
+						"type": "String"
+					},
+					{
+						"name": "DOCLN",
+						"type": "String"
+					},
+					{
+						"name": "RYEAR",
+						"type": "String"
+					},
+					{
+						"name": "DOCNR_LD",
+						"type": "String"
+					},
+					{
+						"name": "RRCTY",
+						"type": "String"
+					},
+					{
+						"name": "RMVCT",
+						"type": "String"
+					},
+					{
+						"name": "VORGN",
+						"type": "String"
+					},
+					{
+						"name": "VRGNG",
+						"type": "String"
+					},
+					{
+						"name": "BTTYPE",
+						"type": "String"
+					},
+					{
+						"name": "AWTYP",
+						"type": "String"
+					},
+					{
+						"name": "AWSYS",
+						"type": "String"
+					},
+					{
+						"name": "AWORG",
+						"type": "String"
+					},
+					{
+						"name": "AWREF",
+						"type": "String"
+					},
+					{
+						"name": "AWITEM",
+						"type": "String"
+					},
+					{
+						"name": "AWITGRP",
+						"type": "String"
+					},
+					{
+						"name": "SUBTA",
+						"type": "String"
+					},
+					{
+						"name": "XREVERSING",
+						"type": "String"
+					},
+					{
+						"name": "XREVERSED",
+						"type": "String"
+					},
+					{
+						"name": "XTRUEREV",
+						"type": "String"
+					},
+					{
+						"name": "AWTYP_REV",
+						"type": "String"
+					},
+					{
+						"name": "RACCT",
+						"type": "String"
+					},
+					{
+						"name": "RCNTR",
+						"type": "String"
+					},
+					{
+						"name": "PRCTR",
+						"type": "String"
+					},
+					{
+						"name": "RFAREA",
+						"type": "String"
+					},
+					{
+						"name": "RBUSA",
+						"type": "String"
+					},
+					{
+						"name": "KOKRS",
+						"type": "String"
+					},
+					{
+						"name": "SEGMENT",
+						"type": "String"
+					},
+					{
+						"name": "SCNTR",
+						"type": "String"
+					},
+					{
+						"name": "PPRCTR",
+						"type": "String"
+					},
+					{
+						"name": "SFAREA",
+						"type": "String"
+					},
+					{
+						"name": "SBUSA",
+						"type": "String"
+					},
+					{
+						"name": "RASSC",
+						"type": "String"
+					},
+					{
+						"name": "PSEGMENT",
+						"type": "String"
+					},
+					{
+						"name": "DRCRK",
+						"type": "String"
+					},
+					{
+						"name": "POPER",
+						"type": "String"
+					},
+					{
+						"name": "PERIV",
+						"type": "String"
+					},
+					{
+						"name": "FISCYEARPER",
+						"type": "String"
+					},
+					{
+						"name": "BUDAT",
+						"type": "String"
+					},
+					{
+						"name": "BLDAT",
+						"type": "String"
+					},
+					{
+						"name": "BLART",
+						"type": "String"
+					},
+					{
+						"name": "BUZEI",
+						"type": "String"
+					},
+					{
+						"name": "ZUONR",
+						"type": "String"
+					},
+					{
+						"name": "BSCHL",
+						"type": "String"
+					},
+					{
+						"name": "BSTAT",
+						"type": "String"
+					},
+					{
+						"name": "LINETYPE",
+						"type": "String"
+					},
+					{
+						"name": "KTOSL",
+						"type": "String"
+					},
+					{
+						"name": "SLALITTYPE",
+						"type": "String"
+					},
+					{
+						"name": "XSPLITMOD",
+						"type": "String"
+					},
+					{
+						"name": "USNAM",
+						"type": "String"
+					},
+					{
+						"name": "TIMESTAMP",
 						"type": "Decimal"
 					},
 					{
-						"name": "DIF_PRECIO",
+						"name": "EPRCTR",
+						"type": "String"
+					},
+					{
+						"name": "RHOART",
+						"type": "String"
+					},
+					{
+						"name": "GLACCOUNT_TYPE",
+						"type": "String"
+					},
+					{
+						"name": "KTOPL",
+						"type": "String"
+					},
+					{
+						"name": "LOKKT",
+						"type": "String"
+					},
+					{
+						"name": "KTOP2",
+						"type": "String"
+					},
+					{
+						"name": "REBZG",
+						"type": "String"
+					},
+					{
+						"name": "REBZJ",
+						"type": "String"
+					},
+					{
+						"name": "REBZZ",
+						"type": "String"
+					},
+					{
+						"name": "REBZT",
+						"type": "String"
+					},
+					{
+						"name": "RBEST",
+						"type": "String"
+					},
+					{
+						"name": "EBELN",
+						"type": "String"
+					},
+					{
+						"name": "EBELP",
+						"type": "String"
+					},
+					{
+						"name": "ZEKKN",
+						"type": "String"
+					},
+					{
+						"name": "SGTXT",
+						"type": "String"
+					},
+					{
+						"name": "KDAUF",
+						"type": "String"
+					},
+					{
+						"name": "KDPOS",
+						"type": "String"
+					},
+					{
+						"name": "MATNR",
+						"type": "String"
+					},
+					{
+						"name": "WERKS",
+						"type": "String"
+					},
+					{
+						"name": "LIFNR",
+						"type": "String"
+					},
+					{
+						"name": "KUNNR",
+						"type": "String"
+					},
+					{
+						"name": "FBUDA",
+						"type": "String"
+					},
+					{
+						"name": "COCO_NUM",
+						"type": "String"
+					},
+					{
+						"name": "KOART",
+						"type": "String"
+					},
+					{
+						"name": "UMSKZ",
+						"type": "String"
+					},
+					{
+						"name": "MWSKZ",
+						"type": "String"
+					},
+					{
+						"name": "HBKID",
+						"type": "String"
+					},
+					{
+						"name": "HKTID",
+						"type": "String"
+					},
+					{
+						"name": "XOPVW",
+						"type": "String"
+					},
+					{
+						"name": "AUGDT",
+						"type": "String"
+					},
+					{
+						"name": "AUGBL",
+						"type": "String"
+					},
+					{
+						"name": "AUGGJ",
+						"type": "String"
+					},
+					{
+						"name": "AFABE",
+						"type": "String"
+					},
+					{
+						"name": "ANLN1",
+						"type": "String"
+					},
+					{
+						"name": "ANLN2",
+						"type": "String"
+					},
+					{
+						"name": "BZDAT",
+						"type": "String"
+					},
+					{
+						"name": "ANBWA",
+						"type": "String"
+					},
+					{
+						"name": "MOVCAT",
+						"type": "String"
+					},
+					{
+						"name": "DEPR_PERIOD",
+						"type": "String"
+					},
+					{
+						"name": "ANLGR",
+						"type": "String"
+					},
+					{
+						"name": "ANLGR2",
+						"type": "String"
+					},
+					{
+						"name": "SETTLEMENT_RULE",
+						"type": "String"
+					},
+					{
+						"name": "ANLKL",
+						"type": "String"
+					},
+					{
+						"name": "KTOGR",
+						"type": "String"
+					},
+					{
+						"name": "PANL1",
+						"type": "String"
+					},
+					{
+						"name": "PANL2",
+						"type": "String"
+					},
+					{
+						"name": "UBZDT_PN",
+						"type": "String"
+					},
+					{
+						"name": "XVABG_PN",
+						"type": "String"
+					},
+					{
+						"name": "PROZS_PN",
 						"type": "Decimal"
 					},
 					{
-						"name": "LFGJA",
-						"type": "Int32"
+						"name": "XMANPROPVAL_PN",
+						"type": "String"
 					},
 					{
-						"name": "LFMON",
-						"type": "Int32"
+						"name": "OBJNR",
+						"type": "String"
 					},
 					{
-						"name": "VALOR_STOCK",
+						"name": "HRKFT",
+						"type": "String"
+					},
+					{
+						"name": "HKGRP",
+						"type": "String"
+					},
+					{
+						"name": "PAROB1",
+						"type": "String"
+					},
+					{
+						"name": "PAROBSRC",
+						"type": "String"
+					},
+					{
+						"name": "USPOB",
+						"type": "String"
+					},
+					{
+						"name": "CO_BELKZ",
+						"type": "String"
+					},
+					{
+						"name": "CO_BEKNZ",
+						"type": "String"
+					},
+					{
+						"name": "BELTP",
+						"type": "String"
+					},
+					{
+						"name": "MUVFLG",
+						"type": "String"
+					},
+					{
+						"name": "GKONT",
+						"type": "String"
+					},
+					{
+						"name": "GKOAR",
+						"type": "String"
+					},
+					{
+						"name": "ERLKZ",
+						"type": "String"
+					},
+					{
+						"name": "PERNR",
+						"type": "String"
+					},
+					{
+						"name": "PAOBJNR",
+						"type": "String"
+					},
+					{
+						"name": "XPAOBJNR_CO_REL",
+						"type": "String"
+					},
+					{
+						"name": "SCOPE",
+						"type": "String"
+					},
+					{
+						"name": "LOGSYSO",
+						"type": "String"
+					},
+					{
+						"name": "PBUKRS",
+						"type": "String"
+					},
+					{
+						"name": "PSCOPE",
+						"type": "String"
+					},
+					{
+						"name": "LOGSYSP",
+						"type": "String"
+					},
+					{
+						"name": "BWSTRAT",
+						"type": "String"
+					},
+					{
+						"name": "OBJNR_HK",
+						"type": "String"
+					},
+					{
+						"name": "AUFNR_ORG",
+						"type": "String"
+					},
+					{
+						"name": "UKOSTL",
+						"type": "String"
+					},
+					{
+						"name": "ULSTAR",
+						"type": "String"
+					},
+					{
+						"name": "UPRZNR",
+						"type": "String"
+					},
+					{
+						"name": "UPRCTR",
+						"type": "String"
+					},
+					{
+						"name": "ACCAS",
+						"type": "String"
+					},
+					{
+						"name": "ACCASTY",
+						"type": "String"
+					},
+					{
+						"name": "LSTAR",
+						"type": "String"
+					},
+					{
+						"name": "AUFNR",
+						"type": "String"
+					},
+					{
+						"name": "AUTYP",
+						"type": "String"
+					},
+					{
+						"name": "PS_PSP_PNR",
+						"type": "String"
+					},
+					{
+						"name": "PS_POSID",
+						"type": "String"
+					},
+					{
+						"name": "PS_PRJ_PNR",
+						"type": "String"
+					},
+					{
+						"name": "PS_PSPID",
+						"type": "String"
+					},
+					{
+						"name": "NPLNR",
+						"type": "String"
+					},
+					{
+						"name": "NPLNR_VORGN",
+						"type": "String"
+					},
+					{
+						"name": "PRZNR",
+						"type": "String"
+					},
+					{
+						"name": "KSTRG",
+						"type": "String"
+					},
+					{
+						"name": "BEMOT",
+						"type": "String"
+					},
+					{
+						"name": "RSRCE",
+						"type": "String"
+					},
+					{
+						"name": "QMNUM",
+						"type": "String"
+					},
+					{
+						"name": "ERKRS",
+						"type": "String"
+					},
+					{
+						"name": "PACCAS",
+						"type": "String"
+					},
+					{
+						"name": "PACCASTY",
+						"type": "String"
+					},
+					{
+						"name": "PLSTAR",
+						"type": "String"
+					},
+					{
+						"name": "PAUFNR",
+						"type": "String"
+					},
+					{
+						"name": "PAUTYP",
+						"type": "String"
+					},
+					{
+						"name": "PPS_PSP_PNR",
+						"type": "String"
+					},
+					{
+						"name": "PPS_POSID",
+						"type": "String"
+					},
+					{
+						"name": "PPS_PRJ_PNR",
+						"type": "String"
+					},
+					{
+						"name": "PPS_PSPID",
+						"type": "String"
+					},
+					{
+						"name": "PKDAUF",
+						"type": "String"
+					},
+					{
+						"name": "PKDPOS",
+						"type": "String"
+					},
+					{
+						"name": "PPAOBJNR",
+						"type": "String"
+					},
+					{
+						"name": "PNPLNR",
+						"type": "String"
+					},
+					{
+						"name": "PNPLNR_VORGN",
+						"type": "String"
+					},
+					{
+						"name": "PPRZNR",
+						"type": "String"
+					},
+					{
+						"name": "PKSTRG",
+						"type": "String"
+					},
+					{
+						"name": "CO_ACCASTY_N1",
+						"type": "String"
+					},
+					{
+						"name": "CO_ACCASTY_N2",
+						"type": "String"
+					},
+					{
+						"name": "CO_ACCASTY_N3",
+						"type": "String"
+					},
+					{
+						"name": "CO_ZLENR",
+						"type": "String"
+					},
+					{
+						"name": "CO_BELNR",
+						"type": "String"
+					},
+					{
+						"name": "CO_BUZEI",
+						"type": "String"
+					},
+					{
+						"name": "CO_BUZEI1",
+						"type": "String"
+					},
+					{
+						"name": "CO_BUZEI2",
+						"type": "String"
+					},
+					{
+						"name": "CO_BUZEI5",
+						"type": "String"
+					},
+					{
+						"name": "CO_BUZEI6",
+						"type": "String"
+					},
+					{
+						"name": "CO_BUZEI7",
+						"type": "String"
+					},
+					{
+						"name": "CO_REFBZ",
+						"type": "String"
+					},
+					{
+						"name": "CO_REFBZ1",
+						"type": "String"
+					},
+					{
+						"name": "CO_REFBZ2",
+						"type": "String"
+					},
+					{
+						"name": "CO_REFBZ5",
+						"type": "String"
+					},
+					{
+						"name": "CO_REFBZ6",
+						"type": "String"
+					},
+					{
+						"name": "CO_REFBZ7",
+						"type": "String"
+					},
+					{
+						"name": "WORK_ITEM_ID",
+						"type": "String"
+					},
+					{
+						"name": "VORNR",
+						"type": "String"
+					},
+					{
+						"name": "AUFPS",
+						"type": "String"
+					},
+					{
+						"name": "UVORN",
+						"type": "String"
+					},
+					{
+						"name": "EQUNR",
+						"type": "String"
+					},
+					{
+						"name": "TPLNR",
+						"type": "String"
+					},
+					{
+						"name": "ISTRU",
+						"type": "String"
+					},
+					{
+						"name": "ILART",
+						"type": "String"
+					},
+					{
+						"name": "PLKNZ",
+						"type": "String"
+					},
+					{
+						"name": "ARTPR",
+						"type": "String"
+					},
+					{
+						"name": "PRIOK",
+						"type": "String"
+					},
+					{
+						"name": "MAUFNR",
+						"type": "String"
+					},
+					{
+						"name": "MATKL_MM",
+						"type": "String"
+					},
+					{
+						"name": "PLANNED_PARTS_WORK",
+						"type": "String"
+					},
+					{
+						"name": "FKART",
+						"type": "String"
+					},
+					{
+						"name": "VKORG",
+						"type": "String"
+					},
+					{
+						"name": "VTWEG",
+						"type": "String"
+					},
+					{
+						"name": "SPART",
+						"type": "String"
+					},
+					{
+						"name": "MATNR_COPA",
+						"type": "String"
+					},
+					{
+						"name": "MATKL",
+						"type": "String"
+					},
+					{
+						"name": "KDGRP",
+						"type": "String"
+					},
+					{
+						"name": "LAND1",
+						"type": "String"
+					},
+					{
+						"name": "BRSCH",
+						"type": "String"
+					},
+					{
+						"name": "BZIRK",
+						"type": "String"
+					},
+					{
+						"name": "KUNRE",
+						"type": "String"
+					},
+					{
+						"name": "KUNWE",
+						"type": "String"
+					},
+					{
+						"name": "KONZS",
+						"type": "String"
+					},
+					{
+						"name": "TSL",
 						"type": "Decimal"
+					},
+					{
+						"name": "WSL",
+						"type": "Decimal"
+					},
+					{
+						"name": "WSL2",
+						"type": "Decimal"
+					},
+					{
+						"name": "WSL3",
+						"type": "Decimal"
+					},
+					{
+						"name": "HSL",
+						"type": "Decimal"
+					},
+					{
+						"name": "KSL",
+						"type": "Decimal"
+					},
+					{
+						"name": "KALNR",
+						"type": "String"
 					},
 					{
 						"name": "VPRSV",
 						"type": "String"
 					},
 					{
-						"name": "PRECIO_ESTANDAR",
+						"name": "MLAST",
+						"type": "String"
+					},
+					{
+						"name": "KZBWS",
+						"type": "String"
+					},
+					{
+						"name": "XOBEW",
+						"type": "String"
+					},
+					{
+						"name": "SOBKZ",
+						"type": "String"
+					},
+					{
+						"name": "VTSTAMP",
 						"type": "Decimal"
 					},
 					{
-						"name": "TOTAL_MATERIAL",
+						"name": "MAT_KDAUF",
+						"type": "String"
+					},
+					{
+						"name": "MAT_KDPOS",
+						"type": "String"
+					},
+					{
+						"name": "MAT_PSPNR",
+						"type": "String"
+					},
+					{
+						"name": "MAT_PS_POSID",
+						"type": "String"
+					},
+					{
+						"name": "MAT_LIFNR",
+						"type": "String"
+					},
+					{
+						"name": "BWTAR",
+						"type": "String"
+					},
+					{
+						"name": "BWKEY",
+						"type": "String"
+					},
+					{
+						"name": "HPEINH",
 						"type": "Decimal"
 					},
 					{
-						"name": "MANO_OBRA_TOTAL",
+						"name": "KPEINH",
 						"type": "Decimal"
 					},
 					{
-						"name": "CIF_TOTAL",
+						"name": "OPEINH",
 						"type": "Decimal"
 					},
 					{
-						"name": "DEPRE_TOTAL",
+						"name": "VPEINH",
 						"type": "Decimal"
 					},
 					{
-						"name": "MATERIALES_COSTO",
+						"name": "MLPTYP",
+						"type": "String"
+					},
+					{
+						"name": "MLCATEG",
+						"type": "String"
+					},
+					{
+						"name": "QSBVALT",
+						"type": "String"
+					},
+					{
+						"name": "QSPROCESS",
+						"type": "String"
+					},
+					{
+						"name": "PERART",
+						"type": "String"
+					},
+					{
+						"name": "MLPOSNR",
+						"type": "String"
+					},
+					{
+						"name": "MSL",
 						"type": "Decimal"
 					},
 					{
-						"name": "MANO_OBRA_COSTO",
+						"name": "MFSL",
 						"type": "Decimal"
 					},
 					{
-						"name": "CIF_COSTO",
+						"name": "VMSL",
 						"type": "Decimal"
 					},
 					{
-						"name": "DEPRECIACION_COSTO",
+						"name": "VMFSL",
+						"type": "Decimal"
+					},
+					{
+						"name": "RMSL",
+						"type": "Decimal"
+					},
+					{
+						"name": "QUANT1",
+						"type": "Decimal"
+					},
+					{
+						"name": "QUANT2",
+						"type": "Decimal"
+					},
+					{
+						"name": "QUANT3",
 						"type": "Decimal"
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[Costos]"
+					"tableName": "[[dsa_ecu_sap].[ACDOCA_BLOB]"
 				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_DocumentoEntrega')]",
+			"name": "[concat(parameters('factoryName'), '/ds_sap_AFKO_BLOB')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -654,326 +1819,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "dwh_General/ds_Sap"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"structure": [
-					{
-						"name": "FECHACARGA",
-						"type": "String"
-					},
-					{
-						"name": "MANDT",
-						"type": "String"
-					},
-					{
-						"name": "DELIVERYDOCUMENT",
-						"type": "String"
-					},
-					{
-						"name": "SDDOCUMENTCATEGORY",
-						"type": "String"
-					},
-					{
-						"name": "DELIVERYDOCUMENTTYPE",
-						"type": "String"
-					},
-					{
-						"name": "CREATEDBYUSER",
-						"type": "String"
-					},
-					{
-						"name": "CREATIONDATE",
-						"type": "String"
-					},
-					{
-						"name": "CREATIONTIME",
-						"type": "String"
-					},
-					{
-						"name": "LASTCHANGEDBYUSER",
-						"type": "String"
-					},
-					{
-						"name": "LASTCHANGEDATE",
-						"type": "String"
-					},
-					{
-						"name": "SALESORGANIZATION",
-						"type": "String"
-					},
-					{
-						"name": "SUPPLIER",
-						"type": "String"
-					},
-					{
-						"name": "DELIVERYDOCUMENTBYSUPPLIER",
-						"type": "String"
-					},
-					{
-						"name": "RECEIVINGPLANT",
-						"type": "String"
-					},
-					{
-						"name": "WAREHOUSE",
-						"type": "String"
-					},
-					{
-						"name": "DOCUMENTDATE",
-						"type": "String"
-					},
-					{
-						"name": "SHIPTOPARTY",
-						"type": "String"
-					},
-					{
-						"name": "DELIVERYDATE",
-						"type": "String"
-					},
-					{
-						"name": "DELIVERYTIME",
-						"type": "String"
-					},
-					{
-						"name": "BILLINGDOCUMENTDATE",
-						"type": "String"
-					},
-					{
-						"name": "SOLDTOPARTY",
-						"type": "String"
-					},
-					{
-						"name": "CUSTOMERGROUP",
-						"type": "String"
-					},
-					{
-						"name": "TRANSACTIONCURRENCY",
-						"type": "String"
-					},
-					{
-						"name": "OVERALLGOODSMOVEMENTSTATUS",
-						"type": "String"
-					},
-					{
-						"name": "DELIVERYDOCUMENTITEM",
-						"type": "Int32"
-					},
-					{
-						"name": "DELIVERYDOCUMENTITEMCATEGORY",
-						"type": "String"
-					},
-					{
-						"name": "SALESGROUP",
-						"type": "String"
-					},
-					{
-						"name": "MATERIAL",
-						"type": "String"
-					},
-					{
-						"name": "MATERIALGROUP",
-						"type": "String"
-					},
-					{
-						"name": "PLANT",
-						"type": "String"
-					},
-					{
-						"name": "STORAGELOCATION",
-						"type": "String"
-					},
-					{
-						"name": "DELIVERYDOCUMENTITEMTEXT",
-						"type": "String"
-					},
-					{
-						"name": "ORIGINALDELIVERYQUANTITY",
-						"type": "Decimal"
-					},
-					{
-						"name": "DELIVERYQUANTITYUNIT",
-						"type": "String"
-					},
-					{
-						"name": "ACTUALDELIVEREDQTYINBASEUNIT",
-						"type": "Decimal"
-					},
-					{
-						"name": "BASEUNIT",
-						"type": "String"
-					},
-					{
-						"name": "GLACCOUNT",
-						"type": "String"
-					},
-					{
-						"name": "ISCOMPLETELYDELIVERED",
-						"type": "String"
-					},
-					{
-						"name": "GOODSMOVEMENTTYPE",
-						"type": "String"
-					},
-					{
-						"name": "RECEIVINGPOINT",
-						"type": "String"
-					},
-					{
-						"name": "INTERCOMPANYBILLINGSTATUS",
-						"type": "String"
-					},
-					{
-						"name": "PROFITCENTER",
-						"type": "String"
-					},
-					{
-						"name": "COSTCENTER",
-						"type": "String"
-					},
-					{
-						"name": "REFERENCESDDOCUMENT",
-						"type": "String"
-					},
-					{
-						"name": "REFERENCESDDOCUMENTITEM",
-						"type": "Int32"
-					},
-					{
-						"name": "REFERENCESDDOCUMENTCATEGORY",
-						"type": "String"
-					},
-					{
-						"name": "SDPROCESSSTATUS",
-						"type": "String"
-					},
-					{
-						"name": "GOODSMOVEMENTSTATUS",
-						"type": "String"
-					},
-					{
-						"name": "ORIGINSDDOCUMENT",
-						"type": "String"
-					},
-					{
-						"name": "SDDOCUMENTITEM",
-						"type": "Int32"
-					},
-					{
-						"name": "MATERIALTYPEPRIMARY",
-						"type": "String"
-					},
-					{
-						"name": "SHIPPINGPOINT",
-						"type": "String"
-					},
-					{
-						"name": "CREATIONDATELINE",
-						"type": "String"
-					},
-					{
-						"name": "LASTCHANGEDATELINE",
-						"type": "String"
-					}
-				],
-				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[documentoentrega]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_FacturaCompra')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Dataset parametrizado DWH\n",
-				"linkedServiceName": {
-					"referenceName": "linked_dwh",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "dwh_General/ds_Sap"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[FacturaCompra]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_FacturaInterlocutor')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Dataset parametrizado DWH\n",
-				"linkedServiceName": {
-					"referenceName": "linked_dwh",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "dwh_General/ds_Sap"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"structure": [
-					{
-						"name": "FECHACARGA",
-						"type": "String"
-					},
-					{
-						"name": "MANDT",
-						"type": "String"
-					},
-					{
-						"name": "BILLINGDOCUMENT",
-						"type": "String"
-					},
-					{
-						"name": "CUSTOMER",
-						"type": "String"
-					},
-					{
-						"name": "PARTNERFUNCTION",
-						"type": "String"
-					},
-					{
-						"name": "SUPPLIER",
-						"type": "String"
-					},
-					{
-						"name": "ADDRESSID",
-						"type": "String"
-					},
-					{
-						"name": "PERSONNEL",
-						"type": "String"
-					},
-					{
-						"name": "CONTACTPERSON",
-						"type": "String"
-					}
-				],
-				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[facturainterlocutor]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_FacturaVenta')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Dataset parametrizado DWH\n",
-				"linkedServiceName": {
-					"referenceName": "linked_dwh",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "dwh_General/ds_Sap"
+					"name": "dwh_General/ds_Sap/RINT"
 				},
 				"annotations": [],
 				"type": "AzureSqlDWTable",
@@ -983,210 +1829,686 @@
 						"type": "String"
 					},
 					{
-						"name": "BILLINGDOCUMENT",
+						"name": "AUFNR",
 						"type": "String"
 					},
 					{
-						"name": "SDDOCUMENTCATEGORY",
+						"name": "GLTRP",
 						"type": "String"
 					},
 					{
-						"name": "BILLINGDOCUMENTCATEGORY",
+						"name": "GSTRP",
 						"type": "String"
 					},
 					{
-						"name": "BILLINGDOCUMENTTYPE",
+						"name": "FTRMS",
 						"type": "String"
 					},
 					{
-						"name": "CREATEDBYUSER",
+						"name": "GLTRS",
 						"type": "String"
 					},
 					{
-						"name": "FECHACARGA",
+						"name": "GSTRS",
 						"type": "String"
 					},
 					{
-						"name": "CREATIONTIME",
+						"name": "GSTRI",
 						"type": "String"
 					},
 					{
-						"name": "LASTCHANGEDATETIME",
+						"name": "GETRI",
 						"type": "String"
 					},
 					{
-						"name": "CREATIONDATE",
+						"name": "GLTRI",
 						"type": "String"
 					},
 					{
-						"name": "SALESORGANIZATION",
+						"name": "FTRMI",
 						"type": "String"
 					},
 					{
-						"name": "BILLINGDOCUMENTDATE",
+						"name": "FTRMP",
 						"type": "String"
 					},
 					{
-						"name": "BILLINGDOCUMENTISCANCELLED",
+						"name": "RSNUM",
 						"type": "String"
 					},
 					{
-						"name": "CANCELLEDBILLINGDOCUMENT",
+						"name": "GASMG",
+						"type": "Decimal"
+					},
+					{
+						"name": "GAMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "GMEIN",
 						"type": "String"
 					},
 					{
-						"name": "PAYMENTMETHOD",
+						"name": "PLNBEZ",
 						"type": "String"
 					},
 					{
-						"name": "COMPANYCODE",
+						"name": "PLNTY",
 						"type": "String"
 					},
 					{
-						"name": "ACCOUNTINGDOCUMENT",
+						"name": "PLNNR",
 						"type": "String"
 					},
 					{
-						"name": "SOLDTOPARTY",
+						"name": "PLNAW",
 						"type": "String"
 					},
 					{
-						"name": "CUSTOMERGROUP",
+						"name": "PLNAL",
 						"type": "String"
 					},
 					{
-						"name": "COUNTRY",
+						"name": "PVERW",
 						"type": "String"
 					},
 					{
-						"name": "BILLINGDOCUMENTITEM",
+						"name": "PLAUF",
+						"type": "String"
+					},
+					{
+						"name": "PLSVB",
+						"type": "Decimal"
+					},
+					{
+						"name": "PLNME",
+						"type": "String"
+					},
+					{
+						"name": "PLSVN",
+						"type": "Decimal"
+					},
+					{
+						"name": "PDATV",
+						"type": "String"
+					},
+					{
+						"name": "PAENR",
+						"type": "String"
+					},
+					{
+						"name": "PLGRP",
+						"type": "String"
+					},
+					{
+						"name": "LODIV",
+						"type": "Decimal"
+					},
+					{
+						"name": "STLTY",
+						"type": "String"
+					},
+					{
+						"name": "STLBEZ",
+						"type": "String"
+					},
+					{
+						"name": "STLST",
+						"type": "String"
+					},
+					{
+						"name": "STLNR",
+						"type": "String"
+					},
+					{
+						"name": "SDATV",
+						"type": "String"
+					},
+					{
+						"name": "SBMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "SBMEH",
+						"type": "String"
+					},
+					{
+						"name": "SAENR",
+						"type": "String"
+					},
+					{
+						"name": "STLAL",
+						"type": "String"
+					},
+					{
+						"name": "STLAN",
+						"type": "String"
+					},
+					{
+						"name": "SLSVN",
+						"type": "Decimal"
+					},
+					{
+						"name": "SLSBS",
+						"type": "Decimal"
+					},
+					{
+						"name": "AUFLD",
+						"type": "String"
+					},
+					{
+						"name": "DISPO",
+						"type": "String"
+					},
+					{
+						"name": "AUFPL",
+						"type": "String"
+					},
+					{
+						"name": "FEVOR",
+						"type": "String"
+					},
+					{
+						"name": "FHORI",
+						"type": "String"
+					},
+					{
+						"name": "TERKZ",
+						"type": "String"
+					},
+					{
+						"name": "REDKZ",
+						"type": "String"
+					},
+					{
+						"name": "APRIO",
+						"type": "String"
+					},
+					{
+						"name": "NTZUE",
+						"type": "String"
+					},
+					{
+						"name": "VORUE",
+						"type": "String"
+					},
+					{
+						"name": "PROFID",
+						"type": "String"
+					},
+					{
+						"name": "VORGZ",
+						"type": "String"
+					},
+					{
+						"name": "SICHZ",
+						"type": "String"
+					},
+					{
+						"name": "FREIZ",
+						"type": "String"
+					},
+					{
+						"name": "UPTER",
+						"type": "String"
+					},
+					{
+						"name": "BEDID",
+						"type": "String"
+					},
+					{
+						"name": "PRONR",
+						"type": "String"
+					},
+					{
+						"name": "ZAEHL",
+						"type": "String"
+					},
+					{
+						"name": "MZAEHL",
+						"type": "String"
+					},
+					{
+						"name": "ZKRIZ",
+						"type": "String"
+					},
+					{
+						"name": "PRUEFLOS",
+						"type": "String"
+					},
+					{
+						"name": "KLVARP",
+						"type": "String"
+					},
+					{
+						"name": "KLVARI",
+						"type": "String"
+					},
+					{
+						"name": "RGEKZ",
+						"type": "String"
+					},
+					{
+						"name": "PLART",
+						"type": "String"
+					},
+					{
+						"name": "FLG_AOB",
+						"type": "String"
+					},
+					{
+						"name": "FLG_ARBEI",
+						"type": "String"
+					},
+					{
+						"name": "GLTPP",
+						"type": "String"
+					},
+					{
+						"name": "GSTPP",
+						"type": "String"
+					},
+					{
+						"name": "GLTPS",
+						"type": "String"
+					},
+					{
+						"name": "GSTPS",
+						"type": "String"
+					},
+					{
+						"name": "FTRPS",
+						"type": "String"
+					},
+					{
+						"name": "RDKZP",
+						"type": "String"
+					},
+					{
+						"name": "TRKZP",
+						"type": "String"
+					},
+					{
+						"name": "RUECK",
+						"type": "String"
+					},
+					{
+						"name": "RMZHL",
+						"type": "String"
+					},
+					{
+						"name": "IGMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "RATID",
+						"type": "String"
+					},
+					{
+						"name": "GROID",
+						"type": "String"
+					},
+					{
+						"name": "CUOBJ",
+						"type": "String"
+					},
+					{
+						"name": "GLUZS",
+						"type": "String"
+					},
+					{
+						"name": "GSUZS",
+						"type": "String"
+					},
+					{
+						"name": "REVLV",
+						"type": "String"
+					},
+					{
+						"name": "RSHTY",
+						"type": "String"
+					},
+					{
+						"name": "RSHID",
+						"type": "String"
+					},
+					{
+						"name": "RSNTY",
+						"type": "String"
+					},
+					{
+						"name": "RSNID",
+						"type": "String"
+					},
+					{
+						"name": "NAUTERM",
+						"type": "String"
+					},
+					{
+						"name": "NAUCOST",
+						"type": "String"
+					},
+					{
+						"name": "STUFE",
+						"type": "Decimal"
+					},
+					{
+						"name": "WEGXX",
+						"type": "Decimal"
+					},
+					{
+						"name": "VWEGX",
+						"type": "Decimal"
+					},
+					{
+						"name": "ARSNR",
+						"type": "String"
+					},
+					{
+						"name": "ARSPS",
+						"type": "String"
+					},
+					{
+						"name": "MAUFNR",
+						"type": "String"
+					},
+					{
+						"name": "LKNOT",
+						"type": "String"
+					},
+					{
+						"name": "RKNOT",
+						"type": "String"
+					},
+					{
+						"name": "PRODNET",
+						"type": "String"
+					},
+					{
+						"name": "IASMG",
+						"type": "Decimal"
+					},
+					{
+						"name": "ABARB",
+						"type": "String"
+					},
+					{
+						"name": "AUFNT",
+						"type": "String"
+					},
+					{
+						"name": "AUFPT",
+						"type": "String"
+					},
+					{
+						"name": "APLZT",
+						"type": "String"
+					},
+					{
+						"name": "NO_DISP",
+						"type": "String"
+					},
+					{
+						"name": "CSPLIT",
+						"type": "String"
+					},
+					{
+						"name": "AENNR",
+						"type": "String"
+					},
+					{
+						"name": "CY_SEQNR",
+						"type": "String"
+					},
+					{
+						"name": "BREAKS",
+						"type": "String"
+					},
+					{
+						"name": "VORGZ_TRM",
+						"type": "Decimal"
+					},
+					{
+						"name": "SICHZ_TRM",
+						"type": "Decimal"
+					},
+					{
+						"name": "TRMDT",
+						"type": "String"
+					},
+					{
+						"name": "GLUZP",
+						"type": "String"
+					},
+					{
+						"name": "GSUZP",
+						"type": "String"
+					},
+					{
+						"name": "GSUZI",
+						"type": "String"
+					},
+					{
+						"name": "GEUZI",
+						"type": "String"
+					},
+					{
+						"name": "GLUPP",
+						"type": "String"
+					},
+					{
+						"name": "GSUPP",
+						"type": "String"
+					},
+					{
+						"name": "GLUPS",
+						"type": "String"
+					},
+					{
+						"name": "GSUPS",
+						"type": "String"
+					},
+					{
+						"name": "CHSCH",
+						"type": "String"
+					},
+					{
+						"name": "KAPT_VORGZ",
+						"type": "String"
+					},
+					{
+						"name": "KAPT_SICHZ",
+						"type": "String"
+					},
+					{
+						"name": "LEAD_AUFNR",
+						"type": "String"
+					},
+					{
+						"name": "PNETSTARTD",
+						"type": "String"
+					},
+					{
+						"name": "PNETSTARTT",
+						"type": "String"
+					},
+					{
+						"name": "PNETENDD",
+						"type": "String"
+					},
+					{
+						"name": "PNETENDT",
+						"type": "String"
+					},
+					{
+						"name": "KBED",
+						"type": "String"
+					},
+					{
+						"name": "KKALKR",
+						"type": "String"
+					},
+					{
+						"name": "SFCPF",
+						"type": "String"
+					},
+					{
+						"name": "RMNGA",
+						"type": "Decimal"
+					},
+					{
+						"name": "GSBTR",
+						"type": "String"
+					},
+					{
+						"name": "VFMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "NOPCOST",
+						"type": "String"
+					},
+					{
+						"name": "NETZKONT",
+						"type": "String"
+					},
+					{
+						"name": "ATRKZ",
+						"type": "String"
+					},
+					{
+						"name": "OBJTYPE",
+						"type": "String"
+					},
+					{
+						"name": "CH_PROC",
+						"type": "String"
+					},
+					{
+						"name": "KAPVERSA",
+						"type": "String"
+					},
+					{
+						"name": "COLORDPROC",
+						"type": "String"
+					},
+					{
+						"name": "KZERB",
+						"type": "String"
+					},
+					{
+						"name": "CONF_KEY",
+						"type": "String"
+					},
+					{
+						"name": "ST_ARBID",
+						"type": "String"
+					},
+					{
+						"name": "VSNMR_V",
+						"type": "String"
+					},
+					{
+						"name": "TERHW",
+						"type": "String"
+					},
+					{
+						"name": "SPLSTAT",
+						"type": "String"
+					},
+					{
+						"name": "COSTUPD",
+						"type": "String"
+					},
+					{
+						"name": "MAX_GAMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "MES_ROUTINGID",
+						"type": "String"
+					},
+					{
+						"name": "TL_VERSN",
+						"type": "String"
+					},
+					{
+						"name": "BOM_VERSN",
+						"type": "String"
+					},
+					{
+						"name": "ADPSP",
+						"type": "String"
+					},
+					{
+						"name": "RMANR",
+						"type": "String"
+					},
+					{
+						"name": "POSNR_RMA",
+						"type": "String"
+					},
+					{
+						"name": "POSNV_RMA",
+						"type": "String"
+					},
+					{
+						"name": "CFB_MAXLZ",
+						"type": "Decimal"
+					},
+					{
+						"name": "CFB_LZEIH",
+						"type": "String"
+					},
+					{
+						"name": "CFB_ADTDAYS",
+						"type": "Decimal"
+					},
+					{
+						"name": "CFB_DATOFM",
+						"type": "String"
+					},
+					{
+						"name": "CFB_BBDPI",
+						"type": "String"
+					},
+					{
+						"name": "OIHANTYP",
+						"type": "String"
+					},
+					{
+						"name": "FSH_MPROD_ORD",
+						"type": "String"
+					},
+					{
+						"name": "FLG_BUNDLE",
+						"type": "String"
+					},
+					{
+						"name": "MILL_RATIO",
 						"type": "Int32"
 					},
 					{
-						"name": "SALESDOCUMENTITEMCATEGORY",
+						"name": "BMEINS",
 						"type": "String"
 					},
 					{
-						"name": "MATERIAL",
-						"type": "String"
-					},
-					{
-						"name": "MATERIALGROUP",
-						"type": "String"
-					},
-					{
-						"name": "PLANT",
-						"type": "String"
-					},
-					{
-						"name": "STORAGELOCATION",
-						"type": "String"
-					},
-					{
-						"name": "BILLINGQUANTITY",
+						"name": "BMENGE",
 						"type": "Decimal"
 					},
 					{
-						"name": "BILLINGQUANTITYUNIT",
+						"name": "MILL_OC_ZUSKZ",
 						"type": "String"
-					},
-					{
-						"name": "BILLINGQUANTITYINBASEUNIT",
-						"type": "Decimal"
-					},
-					{
-						"name": "BASEUNIT",
-						"type": "String"
-					},
-					{
-						"name": "BILLTOPARTYCOUNTRY",
-						"type": "String"
-					},
-					{
-						"name": "NETAMOUNT",
-						"type": "Decimal"
-					},
-					{
-						"name": "TRANSACTIONCURRENCY",
-						"type": "String"
-					},
-					{
-						"name": "GROSSAMOUNT",
-						"type": "Decimal"
-					},
-					{
-						"name": "COSTAMOUNT",
-						"type": "Decimal"
-					},
-					{
-						"name": "DEPARTURECOUNTRY",
-						"type": "String"
-					},
-					{
-						"name": "PROFITCENTER",
-						"type": "String"
-					},
-					{
-						"name": "COSTCENTER",
-						"type": "String"
-					},
-					{
-						"name": "REFERENCESDDOCUMENT",
-						"type": "String"
-					},
-					{
-						"name": "REFERENCESDDOCUMENTITEM",
-						"type": "Int32"
-					},
-					{
-						"name": "SALESDOCUMENT",
-						"type": "String"
-					},
-					{
-						"name": "SALESDOCUMENTITEM",
-						"type": "Int32"
-					},
-					{
-						"name": "SALESGROUP",
-						"type": "String"
-					},
-					{
-						"name": "SALESORDERSALESORGANIZATION",
-						"type": "String"
-					},
-					{
-						"name": "LASTCHANGEDATE",
-						"type": "String"
-					},
-					{
-						"name": "OVERALLSDPROCESSSTATUS",
-						"type": "String"
-					},
-					{
-						"name": "OVERALLBILLINGSTATUS",
-						"type": "String"
-					},
-					{
-						"name": "SHIPPINGPOINT",
-						"type": "String"
-					},
-					{
-						"name": "BILLINGDOCUMENTITEMTEXT",
-						"type": "String"
-					},
-					{
-						"name": "HIGHERLEVELITEM",
-						"type": "Int32"
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[FacturaVenta]"
+					"tableName": "[[dsa_ecu_sap].[AFKO_BLOB]"
 				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_InventarioMaterial')]",
+			"name": "[concat(parameters('factoryName'), '/ds_sap_AFPO_BLOB')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1196,68 +2518,420 @@
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "dwh_General/ds_Sap"
+					"name": "dwh_General/ds_Sap/RINT"
 				},
 				"annotations": [],
 				"type": "AzureSqlDWTable",
 				"structure": [
 					{
-						"name": "FECHACARGA",
-						"type": "String"
-					},
-					{
 						"name": "MANDT",
 						"type": "String"
 					},
 					{
-						"name": "PLANT",
+						"name": "AUFNR",
 						"type": "String"
 					},
 					{
-						"name": "MATERIAL",
+						"name": "POSNR",
 						"type": "String"
 					},
 					{
-						"name": "FISCALYEARCURRENTPERIOD",
+						"name": "PSOBS",
+						"type": "String"
+					},
+					{
+						"name": "QUNUM",
+						"type": "String"
+					},
+					{
+						"name": "QUPOS",
+						"type": "String"
+					},
+					{
+						"name": "PROJN",
+						"type": "String"
+					},
+					{
+						"name": "PLNUM",
+						"type": "String"
+					},
+					{
+						"name": "STRMP",
+						"type": "String"
+					},
+					{
+						"name": "ETRMP",
+						"type": "String"
+					},
+					{
+						"name": "KDAUF",
+						"type": "String"
+					},
+					{
+						"name": "KDPOS",
+						"type": "String"
+					},
+					{
+						"name": "KDEIN",
+						"type": "String"
+					},
+					{
+						"name": "BESKZ",
+						"type": "String"
+					},
+					{
+						"name": "PSAMG",
+						"type": "Decimal"
+					},
+					{
+						"name": "PSMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "WEMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "IAMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "AMEIN",
+						"type": "String"
+					},
+					{
+						"name": "MEINS",
+						"type": "String"
+					},
+					{
+						"name": "MATNR",
+						"type": "String"
+					},
+					{
+						"name": "PAMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "PGMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "KNTTP",
+						"type": "String"
+					},
+					{
+						"name": "TPAUF",
+						"type": "String"
+					},
+					{
+						"name": "LTRMI",
+						"type": "String"
+					},
+					{
+						"name": "LTRMP",
+						"type": "String"
+					},
+					{
+						"name": "KALNR",
+						"type": "String"
+					},
+					{
+						"name": "UEBTO",
+						"type": "Decimal"
+					},
+					{
+						"name": "UEBTK",
+						"type": "String"
+					},
+					{
+						"name": "UNTTO",
+						"type": "Decimal"
+					},
+					{
+						"name": "INSMK",
+						"type": "String"
+					},
+					{
+						"name": "WEPOS",
+						"type": "String"
+					},
+					{
+						"name": "BWTAR",
+						"type": "String"
+					},
+					{
+						"name": "BWTTY",
+						"type": "String"
+					},
+					{
+						"name": "PWERK",
+						"type": "String"
+					},
+					{
+						"name": "LGORT",
+						"type": "String"
+					},
+					{
+						"name": "UMREZ",
+						"type": "Decimal"
+					},
+					{
+						"name": "UMREN",
+						"type": "Decimal"
+					},
+					{
+						"name": "WEBAZ",
+						"type": "Decimal"
+					},
+					{
+						"name": "ELIKZ",
+						"type": "String"
+					},
+					{
+						"name": "SAFNR",
+						"type": "String"
+					},
+					{
+						"name": "VERID",
+						"type": "String"
+					},
+					{
+						"name": "SERNR",
+						"type": "String"
+					},
+					{
+						"name": "TECHS",
+						"type": "String"
+					},
+					{
+						"name": "DWERK",
+						"type": "String"
+					},
+					{
+						"name": "DAUTY",
+						"type": "String"
+					},
+					{
+						"name": "DAUAT",
+						"type": "String"
+					},
+					{
+						"name": "DGLTP",
+						"type": "String"
+					},
+					{
+						"name": "DGLTS",
+						"type": "String"
+					},
+					{
+						"name": "DFREI",
+						"type": "String"
+					},
+					{
+						"name": "DNREL",
+						"type": "String"
+					},
+					{
+						"name": "VERTO",
+						"type": "String"
+					},
+					{
+						"name": "SOBKZ",
+						"type": "String"
+					},
+					{
+						"name": "KZVBR",
+						"type": "String"
+					},
+					{
+						"name": "WEWRT",
+						"type": "Decimal"
+					},
+					{
+						"name": "WEUNB",
+						"type": "String"
+					},
+					{
+						"name": "ABLAD",
+						"type": "String"
+					},
+					{
+						"name": "WEMPF",
+						"type": "String"
+					},
+					{
+						"name": "CHARG",
+						"type": "String"
+					},
+					{
+						"name": "GSBER",
+						"type": "String"
+					},
+					{
+						"name": "WEAED",
+						"type": "String"
+					},
+					{
+						"name": "CUOBJ",
+						"type": "String"
+					},
+					{
+						"name": "KBNKZ",
+						"type": "String"
+					},
+					{
+						"name": "ARSNR",
+						"type": "String"
+					},
+					{
+						"name": "ARSPS",
+						"type": "String"
+					},
+					{
+						"name": "KRSNR",
+						"type": "String"
+					},
+					{
+						"name": "KRSPS",
+						"type": "String"
+					},
+					{
+						"name": "KCKEY",
+						"type": "String"
+					},
+					{
+						"name": "RTP01",
+						"type": "String"
+					},
+					{
+						"name": "RTP02",
+						"type": "String"
+					},
+					{
+						"name": "RTP03",
+						"type": "String"
+					},
+					{
+						"name": "RTP04",
+						"type": "String"
+					},
+					{
+						"name": "KSVON",
+						"type": "String"
+					},
+					{
+						"name": "KSBIS",
+						"type": "String"
+					},
+					{
+						"name": "OBJNP",
+						"type": "String"
+					},
+					{
+						"name": "NDISR",
+						"type": "String"
+					},
+					{
+						"name": "VFMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "GSBTR",
+						"type": "String"
+					},
+					{
+						"name": "KZAVC",
+						"type": "String"
+					},
+					{
+						"name": "KZBWS",
+						"type": "String"
+					},
+					{
+						"name": "XLOEK",
+						"type": "String"
+					},
+					{
+						"name": "SERNP",
+						"type": "String"
+					},
+					{
+						"name": "ANZSN",
 						"type": "Int32"
 					},
 					{
-						"name": "ISCURRENTFISCALPERIOD",
-						"type": "Int32"
-					},
-					{
-						"name": "TOTALVALSTOCKQUANTITY",
-						"type": "Decimal"
-					},
-					{
-						"name": "TOTALVALSTOCKVALUE",
-						"type": "Decimal"
-					},
-					{
-						"name": "MOVINGAVERAGEPRICE",
-						"type": "Decimal"
-					},
-					{
-						"name": "STANDARDPRICE",
-						"type": "Decimal"
-					},
-					{
-						"name": "PRODUCTPRICECONTROL",
+						"name": "OBJTYPE",
 						"type": "String"
 					},
 					{
-						"name": "VALUATIONCLASS",
+						"name": "CH_PROC",
+						"type": "String"
+					},
+					{
+						"name": "FXPRU",
+						"type": "String"
+					},
+					{
+						"name": "CUOBJ_ROOT",
+						"type": "String"
+					},
+					{
+						"name": "BERID",
+						"type": "String"
+					},
+					{
+						"name": "TECHS_COPY",
+						"type": "String"
+					},
+					{
+						"name": "SGT_SCAT",
+						"type": "String"
+					},
+					{
+						"name": "KUNNR2",
+						"type": "String"
+					},
+					{
+						"name": "FSH_SEASON_YEAR",
+						"type": "String"
+					},
+					{
+						"name": "FSH_SEASON",
+						"type": "String"
+					},
+					{
+						"name": "FSH_COLLECTION",
+						"type": "String"
+					},
+					{
+						"name": "FSH_THEME",
+						"type": "String"
+					},
+					{
+						"name": "FSH_SALLOC_QTY",
+						"type": "Decimal"
+					},
+					{
+						"name": "MILL_OC_AUFNR_U",
+						"type": "String"
+					},
+					{
+						"name": "MILL_OC_RUMNG",
+						"type": "Decimal"
+					},
+					{
+						"name": "MILL_OC_SORT",
 						"type": "String"
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[inventariomaterial]"
+					"tableName": "[[dsa_ecu_sap].[AFPO_BLOB]"
 				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_OrdenCompra')]",
+			"name": "[concat(parameters('factoryName'), '/ds_sap_AFRU_BLOB')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1267,101 +2941,1850 @@
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "dwh_General/ds_Sap"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[OrdenCompra]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_OrdenCompraCondicion')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Dataset parametrizado DWH\n",
-				"linkedServiceName": {
-					"referenceName": "linked_dwh",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "dwh_General/ds_Sap"
+					"name": "dwh_General/ds_Sap/RINT"
 				},
 				"annotations": [],
 				"type": "AzureSqlDWTable",
 				"structure": [
 					{
-						"name": "FECHACARGA",
+						"name": "MANDT",
 						"type": "String"
 					},
+					{
+						"name": "RUECK",
+						"type": "String"
+					},
+					{
+						"name": "RMZHL",
+						"type": "String"
+					},
+					{
+						"name": "ERSDA",
+						"type": "String"
+					},
+					{
+						"name": "ERNAM",
+						"type": "String"
+					},
+					{
+						"name": "LAEDA",
+						"type": "String"
+					},
+					{
+						"name": "AENAM",
+						"type": "String"
+					},
+					{
+						"name": "BUDAT",
+						"type": "String"
+					},
+					{
+						"name": "ARBID",
+						"type": "String"
+					},
+					{
+						"name": "WERKS",
+						"type": "String"
+					},
+					{
+						"name": "LTXA1",
+						"type": "String"
+					},
+					{
+						"name": "TXTSP",
+						"type": "String"
+					},
+					{
+						"name": "ISERH",
+						"type": "Decimal"
+					},
+					{
+						"name": "ZEIER",
+						"type": "String"
+					},
+					{
+						"name": "ILE01",
+						"type": "String"
+					},
+					{
+						"name": "ISM01",
+						"type": "Decimal"
+					},
+					{
+						"name": "ILE02",
+						"type": "String"
+					},
+					{
+						"name": "ISM02",
+						"type": "Decimal"
+					},
+					{
+						"name": "ILE03",
+						"type": "String"
+					},
+					{
+						"name": "ISM03",
+						"type": "Decimal"
+					},
+					{
+						"name": "ILE04",
+						"type": "String"
+					},
+					{
+						"name": "ISM04",
+						"type": "Decimal"
+					},
+					{
+						"name": "ILE05",
+						"type": "String"
+					},
+					{
+						"name": "ISM05",
+						"type": "Decimal"
+					},
+					{
+						"name": "ILE06",
+						"type": "String"
+					},
+					{
+						"name": "ISM06",
+						"type": "Decimal"
+					},
+					{
+						"name": "ABARB",
+						"type": "String"
+					},
+					{
+						"name": "ISMNW",
+						"type": "Decimal"
+					},
+					{
+						"name": "ISMNE",
+						"type": "String"
+					},
+					{
+						"name": "LEARR",
+						"type": "String"
+					},
+					{
+						"name": "IDAUR",
+						"type": "Decimal"
+					},
+					{
+						"name": "IDAUE",
+						"type": "String"
+					},
+					{
+						"name": "ZCODE",
+						"type": "String"
+					},
+					{
+						"name": "LOART",
+						"type": "String"
+					},
+					{
+						"name": "QUALF",
+						"type": "String"
+					},
+					{
+						"name": "ANZMA",
+						"type": "Decimal"
+					},
+					{
+						"name": "LOGRP",
+						"type": "String"
+					},
+					{
+						"name": "GMNGA",
+						"type": "Decimal"
+					},
+					{
+						"name": "LMNGA",
+						"type": "Decimal"
+					},
+					{
+						"name": "XMNGA",
+						"type": "Decimal"
+					},
+					{
+						"name": "GMEIN",
+						"type": "String"
+					},
+					{
+						"name": "MEINH",
+						"type": "String"
+					},
+					{
+						"name": "GRUND",
+						"type": "String"
+					},
+					{
+						"name": "PERNR",
+						"type": "String"
+					},
+					{
+						"name": "ISDD",
+						"type": "String"
+					},
+					{
+						"name": "ISDZ",
+						"type": "String"
+					},
+					{
+						"name": "IERD",
+						"type": "String"
+					},
+					{
+						"name": "IERZ",
+						"type": "String"
+					},
+					{
+						"name": "ISBD",
+						"type": "String"
+					},
+					{
+						"name": "ISBZ",
+						"type": "String"
+					},
+					{
+						"name": "IEBD",
+						"type": "String"
+					},
+					{
+						"name": "IEBZ",
+						"type": "String"
+					},
+					{
+						"name": "ISAD",
+						"type": "String"
+					},
+					{
+						"name": "ISAZ",
+						"type": "String"
+					},
+					{
+						"name": "IEDD",
+						"type": "String"
+					},
+					{
+						"name": "IEDZ",
+						"type": "String"
+					},
+					{
+						"name": "PEDD",
+						"type": "String"
+					},
+					{
+						"name": "PEDZ",
+						"type": "String"
+					},
+					{
+						"name": "WABLNR",
+						"type": "String"
+					},
+					{
+						"name": "WEBLNR",
+						"type": "String"
+					},
+					{
+						"name": "AUERU",
+						"type": "String"
+					},
+					{
+						"name": "AUSOR",
+						"type": "String"
+					},
+					{
+						"name": "STNDR",
+						"type": "String"
+					},
+					{
+						"name": "MANUR",
+						"type": "String"
+					},
+					{
+						"name": "MEILR",
+						"type": "String"
+					},
+					{
+						"name": "AUFPL",
+						"type": "String"
+					},
+					{
+						"name": "APLZL",
+						"type": "String"
+					},
+					{
+						"name": "AUFNR",
+						"type": "String"
+					},
+					{
+						"name": "APLFL",
+						"type": "String"
+					},
+					{
+						"name": "VORNR",
+						"type": "String"
+					},
+					{
+						"name": "SUMNR",
+						"type": "String"
+					},
+					{
+						"name": "OFM01",
+						"type": "Decimal"
+					},
+					{
+						"name": "OFE01",
+						"type": "String"
+					},
+					{
+						"name": "LEK01",
+						"type": "String"
+					},
+					{
+						"name": "OFM02",
+						"type": "Decimal"
+					},
+					{
+						"name": "OFE02",
+						"type": "String"
+					},
+					{
+						"name": "LEK02",
+						"type": "String"
+					},
+					{
+						"name": "OFM03",
+						"type": "Decimal"
+					},
+					{
+						"name": "OFE03",
+						"type": "String"
+					},
+					{
+						"name": "LEK03",
+						"type": "String"
+					},
+					{
+						"name": "OFM04",
+						"type": "Decimal"
+					},
+					{
+						"name": "OFE04",
+						"type": "String"
+					},
+					{
+						"name": "LEK04",
+						"type": "String"
+					},
+					{
+						"name": "OFM05",
+						"type": "Decimal"
+					},
+					{
+						"name": "OFE05",
+						"type": "String"
+					},
+					{
+						"name": "LEK05",
+						"type": "String"
+					},
+					{
+						"name": "OFM06",
+						"type": "Decimal"
+					},
+					{
+						"name": "OFE06",
+						"type": "String"
+					},
+					{
+						"name": "LEK06",
+						"type": "String"
+					},
+					{
+						"name": "OFMNW",
+						"type": "Decimal"
+					},
+					{
+						"name": "OFMNE",
+						"type": "String"
+					},
+					{
+						"name": "LEKNW",
+						"type": "String"
+					},
+					{
+						"name": "ODAUR",
+						"type": "Decimal"
+					},
+					{
+						"name": "ODAUE",
+						"type": "String"
+					},
+					{
+						"name": "STOKZ",
+						"type": "String"
+					},
+					{
+						"name": "STZHL",
+						"type": "String"
+					},
+					{
+						"name": "SMENG",
+						"type": "Decimal"
+					},
+					{
+						"name": "RUECK_MST",
+						"type": "String"
+					},
+					{
+						"name": "RMZHL_MST",
+						"type": "String"
+					},
+					{
+						"name": "PDSNR",
+						"type": "String"
+					},
+					{
+						"name": "KAPID",
+						"type": "String"
+					},
+					{
+						"name": "SPLIT",
+						"type": "Int32"
+					},
+					{
+						"name": "ZAUSW",
+						"type": "String"
+					},
+					{
+						"name": "ORIND",
+						"type": "String"
+					},
+					{
+						"name": "ORIGF",
+						"type": "String"
+					},
+					{
+						"name": "CANUM",
+						"type": "String"
+					},
+					{
+						"name": "BELNR_IST",
+						"type": "String"
+					},
+					{
+						"name": "BELNR_UMB",
+						"type": "String"
+					},
+					{
+						"name": "RMNGA",
+						"type": "Decimal"
+					},
+					{
+						"name": "CATSBELNR",
+						"type": "String"
+					},
+					{
+						"name": "SATZA",
+						"type": "String"
+					},
+					{
+						"name": "ERZET",
+						"type": "String"
+					},
+					{
+						"name": "CATSPRICE",
+						"type": "Decimal"
+					},
+					{
+						"name": "CATSTCURR",
+						"type": "String"
+					},
+					{
+						"name": "CATSPEINH",
+						"type": "Decimal"
+					},
+					{
+						"name": "BEMOT",
+						"type": "String"
+					},
+					{
+						"name": "IPRZ1",
+						"type": "Decimal"
+					},
+					{
+						"name": "IPRE1",
+						"type": "String"
+					},
+					{
+						"name": "IPRK1",
+						"type": "String"
+					},
+					{
+						"name": "EXNAM",
+						"type": "String"
+					},
+					{
+						"name": "EXERD",
+						"type": "String"
+					},
+					{
+						"name": "EXERZ",
+						"type": "String"
+					},
+					{
+						"name": "PRZ01",
+						"type": "String"
+					},
+					{
+						"name": "OPRZ1",
+						"type": "Decimal"
+					},
+					{
+						"name": "OPRE1",
+						"type": "String"
+					},
+					{
+						"name": "SKOKRS",
+						"type": "String"
+					},
+					{
+						"name": "SKOSTL",
+						"type": "String"
+					},
+					{
+						"name": "NODAT",
+						"type": "String"
+					},
+					{
+						"name": "ISMNU",
+						"type": "String"
+					},
+					{
+						"name": "OFMNU",
+						"type": "String"
+					},
+					{
+						"name": "PACKNO",
+						"type": "String"
+					},
+					{
+						"name": "EXTID",
+						"type": "String"
+					},
+					{
+						"name": "SCHGRUP",
+						"type": "String"
+					},
+					{
+						"name": "KAPTPROG",
+						"type": "String"
+					},
+					{
+						"name": "EEW_AFRU_PS_DUMMY",
+						"type": "String"
+					},
+					{
+						"name": "OBMAT",
+						"type": "String"
+					},
+					{
+						"name": "OBCHA",
+						"type": "String"
+					},
+					{
+						"name": "LICHA",
+						"type": "String"
+					},
+					{
+						"name": "MYEAR",
+						"type": "String"
+					},
+					{
+						"name": "ME_SFCID",
+						"type": "String"
+					},
+					{
+						"name": "ME_2ND_CONF_QTY",
+						"type": "Decimal"
+					},
+					{
+						"name": "ROLE_ID",
+						"type": "String"
+					},
+					{
+						"name": "UCMAT",
+						"type": "String"
+					},
+					{
+						"name": "UCCHA",
+						"type": "String"
+					},
+					{
+						"name": "WTY_IND",
+						"type": "String"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dsa_ecu_sap].[AFRU_BLOB]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sap_AFVC_BLOB')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataset parametrizado DWH\n",
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dwh_General/ds_Sap/RINT"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"structure": [
 					{
 						"name": "MANDT",
 						"type": "String"
 					},
 					{
-						"name": "PURCHASEORDER",
+						"name": "AUFPL",
 						"type": "String"
 					},
 					{
-						"name": "PURCHASEORDERITEM",
+						"name": "APLZL",
 						"type": "String"
 					},
 					{
-						"name": "CONDITIONAPPLICATION",
+						"name": "PLNFL",
 						"type": "String"
 					},
 					{
-						"name": "CONDITIONTYPE",
+						"name": "PLNKN",
 						"type": "String"
 					},
 					{
-						"name": "CONDITIONBASEVALUE",
+						"name": "PLNAL",
+						"type": "String"
+					},
+					{
+						"name": "PLNTY",
+						"type": "String"
+					},
+					{
+						"name": "VINTV",
 						"type": "Decimal"
 					},
 					{
-						"name": "CONDITIONRATEVALUE",
+						"name": "PLNNR",
+						"type": "String"
+					},
+					{
+						"name": "ZAEHL",
+						"type": "String"
+					},
+					{
+						"name": "VORNR",
+						"type": "String"
+					},
+					{
+						"name": "STEUS",
+						"type": "String"
+					},
+					{
+						"name": "ARBID",
+						"type": "String"
+					},
+					{
+						"name": "PDEST",
+						"type": "String"
+					},
+					{
+						"name": "WERKS",
+						"type": "String"
+					},
+					{
+						"name": "KTSCH",
+						"type": "String"
+					},
+					{
+						"name": "LTXA1",
+						"type": "String"
+					},
+					{
+						"name": "LTXA2",
+						"type": "String"
+					},
+					{
+						"name": "TXTSP",
+						"type": "String"
+					},
+					{
+						"name": "VPLTY",
+						"type": "String"
+					},
+					{
+						"name": "VPLNR",
+						"type": "String"
+					},
+					{
+						"name": "VPLAL",
+						"type": "String"
+					},
+					{
+						"name": "VPLFL",
+						"type": "String"
+					},
+					{
+						"name": "VGWTS",
+						"type": "String"
+					},
+					{
+						"name": "LAR01",
+						"type": "String"
+					},
+					{
+						"name": "LAR02",
+						"type": "String"
+					},
+					{
+						"name": "LAR03",
+						"type": "String"
+					},
+					{
+						"name": "LAR04",
+						"type": "String"
+					},
+					{
+						"name": "LAR05",
+						"type": "String"
+					},
+					{
+						"name": "LAR06",
+						"type": "String"
+					},
+					{
+						"name": "ZERMA",
+						"type": "String"
+					},
+					{
+						"name": "ZGDAT",
+						"type": "String"
+					},
+					{
+						"name": "ZCODE",
+						"type": "String"
+					},
+					{
+						"name": "ZULNR",
+						"type": "String"
+					},
+					{
+						"name": "LOANZ",
 						"type": "Decimal"
 					},
 					{
-						"name": "CONDITIONCURRENCY",
+						"name": "LOART",
 						"type": "String"
 					},
 					{
-						"name": "CONDITIONQUANTITY",
+						"name": "RSANZ",
+						"type": "String"
+					},
+					{
+						"name": "QUALF",
+						"type": "String"
+					},
+					{
+						"name": "ANZMA",
 						"type": "Decimal"
 					},
 					{
-						"name": "CONDITIONQUANTITYUNIT",
+						"name": "RFGRP",
 						"type": "String"
 					},
 					{
-						"name": "TAXCODE",
+						"name": "RFSCH",
 						"type": "String"
 					},
 					{
-						"name": "CONDITIONAMOUNT",
+						"name": "RASCH",
+						"type": "String"
+					},
+					{
+						"name": "AUFAK",
 						"type": "Decimal"
 					},
 					{
-						"name": "TRANSACTIONCURRENCY",
+						"name": "LOGRP",
 						"type": "String"
 					},
 					{
-						"name": "PRICINGDATETIME",
+						"name": "UEMUS",
+						"type": "String"
+					},
+					{
+						"name": "UEKAN",
+						"type": "String"
+					},
+					{
+						"name": "FLIES",
+						"type": "String"
+					},
+					{
+						"name": "SPMUS",
+						"type": "String"
+					},
+					{
+						"name": "SPLIM",
+						"type": "Decimal"
+					},
+					{
+						"name": "ABLIPKZ",
+						"type": "String"
+					},
+					{
+						"name": "RSTRA",
+						"type": "String"
+					},
+					{
+						"name": "SUMNR",
+						"type": "String"
+					},
+					{
+						"name": "SORTL",
+						"type": "String"
+					},
+					{
+						"name": "LIFNR",
+						"type": "String"
+					},
+					{
+						"name": "PREIS",
+						"type": "Decimal"
+					},
+					{
+						"name": "PEINH",
+						"type": "Decimal"
+					},
+					{
+						"name": "SAKTO",
+						"type": "String"
+					},
+					{
+						"name": "WAERS",
+						"type": "String"
+					},
+					{
+						"name": "INFNR",
+						"type": "String"
+					},
+					{
+						"name": "ESOKZ",
+						"type": "String"
+					},
+					{
+						"name": "EKORG",
+						"type": "String"
+					},
+					{
+						"name": "EKGRP",
+						"type": "String"
+					},
+					{
+						"name": "KZLGF",
+						"type": "String"
+					},
+					{
+						"name": "KZWRTF",
+						"type": "String"
+					},
+					{
+						"name": "MATKL",
+						"type": "String"
+					},
+					{
+						"name": "DDEHN",
+						"type": "String"
+					},
+					{
+						"name": "ANZZL",
+						"type": "Int32"
+					},
+					{
+						"name": "PRZNT",
+						"type": "Int32"
+					},
+					{
+						"name": "MLSTN",
+						"type": "String"
+					},
+					{
+						"name": "PPRIO",
+						"type": "String"
+					},
+					{
+						"name": "BUKRS",
+						"type": "String"
+					},
+					{
+						"name": "ANFKO",
+						"type": "String"
+					},
+					{
+						"name": "ANFKOKRS",
+						"type": "String"
+					},
+					{
+						"name": "INDET",
+						"type": "String"
+					},
+					{
+						"name": "LARNT",
+						"type": "String"
+					},
+					{
+						"name": "PRKST",
+						"type": "Decimal"
+					},
+					{
+						"name": "APLFL",
+						"type": "String"
+					},
+					{
+						"name": "RUECK",
+						"type": "String"
+					},
+					{
+						"name": "RMZHL",
+						"type": "String"
+					},
+					{
+						"name": "PROJN",
+						"type": "String"
+					},
+					{
+						"name": "OBJNR",
+						"type": "String"
+					},
+					{
+						"name": "SPANZ",
+						"type": "Decimal"
+					},
+					{
+						"name": "BEDID",
+						"type": "String"
+					},
+					{
+						"name": "BEDZL",
+						"type": "String"
+					},
+					{
+						"name": "BANFN",
+						"type": "String"
+					},
+					{
+						"name": "BNFPO",
+						"type": "String"
+					},
+					{
+						"name": "LEK01",
+						"type": "String"
+					},
+					{
+						"name": "LEK02",
+						"type": "String"
+					},
+					{
+						"name": "LEK03",
+						"type": "String"
+					},
+					{
+						"name": "LEK04",
+						"type": "String"
+					},
+					{
+						"name": "LEK05",
+						"type": "String"
+					},
+					{
+						"name": "LEK06",
+						"type": "String"
+					},
+					{
+						"name": "SELKZ",
+						"type": "String"
+					},
+					{
+						"name": "KALID",
+						"type": "String"
+					},
+					{
+						"name": "FRSP",
+						"type": "String"
+					},
+					{
+						"name": "STDKN",
+						"type": "String"
+					},
+					{
+						"name": "ANLZU",
+						"type": "String"
+					},
+					{
+						"name": "ISTRU",
+						"type": "String"
+					},
+					{
+						"name": "ISTTY",
+						"type": "String"
+					},
+					{
+						"name": "ISTNR",
+						"type": "String"
+					},
+					{
+						"name": "ISTKN",
+						"type": "String"
+					},
+					{
+						"name": "ISTPO",
+						"type": "String"
+					},
+					{
+						"name": "IUPOZ",
+						"type": "String"
+					},
+					{
+						"name": "EBORT",
+						"type": "String"
+					},
+					{
+						"name": "VERTL",
+						"type": "String"
+					},
+					{
+						"name": "LEKNW",
+						"type": "String"
+					},
+					{
+						"name": "NPRIO",
+						"type": "String"
+					},
+					{
+						"name": "PVZKN",
+						"type": "String"
+					},
+					{
+						"name": "PHFLG",
+						"type": "String"
+					},
+					{
+						"name": "PHSEQ",
+						"type": "String"
+					},
+					{
+						"name": "KNOBJ",
+						"type": "String"
+					},
+					{
+						"name": "ERFSICHT",
+						"type": "String"
+					},
+					{
+						"name": "QPPKTABS",
+						"type": "String"
+					},
+					{
+						"name": "OTYPE",
+						"type": "String"
+					},
+					{
+						"name": "OBJEKTID",
+						"type": "String"
+					},
+					{
+						"name": "QLKAPAR",
+						"type": "String"
+					},
+					{
+						"name": "RSTUF",
+						"type": "String"
+					},
+					{
+						"name": "NPTXTKY",
+						"type": "String"
+					},
+					{
+						"name": "SUBSYS",
+						"type": "String"
+					},
+					{
+						"name": "PSPNR",
+						"type": "String"
+					},
+					{
+						"name": "PACKNO",
+						"type": "String"
+					},
+					{
+						"name": "TXJCD",
+						"type": "String"
+					},
+					{
+						"name": "SCOPE",
+						"type": "String"
+					},
+					{
+						"name": "GSBER",
+						"type": "String"
+					},
+					{
+						"name": "PRCTR",
+						"type": "String"
+					},
+					{
+						"name": "NO_DISP",
+						"type": "String"
+					},
+					{
+						"name": "QKZPRZEIT",
+						"type": "String"
+					},
+					{
+						"name": "QKZZTMG1",
+						"type": "String"
+					},
+					{
+						"name": "QKZPRMENG",
+						"type": "String"
+					},
+					{
+						"name": "QKZPRFREI",
+						"type": "String"
+					},
+					{
+						"name": "KZFEAT",
+						"type": "String"
+					},
+					{
+						"name": "QKZTLSBEST",
+						"type": "String"
+					},
+					{
+						"name": "AENNR",
+						"type": "String"
+					},
+					{
+						"name": "CUOBJ_ARB",
+						"type": "String"
+					},
+					{
+						"name": "EVGEW",
+						"type": "Decimal"
+					},
+					{
+						"name": "ARBII",
+						"type": "String"
+					},
+					{
+						"name": "WERKI",
+						"type": "String"
+					},
+					{
+						"name": "CY_SEQNRV",
+						"type": "String"
+					},
+					{
+						"name": "KAPT_PUFFR",
+						"type": "Int32"
+					},
+					{
+						"name": "EBELN",
+						"type": "String"
+					},
+					{
+						"name": "EBELP",
+						"type": "String"
+					},
+					{
+						"name": "WEMPF",
+						"type": "String"
+					},
+					{
+						"name": "ABLAD",
+						"type": "String"
+					},
+					{
+						"name": "CLASF",
+						"type": "String"
+					},
+					{
+						"name": "FRUNV",
+						"type": "String"
+					},
+					{
+						"name": "ZSCHL",
+						"type": "String"
+					},
+					{
+						"name": "KALSM",
+						"type": "String"
+					},
+					{
+						"name": "SCHED_END",
+						"type": "String"
+					},
+					{
+						"name": "NETZKONT",
+						"type": "String"
+					},
+					{
+						"name": "OWAER",
+						"type": "String"
+					},
+					{
+						"name": "AFNAM",
+						"type": "String"
+					},
+					{
+						"name": "BEDNR",
+						"type": "String"
+					},
+					{
+						"name": "KZFIX",
+						"type": "String"
+					},
+					{
+						"name": "PERNR",
+						"type": "String"
+					},
+					{
+						"name": "FRDLB",
+						"type": "String"
+					},
+					{
+						"name": "QPART",
+						"type": "String"
+					},
+					{
+						"name": "LOEKZ",
+						"type": "String"
+					},
+					{
+						"name": "WKURS",
+						"type": "Decimal"
+					},
+					{
+						"name": "PROD_ACT",
+						"type": "String"
+					},
+					{
+						"name": "FPLNR",
+						"type": "String"
+					},
+					{
+						"name": "OBJTYPE",
+						"type": "String"
+					},
+					{
+						"name": "CH_PROC",
+						"type": "String"
+					},
+					{
+						"name": "KLVAR",
+						"type": "String"
+					},
+					{
+						"name": "KALNR",
+						"type": "String"
+					},
+					{
+						"name": "FORDN",
+						"type": "String"
+					},
+					{
+						"name": "FORDP",
+						"type": "String"
+					},
+					{
+						"name": "MAT_PRKST",
+						"type": "Decimal"
+					},
+					{
+						"name": "PRZ01",
+						"type": "String"
+					},
+					{
+						"name": "RFPNT",
+						"type": "String"
+					},
+					{
+						"name": "FUNC_AREA",
+						"type": "String"
+					},
+					{
+						"name": "TECHS",
+						"type": "String"
+					},
+					{
+						"name": "ADPSP",
+						"type": "String"
+					},
+					{
+						"name": "RFIPPNT",
+						"type": "String"
+					},
+					{
+						"name": "MES_OPERID",
+						"type": "String"
+					},
+					{
+						"name": "MES_STEPID",
+						"type": "String"
+					},
+					{
+						"name": "OAN_INST_ID_SETUP",
+						"type": "Int32"
+					},
+					{
+						"name": "OAN_INST_ID_PRODUCE",
+						"type": "Int32"
+					},
+					{
+						"name": "OAN_INST_ID_TEARDOWN",
+						"type": "Int32"
+					},
+					{
+						"name": "TL_VERSN",
+						"type": "String"
+					},
+					{
+						"name": "DUMMY_AFVC_INCL_EEW_PS",
+						"type": "String"
+					},
+					{
+						"name": "/CUM/CUGUID",
+						"type": "String"
+					},
+					{
+						"name": "/ISDFPS/OBJNR",
+						"type": "String"
+					},
+					{
+						"name": "MILL_OC_AUFNR_MO",
+						"type": "String"
+					},
+					{
+						"name": "WTY_IND",
+						"type": "String"
+					},
+					{
+						"name": "TPLNR",
+						"type": "String"
+					},
+					{
+						"name": "EQUNR",
+						"type": "String"
+					},
+					{
+						"name": "CPD_UPDAT",
+						"type": "Decimal"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dsa_ecu_sap].[AFVC_BLOB]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sap_AUFK_BLOB')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Dataset parametrizado DWH\n",
+				"linkedServiceName": {
+					"referenceName": "linked_dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dwh_General/ds_Sap/RINT"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"structure": [
+					{
+						"name": "MANDT",
+						"type": "String"
+					},
+					{
+						"name": "AUFNR",
+						"type": "String"
+					},
+					{
+						"name": "AUART",
+						"type": "String"
+					},
+					{
+						"name": "AUTYP",
+						"type": "String"
+					},
+					{
+						"name": "REFNR",
+						"type": "String"
+					},
+					{
+						"name": "ERNAM",
+						"type": "String"
+					},
+					{
+						"name": "ERDAT",
+						"type": "String"
+					},
+					{
+						"name": "AENAM",
+						"type": "String"
+					},
+					{
+						"name": "AEDAT",
+						"type": "String"
+					},
+					{
+						"name": "KTEXT",
+						"type": "String"
+					},
+					{
+						"name": "LTEXT",
+						"type": "String"
+					},
+					{
+						"name": "BUKRS",
+						"type": "String"
+					},
+					{
+						"name": "WERKS",
+						"type": "String"
+					},
+					{
+						"name": "GSBER",
+						"type": "String"
+					},
+					{
+						"name": "KOKRS",
+						"type": "String"
+					},
+					{
+						"name": "CCKEY",
+						"type": "String"
+					},
+					{
+						"name": "KOSTV",
+						"type": "String"
+					},
+					{
+						"name": "STORT",
+						"type": "String"
+					},
+					{
+						"name": "SOWRK",
+						"type": "String"
+					},
+					{
+						"name": "ASTKZ",
+						"type": "String"
+					},
+					{
+						"name": "WAERS",
+						"type": "String"
+					},
+					{
+						"name": "ASTNR",
+						"type": "String"
+					},
+					{
+						"name": "STDAT",
+						"type": "String"
+					},
+					{
+						"name": "ESTNR",
+						"type": "String"
+					},
+					{
+						"name": "PHAS0",
+						"type": "String"
+					},
+					{
+						"name": "PHAS1",
+						"type": "String"
+					},
+					{
+						"name": "PHAS2",
+						"type": "String"
+					},
+					{
+						"name": "PHAS3",
+						"type": "String"
+					},
+					{
+						"name": "PDAT1",
+						"type": "String"
+					},
+					{
+						"name": "PDAT2",
+						"type": "String"
+					},
+					{
+						"name": "PDAT3",
+						"type": "String"
+					},
+					{
+						"name": "IDAT1",
+						"type": "String"
+					},
+					{
+						"name": "IDAT2",
+						"type": "String"
+					},
+					{
+						"name": "IDAT3",
+						"type": "String"
+					},
+					{
+						"name": "OBJID",
+						"type": "String"
+					},
+					{
+						"name": "VOGRP",
+						"type": "String"
+					},
+					{
+						"name": "LOEKZ",
+						"type": "String"
+					},
+					{
+						"name": "PLGKZ",
+						"type": "String"
+					},
+					{
+						"name": "KVEWE",
+						"type": "String"
+					},
+					{
+						"name": "KAPPL",
+						"type": "String"
+					},
+					{
+						"name": "KALSM",
+						"type": "String"
+					},
+					{
+						"name": "ZSCHL",
+						"type": "String"
+					},
+					{
+						"name": "ABKRS",
+						"type": "String"
+					},
+					{
+						"name": "KSTAR",
+						"type": "String"
+					},
+					{
+						"name": "KOSTL",
+						"type": "String"
+					},
+					{
+						"name": "SAKNR",
+						"type": "String"
+					},
+					{
+						"name": "SETNM",
+						"type": "String"
+					},
+					{
+						"name": "CYCLE",
+						"type": "String"
+					},
+					{
+						"name": "SDATE",
+						"type": "String"
+					},
+					{
+						"name": "SEQNR",
+						"type": "String"
+					},
+					{
+						"name": "USER0",
+						"type": "String"
+					},
+					{
+						"name": "USER1",
+						"type": "String"
+					},
+					{
+						"name": "USER2",
+						"type": "String"
+					},
+					{
+						"name": "USER3",
+						"type": "String"
+					},
+					{
+						"name": "USER4",
+						"type": "Decimal"
+					},
+					{
+						"name": "USER5",
+						"type": "String"
+					},
+					{
+						"name": "USER6",
+						"type": "String"
+					},
+					{
+						"name": "USER7",
+						"type": "String"
+					},
+					{
+						"name": "USER8",
+						"type": "String"
+					},
+					{
+						"name": "USER9",
+						"type": "String"
+					},
+					{
+						"name": "OBJNR",
+						"type": "String"
+					},
+					{
+						"name": "PRCTR",
+						"type": "String"
+					},
+					{
+						"name": "PSPEL",
+						"type": "String"
+					},
+					{
+						"name": "AWSLS",
+						"type": "String"
+					},
+					{
+						"name": "ABGSL",
+						"type": "String"
+					},
+					{
+						"name": "TXJCD",
+						"type": "String"
+					},
+					{
+						"name": "FUNC_AREA",
+						"type": "String"
+					},
+					{
+						"name": "SCOPE",
+						"type": "String"
+					},
+					{
+						"name": "PLINT",
+						"type": "String"
+					},
+					{
+						"name": "KDAUF",
+						"type": "String"
+					},
+					{
+						"name": "KDPOS",
+						"type": "String"
+					},
+					{
+						"name": "AUFEX",
+						"type": "String"
+					},
+					{
+						"name": "IVPRO",
+						"type": "String"
+					},
+					{
+						"name": "LOGSYSTEM",
+						"type": "String"
+					},
+					{
+						"name": "FLG_MLTPS",
+						"type": "String"
+					},
+					{
+						"name": "ABUKR",
+						"type": "String"
+					},
+					{
+						"name": "AKSTL",
+						"type": "String"
+					},
+					{
+						"name": "SIZECL",
+						"type": "String"
+					},
+					{
+						"name": "IZWEK",
+						"type": "String"
+					},
+					{
+						"name": "UMWKZ",
+						"type": "String"
+					},
+					{
+						"name": "KSTEMPF",
+						"type": "String"
+					},
+					{
+						"name": "ZSCHM",
+						"type": "String"
+					},
+					{
+						"name": "PKOSA",
+						"type": "String"
+					},
+					{
+						"name": "ANFAUFNR",
+						"type": "String"
+					},
+					{
+						"name": "PROCNR",
+						"type": "String"
+					},
+					{
+						"name": "PROTY",
+						"type": "String"
+					},
+					{
+						"name": "RSORD",
+						"type": "String"
+					},
+					{
+						"name": "BEMOT",
+						"type": "String"
+					},
+					{
+						"name": "ADRNRA",
+						"type": "String"
+					},
+					{
+						"name": "ERFZEIT",
+						"type": "String"
+					},
+					{
+						"name": "AEZEIT",
+						"type": "String"
+					},
+					{
+						"name": "CSTG_VRNT",
+						"type": "String"
+					},
+					{
+						"name": "COSTESTNR",
+						"type": "String"
+					},
+					{
+						"name": "VERAA_USER",
+						"type": "String"
+					},
+					{
+						"name": "EEW_AUFK_PS_DUMMY",
+						"type": "String"
+					},
+					{
+						"name": "VNAME",
+						"type": "String"
+					},
+					{
+						"name": "RECID",
+						"type": "String"
+					},
+					{
+						"name": "ETYPE",
+						"type": "String"
+					},
+					{
+						"name": "OTYPE",
+						"type": "String"
+					},
+					{
+						"name": "JV_JIBCL",
+						"type": "String"
+					},
+					{
+						"name": "JV_JIBSA",
+						"type": "String"
+					},
+					{
+						"name": "JV_OCO",
+						"type": "String"
+					},
+					{
+						"name": "CPD_UPDAT",
+						"type": "Decimal"
+					},
+					{
+						"name": "/CUM/INDCU",
+						"type": "String"
+					},
+					{
+						"name": "/CUM/CMNUM",
+						"type": "String"
+					},
+					{
+						"name": "/CUM/AUEST",
+						"type": "String"
+					},
+					{
+						"name": "/CUM/DESNUM",
+						"type": "String"
+					},
+					{
+						"name": "AD01PROFNR",
+						"type": "String"
+					},
+					{
+						"name": "VAPLZ",
+						"type": "String"
+					},
+					{
+						"name": "WAWRK",
+						"type": "String"
+					},
+					{
+						"name": "FERC_IND",
+						"type": "String"
+					},
+					{
+						"name": "CLAIM_CONTROL",
+						"type": "String"
+					},
+					{
+						"name": "UPDATE_NEEDED",
+						"type": "String"
+					},
+					{
+						"name": "UPDATE_CONTROL",
 						"type": "String"
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[OrdenCompraCondicion]"
+					"tableName": "[[dsa_ecu_sap].[AUFK_BLOB]"
 				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_OrdenManofactura')]",
+			"name": "[concat(parameters('factoryName'), '/ds_sap_AUFM_BLOB')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1371,33 +4794,198 @@
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "dwh_General/ds_Sap"
+					"name": "dwh_General/ds_Sap/RINT"
 				},
 				"annotations": [],
 				"type": "AzureSqlDWTable",
+				"structure": [
+					{
+						"name": "MANDT",
+						"type": "String"
+					},
+					{
+						"name": "MBLNR",
+						"type": "String"
+					},
+					{
+						"name": "MJAHR",
+						"type": "String"
+					},
+					{
+						"name": "ZEILE",
+						"type": "String"
+					},
+					{
+						"name": "BLDAT",
+						"type": "String"
+					},
+					{
+						"name": "BUDAT",
+						"type": "String"
+					},
+					{
+						"name": "BWART",
+						"type": "String"
+					},
+					{
+						"name": "MATNR",
+						"type": "String"
+					},
+					{
+						"name": "WERKS",
+						"type": "String"
+					},
+					{
+						"name": "LGORT",
+						"type": "String"
+					},
+					{
+						"name": "CHARG",
+						"type": "String"
+					},
+					{
+						"name": "SOBKZ",
+						"type": "String"
+					},
+					{
+						"name": "LIFNR",
+						"type": "String"
+					},
+					{
+						"name": "KDAUF",
+						"type": "String"
+					},
+					{
+						"name": "KDPOS",
+						"type": "String"
+					},
+					{
+						"name": "SHKZG",
+						"type": "String"
+					},
+					{
+						"name": "DMBTR",
+						"type": "Decimal"
+					},
+					{
+						"name": "WAERS",
+						"type": "String"
+					},
+					{
+						"name": "BWTAR",
+						"type": "String"
+					},
+					{
+						"name": "MENGE",
+						"type": "Decimal"
+					},
+					{
+						"name": "MEINS",
+						"type": "String"
+					},
+					{
+						"name": "ERFMG",
+						"type": "Decimal"
+					},
+					{
+						"name": "ERFME",
+						"type": "String"
+					},
+					{
+						"name": "EBELN",
+						"type": "String"
+					},
+					{
+						"name": "EBELP",
+						"type": "String"
+					},
+					{
+						"name": "ELIKZ",
+						"type": "String"
+					},
+					{
+						"name": "WEMPF",
+						"type": "String"
+					},
+					{
+						"name": "ABLAD",
+						"type": "String"
+					},
+					{
+						"name": "AUFNR",
+						"type": "String"
+					},
+					{
+						"name": "RSNUM",
+						"type": "String"
+					},
+					{
+						"name": "RSPOS",
+						"type": "String"
+					},
+					{
+						"name": "RSART",
+						"type": "String"
+					},
+					{
+						"name": "KZEAR",
+						"type": "String"
+					},
+					{
+						"name": "KZBEW",
+						"type": "String"
+					},
+					{
+						"name": "WEUNB",
+						"type": "String"
+					},
+					{
+						"name": "PS_PSP_PNR",
+						"type": "String"
+					},
+					{
+						"name": "NPLNR",
+						"type": "String"
+					},
+					{
+						"name": "AUFPL",
+						"type": "String"
+					},
+					{
+						"name": "APLZL",
+						"type": "String"
+					},
+					{
+						"name": "SAKTO",
+						"type": "String"
+					},
+					{
+						"name": "KOKRS",
+						"type": "String"
+					},
+					{
+						"name": "/CWM/MENGE",
+						"type": "Decimal"
+					},
+					{
+						"name": "/CWM/MEINS",
+						"type": "String"
+					},
+					{
+						"name": "/CWM/ERFMG",
+						"type": "Decimal"
+					},
+					{
+						"name": "/CWM/ERFME",
+						"type": "String"
+					},
+					{
+						"name": "WTY_IND",
+						"type": "String"
+					}
+				],
 				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[ORDENMANOFACTURA]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sap_PedidoVenta')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Dataset parametrizado DWH\n",
-				"linkedServiceName": {
-					"referenceName": "linked_dwh",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "dwh_General/ds_Sap"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"typeProperties": {
-					"tableName": "[[dsa_ecu_sap].[PedidoVenta]"
+					"tableName": "[[dsa_ecu_sap].[AUFM_BLOB]"
 				}
 			},
 			"dependsOn": []
