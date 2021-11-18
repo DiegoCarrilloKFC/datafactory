@@ -13,6 +13,138 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dsa_Sip_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "SIP",
+				"activities": [
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "SELECT\n\tFechaCarga=GETDATE(),\n\tFechaDesde=MIN(Fecha),--inicia en enero +1\n\tFechaHasta=DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) + 2, -1)--termina en diciembre+1\nFROM dwh_dim.Tiempo\nwhere AnioNumero52Semanas=year(DATEADD(yy, DATEDIFF(yy, 0, GETDATE())+1, 0))",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Cargar Catalogo",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sip_Ecu_Catalogo",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": "SAZCONTADB",
+								"BaseDatos": "Presupuestos"
+							}
+						}
+					},
+					{
+						"name": "Cargar Transaccional",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Cargar Catalogo",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_Sip_Ecu_Transaccional",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": "SAZCONTADB",
+								"BaseDatos": "Presupuestos",
+								"FechaDesde": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+									"type": "Expression"
+								},
+								"FechaHasta": {
+									"value": "@activity('Fecha Carga').output.firstRow.FechaHasta",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Actualizar Estadisticas",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Cargar Transaccional",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "UPDATE STATISTICS [dsa_ecu_sip].[Cuentas]\nUPDATE STATISTICS [dsa_ecu_sip].[PresupuestoGastos]\nUPDATE STATISTICS [dsa_ecu_sip].[PresupuestoVentas]\nUPDATE STATISTICS [dsa_ecu_sip].[SolicitudTotal_Aprobacion]\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "dsa_SipEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dsa_SistemaGerente_Arg')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -4976,58 +5108,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl_dsa_SistemaGerente_Ecu_Transaccional')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Recarga Contabiliadad PyG')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "pl_Recarga_ContabilidadPyG_Ecuador",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Month",
-						"interval": 1,
-						"startTime": "2021-05-07T14:51:00Z",
-						"timeZone": "UTC",
-						"schedule": {
-							"minutes": [
-								20
-							],
-							"hours": [
-								16,
-								22,
-								1,
-								14
-							],
-							"monthDays": [
-								9,
-								10,
-								12,
-								13,
-								14,
-								11,
-								15,
-								8,
-								16,
-								17,
-								18
-							]
-						}
-					}
-				}
-			},
-			"dependsOn": []
 		}
 	]
 }

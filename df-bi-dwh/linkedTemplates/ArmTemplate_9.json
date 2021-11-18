@@ -13,6 +13,338 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Planta_Ecu_ControlPedido_Reproceso')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Planta Ecuador",
+				"activities": [
+					{
+						"name": "plt_FacPedidoTransferencia",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "dwh_ecu_plt.usp_CargaFacPedidoTransferencia",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacPedidoVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "dwh_ecu_plt.usp_CargaFacVenta",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacTransferencia",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacPedidoTransferencia",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "dwh_ecu_plt.usp_CargaFacTransferencia",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacPedidoVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "dwh_ecu_plt.usp_CargaFacPedidoVenta",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Fecha Carga",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderStoredProcedureName": "[[admin_adm].[usp_CargaFecha]",
+								"storedProcedureParameters": {
+									"Dias": {
+										"type": "Int32",
+										"value": null
+									},
+									"FechaDesde": {
+										"type": "Datetime",
+										"value": null
+									},
+									"FechaFin": {
+										"type": "Datetime",
+										"value": null
+									},
+									"FechaHasta": {
+										"type": "Datetime",
+										"value": null
+									}
+								},
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "String",
+						"defaultValue": "0"
+					},
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_PlantaEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_dwh_Planta_Ecu_Embutser')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -6971,2163 +7303,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_Sharepoint')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_Domicilio_Chl_Catalogo')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Area",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Area]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Area]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Area,Cod_Restaurante,Descripcion,Estado FROM dbo.Area",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Area]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Area",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Area]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Area",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Area]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Calle",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Calle]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Calle]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Calle,Descripcion,Cod_Ciudad,Estado FROM dbo.Calle",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Calle]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Calle",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Ciudad",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Calle]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Calle",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Ciudad",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Calle]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Calles_Back",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Calles_Back]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Calles_Back]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Calle_Back,Descripcion,Cod_Restaurante,Estado FROM dbo.Calles_Back",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Calles_Back]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Calle_Back",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Calles_Back]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Calle_Back",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Calles_Back]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Calle_Restaurante",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Calle_Restaurante]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Calle_Restaurante]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Calle,Cod_Area,Estado FROM dbo.Calle_Restaurante",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Calle_Restaurante]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Calle",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Area",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Calle_Restaurante]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Calle",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Area",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Calle_Restaurante]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Cliente_Domicilio",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Cliente_Domicilio]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Cliente_Domicilio]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Cliente_Domicilio,Ruc_Cedula,Nombres,Apellidos,Observaciones,Email,Fecha,Ext,Estado,Cod_Tipo_Documento FROM dbo.Cliente_Domicilio",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Cliente_Domicilio]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Cliente_Domicilio",
-											"type": "String"
-										},
-										{
-											"name": "Ruc_Cedula",
-											"type": "String"
-										},
-										{
-											"name": "Nombres",
-											"type": "String"
-										},
-										{
-											"name": "Apellidos",
-											"type": "String"
-										},
-										{
-											"name": "Observaciones",
-											"type": "String"
-										},
-										{
-											"name": "Email",
-											"type": "String"
-										},
-										{
-											"name": "Fecha",
-											"type": "DateTime"
-										},
-										{
-											"name": "Ext",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Tipo_Documento",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Cliente_Domicilio]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Cliente_Domicilio",
-											"type": "String"
-										},
-										{
-											"name": "Ruc_Cedula",
-											"type": "String"
-										},
-										{
-											"name": "Nombres",
-											"type": "String"
-										},
-										{
-											"name": "Apellidos",
-											"type": "String"
-										},
-										{
-											"name": "Observaciones",
-											"type": "String"
-										},
-										{
-											"name": "Email",
-											"type": "String"
-										},
-										{
-											"name": "Fecha",
-											"type": "DateTime"
-										},
-										{
-											"name": "Ext",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Tipo_Documento",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Cliente_Domicilio]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Compania",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Compania]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Compania]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Compania,Descripcion,Estado FROM dbo.Compania",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Compania]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Compania",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Compania]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Compania",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Compania]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Estados_Domicilio",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Estados_Domicilio]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Estados_Domicilio]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Estado,Factura,Asignacion FROM dbo.Estados_Domicilio",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Estados_Domicilio]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Factura",
-											"type": "String"
-										},
-										{
-											"name": "Asignacion",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[Estados_Domicilio]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Factura",
-											"type": "String"
-										},
-										{
-											"name": "Asignacion",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Estados_Domicilio]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Inmueble",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Inmueble]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Inmueble]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Inmueble,Cod_Tipo_Inmueble,Descripcion,Cod_Calle1,Cod_Calle2,Cod_ZipCode,Num_Direccion,Estado,Cod_Calle_Back1,Cod_Calle_Back2 FROM dbo.Inmueble",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Inmueble]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Inmueble",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Tipo_Inmueble",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Calle1",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Calle2",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_ZipCode",
-											"type": "String"
-										},
-										{
-											"name": "Num_Direccion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Calle_Back1",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Calle_Back2",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Inmueble]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Inmueble",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Tipo_Inmueble",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Calle1",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Calle2",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_ZipCode",
-											"type": "String"
-										},
-										{
-											"name": "Num_Direccion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Calle_Back1",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Calle_Back2",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Inmueble]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Modificador",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Modificador]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Modificador]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Modificador,Cod_Tipo_Modificador,Descripcion,Estado FROM dbo.Modificador",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Modificador]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Modificador",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Tipo_Modificador",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Modificador]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Modificador",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Tipo_Modificador",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Modificador]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Motivo_Anulacion",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Motivo_Anulacion]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Motivo_Anulacion]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Motivo,Descripcion,Estado FROM dbo.Motivo_Anulacion",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Motivo_Anulacion]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Motivo",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Motivo_Anulacion]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Motivo",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Motivo_Anulacion]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Motorolos",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Motorolos]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Motorolos]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Motorolo,Cod_Compania,Cod_Restaurante,Cedula,Nombres,Apellidos,Cod_Tarjeta,Cod_Nomina,Estado,Telefono,Tipo_Motorolo FROM dbo.Motorolos",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Motorolos]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Motorolo",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Compania",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Cedula",
-											"type": "String"
-										},
-										{
-											"name": "Nombres",
-											"type": "String"
-										},
-										{
-											"name": "Apellidos",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Tarjeta",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Nomina",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Telefono",
-											"type": "String"
-										},
-										{
-											"name": "Tipo_Motorolo",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dbo].[Motorolos]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Motorolo",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Compania",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Restaurante",
-											"type": "Int32"
-										},
-										{
-											"name": "Cedula",
-											"type": "String"
-										},
-										{
-											"name": "Nombres",
-											"type": "String"
-										},
-										{
-											"name": "Apellidos",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Tarjeta",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Nomina",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Telefono",
-											"type": "String"
-										},
-										{
-											"name": "Tipo_Motorolo",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Motorolos]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Telefonos",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Telefonos]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Telefonos]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Telefono,Cod_Inmueble,Tipo,Estado,Cod_Ciudad FROM dbo.Telefonos",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Telefonos]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Telefono",
-											"type": "Int64"
-										},
-										{
-											"name": "Cod_Inmueble",
-											"type": "String"
-										},
-										{
-											"name": "Tipo",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Ciudad",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Telefonos]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Telefono",
-											"type": "Int64"
-										},
-										{
-											"name": "Cod_Inmueble",
-											"type": "String"
-										},
-										{
-											"name": "Tipo",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Ciudad",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Telefonos]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Telefono_Cliente",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Telefono_Cliente]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Telefono_Cliente]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Cliente_Domicilio,Cod_Telefono FROM dbo.Telefono_Cliente",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Telefono_Cliente]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Cliente_Domicilio",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Telefono",
-											"type": "Int64"
-										}
-									],
-									"cw_tableName": "[[dbo].[Telefono_Cliente]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Cliente_Domicilio",
-											"type": "String"
-										},
-										{
-											"name": "Cod_Telefono",
-											"type": "Int64"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Telefono_Cliente]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Tipo_Accion_Domi",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Tipo_Accion_Domi]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Tipo_Accion_Domi]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Accion_Domi,Descripcion,Inicial,Estado FROM dbo.Tipo_Accion_Domi",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Tipo_Accion_Domi]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Accion_Domi",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Inicial",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Tipo_Accion_Domi]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Accion_Domi",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Inicial",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Tipo_Accion_Domi]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Tipo_Inmueble",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Tipo_Inmueble]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Tipo_Inmueble]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Tipo_Inmueble,Descripcion,Detalle,Estado FROM dbo.Tipo_Inmueble",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Tipo_Inmueble]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Tipo_Inmueble",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Detalle",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Tipo_Inmueble]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Tipo_Inmueble",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Detalle",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Tipo_Inmueble]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Tipo_Modificador",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Tipo_Modificador]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Tipo_Modificador]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Tipo_Modificador,Descripcion,Estado FROM dbo.Tipo_Modificador",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Tipo_Modificador]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Tipo_Modificador",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Tipo_Modificador]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Tipo_Modificador",
-											"type": "Int32"
-										},
-										{
-											"name": "Descripcion",
-											"type": "String"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Tipo_Modificador]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Tipo_Modificador_Plu",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[dbo].[Tipo_Modificador_Plu]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_chl_domi].[Tipo_Modificador_Plu]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_Tipo_Modificador_Plu,Cod_Tipo_Modificador,Cod_Plu,Estado FROM dbo.Tipo_Modificador_Plu",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_chl_domi].[Tipo_Modificador_Plu]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								},
-								"disableMetricsCollection": false
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_DomicilioChl",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Tipo_Modificador_Plu",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Tipo_Modificador",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Plu",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dbo].[Tipo_Modificador_Plu]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "Cod_Tipo_Modificador_Plu",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Tipo_Modificador",
-											"type": "Int32"
-										},
-										{
-											"name": "Cod_Plu",
-											"type": "Int32"
-										},
-										{
-											"name": "Estado",
-											"type": "Int32"
-										}
-									],
-									"cw_tableName": "[[dsa_chl_domi].[Tipo_Modificador_Plu]"
-								}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "192.168.148.110"
-					},
-					"BaseDatosDomicilioGerente": {
-						"type": "string",
-						"defaultValue": "SqlGerenteDom"
-					}
-				},
-				"folder": {
-					"name": "dsa_DomicilioChl"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_DomicilioChl')]"
 			]
 		}
 	]
