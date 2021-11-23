@@ -16036,7 +16036,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,cod_medio,descripcion,color,colorSecu,Domicilio FROM dbo.MedioVenta",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,cod_medio,descripcion,color,colorSecu,Domicilio,Cod_TipoMedio FROM dbo.MedioVenta",
 								"partitionOption": "None"
 							},
 							"sink": {
@@ -16088,6 +16088,10 @@
 										{
 											"name": "Domicilio",
 											"type": "Int32"
+										},
+										{
+											"name": "Cod_TipoMedio",
+											"type": "Int32"
 										}
 									],
 									"cw_tableName": "[[dbo].[MedioVenta]",
@@ -16130,6 +16134,10 @@
 										},
 										{
 											"name": "Domicilio",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_TipoMedio",
 											"type": "Int32"
 										}
 									],
@@ -16436,6 +16444,109 @@
 										}
 									],
 									"cw_tableName": "[[dsa_chl_sg].[Users]"
+								}
+							}
+						]
+					},
+					{
+						"name": "TipoMedioVenta",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 1,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[TipoMedioVenta]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_chl_sg].[TipoMedioVenta]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,Cod_TipoMedio,descripcion FROM dbo.TipoMedioVenta",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_chl_sg].[TipoMedioVenta]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteChl",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipoMedio",
+											"type": "Int32"
+										},
+										{
+											"name": "descripcion",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dbo].[TipoMedioVenta]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.Servidor",
+										"type": "Expression"
+									},
+									"cw_baseDatos": {
+										"value": "@pipeline().parameters.BaseDatos",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_TipoMedio",
+											"type": "Int32"
+										},
+										{
+											"name": "descripcion",
+											"type": "String"
+										}
+									],
+									"cw_tableName": "[[dsa_chl_sg].[TipoMedioVenta]"
 								}
 							}
 						]
