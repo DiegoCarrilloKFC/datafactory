@@ -26060,6 +26060,147 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "QMTT",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "QMTT_BLOB",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": {
+									"value": "TRUNCATE TABLE dsa_ecu_sap.QMTT\nINSERT INTO [dsa_ecu_sap].[QMTT]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[QMTT_BLOB]\nSELECT 'ok' AS Resultado",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "DeleteQMTT",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "QMTT",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_BlobSap_Delete",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "produccionplanta/QMTT"
+								}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "almacenamientosap/produccionplanta/QMTT"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"modifiedDatetimeEnd": {
+									"value": "@adddays(pipeline().TriggerTime,-7)",
+									"type": "Expression"
+								},
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "QMTT_BLOB",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "FECHACARGA",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "produccionplanta/QMTT",
+									"wildcardFileName": {
+										"value": "@Concat('QMTT_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+										"type": "Expression"
+									}
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "truncate table dsa_ecu_sap.QMTT_BLOB",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_BlobSap",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_carpeta": "produccionplanta/QMTT"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sap_QMTT_BLOB",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -31184,6 +31325,64 @@
 						"userProperties": [],
 						"typeProperties": {
 							"storedProcedureName": "[dsa_ecu_sap].usp_CargaQASEHistorico",
+							"storedProcedureParameters": {
+								"FechaDesde": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaDesde",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"FechaHasta": {
+									"value": {
+										"value": "@activity('Fecha Carga').output.firstRow.FechaHastaActual",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "QMTT",
+						"description": "",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Fecha Carga",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[dsa_ecu_sap].usp_CargaQMTTHistorico",
 							"storedProcedureParameters": {
 								"FechaDesde": {
 									"value": {
