@@ -526,7 +526,14 @@
 			{
 				"name": "Inicializar Info Suscripcion",
 				"type": "SqlServerStoredProcedure",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Escalar DWH",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -969,6 +976,22 @@
 						"IDCadenaSistemaGerente": "0",
 						"Pais": "ECU",
 						"TipoCarga": "AUTOMATICA"
+					}
+				}
+			},
+			{
+				"name": "Escalar DWH",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_admin_Escalar_DWH",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"DWU": "DW100c"
 					}
 				}
 			}
