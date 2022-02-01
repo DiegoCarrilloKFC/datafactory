@@ -261,12 +261,6 @@
 						]
 					},
 					{
-						"activity": "Carga CAR Chl",
-						"dependencyConditions": [
-							"Completed"
-						]
-					},
-					{
 						"activity": "Carga CAR Arg",
 						"dependencyConditions": [
 							"Completed"
@@ -274,6 +268,12 @@
 					},
 					{
 						"activity": "Carga Plantas Sap Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "Carga CHL DOMI",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -785,6 +785,106 @@
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "Carga Operacion Col",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Domicilio COL",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_Col",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "COL",
+						"TipoCarga": "MANUAL"
+					}
+				}
+			},
+			{
+				"name": "Carga CAR Col",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Operacion Col",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Auditoria_Col",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": 0,
+						"Pais": "COL",
+						"TipoCarga": "MANUAL"
+					}
+				}
+			},
+			{
+				"name": "Carga Domicilio COL",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Movimiento Auditoria Col",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_DomicilioCol",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "COL",
+						"TipoCarga": "MANUAL"
+					}
+				}
+			},
+			{
+				"name": "Carga CHL DOMI",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga CAR Chl",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_DomicilioChl",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "CHL",
+						"TipoCarga": "AUTOMATICA"
+					}
 				}
 			}
 		],
