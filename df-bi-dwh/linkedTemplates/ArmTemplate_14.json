@@ -398,7 +398,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pl_Carga_Multipais')]",
+			"name": "[concat(parameters('factoryName'), '/pl_Carga_dsa_Multipais')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -406,14 +406,7 @@
 					{
 						"name": "Carga DSA SG Ecu",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -427,14 +420,7 @@
 					{
 						"name": "Carga DSA SG Col",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -448,14 +434,7 @@
 					{
 						"name": "Carga DSA SG Chl",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -469,14 +448,7 @@
 					{
 						"name": "Carga DSA MP Ecu",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -491,253 +463,9 @@
 						}
 					},
 					{
-						"name": "Carga Dimension",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga DSA SG Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga DSA SG Col",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga DSA SG Chl",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga DSA MP Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga DSA SG Arg",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga DSA DOM Chl",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga DSA SAP",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga DSA DOM Col",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga DSA SAP_1",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Dimensiones",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": 0,
-								"Pais": "ALL",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga Operacion Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Venta Acumulada Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga Plantas Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Venta Acumulada Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Planta_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga Operacion Chl",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Venta Acumulada Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_Chl",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "CHL",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga CAR Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Operacion Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga DSA SG INV Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_CAR_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": 0,
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga CAR Chl",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Operacion Chl",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Auditoria_Chl",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": 0,
-								"Pais": "CHL",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Inicializar Etapas",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Info Suscripcion",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "EXEC [dsa_int_lst].[usp_CargaTabla]\nEXEC [dsa_int_lst].[usp_CargaDependenciaTabla]\nEXEC [admin_btc].[usp_CargaTabla]\nEXEC [admin_btc].[usp_CargaDependenciaTabla]\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ECU'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ECU'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ECU'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'COL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'COL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'COL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'CHL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'CHL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'CHL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ARG'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ARG'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ARG'\n\n--Control de Cargas\nTRUNCATE TABLE admin_btc.CargaDataFactory\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA VENTA-CAR-PLANTA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA ARGENTINA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					},
-					{
 						"name": "Carga DSA DOM Col",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -749,256 +477,9 @@
 						}
 					},
 					{
-						"name": "Recarga Permisologia",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Info Suscripcion",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_App_Seguridad",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
-								"BaseDatos": "dw_admin_Bi"
-							}
-						}
-					},
-					{
-						"name": "Carga Info Sus Dim",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Dimension",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"Proceso": "DIMENSION",
-								"SP": "admin_btc.usp_CargaInfoSuscripcion_Dimension"
-							}
-						}
-					},
-					{
-						"name": "Finalizar Carga Venta",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Carga Cinnabon Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga Operaciones POS Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga CAR Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga Plantas Venta Embutser",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Tiempos Domicilio",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga CAR Chl",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA VENTA-CAR-PLANTA'\n\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA ARGENTINA'\n\nSELECT 'ok' AS Resultado",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					},
-					{
-						"name": "Carga Plantas Venta Embutser",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Plantas Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Carga Operacion Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Planta_Ecu_Venta_Embutser",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga DSA SG INV Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_Inventario",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Carga Cinnabon Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga CAR Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_Cinnabon",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Inicializar Info Suscripcion",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Escalar DWH",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[admin_btc].[usp_CargaInfoSuscripcion_Inicializa]"
-						},
-						"linkedServiceName": {
-							"referenceName": "linked_sharepoint",
-							"type": "LinkedServiceReference",
-							"parameters": {
-								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
-								"BaseDatos": "dw_dwh_suscripcion"
-							}
-						}
-					},
-					{
-						"name": "Carga Operaciones POS Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga CAR Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_POS_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
 						"name": "Carga DSA SG Arg",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -1010,187 +491,9 @@
 						}
 					},
 					{
-						"name": "Carga Operacion Arg",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Venta Acumulada Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_Arg",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ARG",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga CAR Arg",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Operacion Arg",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Auditoria_Arg",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": 0,
-								"Pais": "ARG",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Inicializar Carga Uyc",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Finalizar Carga Venta",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA USO CONSUMO ECU',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					},
-					{
-						"name": "Carga Operacion UyC Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Carga Uyc",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_UyC_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Verificar Proceso Cubos Venta",
-						"type": "Until",
-						"dependsOn": [
-							{
-								"activity": "Carga Operacion UyC Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"expression": {
-								"value": "@equals(activity('Verificar Carga Venta').output.firstRow.Resultado, 'OK')",
-								"type": "Expression"
-							},
-							"activities": [
-								{
-									"name": "Verificar Carga Venta",
-									"type": "Lookup",
-									"dependsOn": [
-										{
-											"activity": "Espera",
-											"dependencyConditions": [
-												"Completed"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "SqlDWSource",
-											"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA-CAR-PLANTA' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado",
-											"partitionOption": "None"
-										},
-										"dataset": {
-											"referenceName": "ds_dwh_general",
-											"type": "DatasetReference",
-											"parameters": {}
-										}
-									}
-								},
-								{
-									"name": "Espera",
-									"type": "Wait",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"waitTimeInSeconds": 180
-									}
-								}
-							],
-							"timeout": "00.12:00:00"
-						}
-					},
-					{
 						"name": "Carga DSA DOM Chl",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -1204,14 +507,7 @@
 					{
 						"name": "Carga DSA SAP",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -1223,119 +519,9 @@
 						}
 					},
 					{
-						"name": "Tiempos Domicilio",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Carga Operacion Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "TRUNCATE TABLE [dsa_ecu_sg].[Consolidado_DomicilioTiempos]\n\n--RANGO DE FECHAS\nset dateformat ymd\nDECLARE @FechaDesde DATETIME = CAST(GETDATE()-30 AS DATE)\nDECLARE @FechaHasta DATETIME = CAST(GETDATE() AS DATE)\n\n\n--INSERTAR DATOS\nINSERT INTO [dsa_ecu_sg].[Consolidado_DomicilioTiempos] \nSELECT\n\t'20210322',\n\tCAST(SUBSTRING(Final.cod_factura,6,14)AS INT)AS Factura,\n\tFinal.cod_telefono,\n\tCliente,\n\tCod_ZipCode,\n\tMotorizado,\n\tDespachador,\n\ttotal,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS Hora,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignada,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS Llegada,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS HoraC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignadaC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS LlegadaC,\n\tfinal.fecha,\n\tfinal.Cod_Restaurante,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS CreacionC,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS Creacion,\n\tYEAR(Fecha_Factura) AS Anio,\n\t'' AS Region,\n\tCASE WHEN fac.Cod_AppMovil is null THEN isnull(fac.Medio,'Llamada') ELSE isnull(fac.Medio,'App') END  AS Tipo_Pedido,\n\tCASE WHEN Dispositivo is null THEN '-' ELSE Dispositivo END Dispositivo,\n\tISNULL(IDMedio,'7ECU') IDMedio,\n\t'3ECU' IDCanalVenta\nFROM\n\t(\n\t\tSELECT\n\t\t\tCodigoCentroCosto,\n\t\t\tCod_Restaurante,\n\t\t\tfecha,\n\t\t\tcod_factura,\n\t\t\tcod_telefono,\n\t\t\tCliente,\n\t\t\tCod_ZipCode,\n\t\t\tMotorizado,\n\t\t\tDespachador,\n\t\t\ttotal,\n\t\t\tFecha_Factura,\n\t\t\tFecha_Creacion,\n\t\t\t[3] AS ASignada,\n\t\t\t[1] AS Llegada,\n\t\t\tIDMedio\n\t\tFROM\n\t\t\t( \n\t\t\tSELECT\n\t\t\t\tper.CodigoCentroCosto,\n\t\t\t\tper.fecha,\n\t\t\t\tfd.cod_factura,\n\t\t\t\tfd.cod_telefono,\n\t\t\t\t(cl.Nombres+SPACE(1)+cl.Apellidos) AS Cliente,\n\t\t\t\tInm.Cod_ZipCode,\n\t\t\t\t(mo.Nombres+SPACE(1)+mo.Apellidos) AS Motorizado,\n\t\t\t\tUPPER(us.Usuario) AS Despachador,\n\t\t\t\tfd.TotalBruto AS total,\n\t\t\t\tfd.fecha AS Fecha_Factura,\n\t\t\t\tfm.fecha AS tiempos,\n\t\t\t\tfm.cod_estado,\n\t\t\t\tfd.Fecha_Creacion,\n\t\t\t\tper.Cod_Restaurante,\n\t\t\t\tCASE\n\t\t\t\t\tWHEN medio IS NULL\t\t\t\t\tAND dispositivo = 'Android'\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'Android'\t\t\t\tAND dispositivo = 'App'\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'App'\t\t\t\t\tAND dispositivo IS NULL\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'App'\t\t\t\t\tAND dispositivo = 'Android'\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'App'\t\t\t\t\tAND dispositivo = 'iOS'\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'App'\t\t\t\t\tAND dispositivo = 'App'\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'App'\t\t\t\t\tAND dispositivo = 'Web'\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'App'\t\t\t\t\tAND dispositivo = 'Llamada'\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'iOS'\t\t\t\t\tAND dispositivo = 'App'\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'Llamada'\t\t\t\tAND dispositivo IS NULL\t\t\tTHEN '7ECU'\n\t\t\t\t\tWHEN medio = 'Llamada'\t\t\t\tAND dispositivo = 'Llamada'\t\tTHEN '7ECU'\n\t\t\t\t\tWHEN medio = 'Llamada'\t\t\t\tAND dispositivo = 'Android'\t\tTHEN '7ECU'\n\t\t\t\t\tWHEN medio = 'Llamada'\t\t\t\tAND dispositivo = 'Ios'\t\t\tTHEN '7ECU'\n\t\t\t\t\tWHEN medio = 'Llamada'\t\t\t\tAND dispositivo = 'Uber'\t\tTHEN '7ECU'\n\t\t\t\t\tWHEN medio = 'Llamada'\t\t\t\tAND dispositivo = 'Web'\t\t\tTHEN '7ECU'\n\t\t\t\t\tWHEN medio = 'Tictuk'\t\t\t\tAND dispositivo = 'TICTUK'\t\tTHEN '20ECU'\n\t\t\t\t\tWHEN medio = 'Call Center Regional'\tAND dispositivo = 'Operadores'\tTHEN '26ECU'\n\t\t\t\t\tWHEN medio = 'mobile'\t\t\t\tAND dispositivo = 'Web'\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'Web'\t\t\t\t\tAND dispositivo = 'mobile'\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'Web'\t\t\t\t\tAND dispositivo IS NULL\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio = 'Web'\t\t\t\t\tAND dispositivo = 'web'\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN medio IS NULL\tAND dispositivo IS NULL\tAND Cod_AppMovil IS NULL THEN '7ECU'\n\t\t\t\tELSE null\n\t\t\t\tEND IDMedio\t\t\t\t\n\t\t\t\tFROM pos_ecu_domi.factura_domicilio AS fd\n\t\t\t\t\tINNER JOIN pos_ecu_domi.periodo AS per ON fd.cod_periodo = per.cod_periodo and fd.CodigoCentroCosto = per.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Cliente_Domicilio AS cl ON fd.Cod_Cliente_Domicilio = cl.Cod_Cliente_Domicilio and cl.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Telefonos AS tl ON fd.Cod_Telefono = tl.Cod_Telefono and tl.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Inmueble AS Inm ON tl.Cod_inmueble = Inm.Cod_inmueble and inm.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Factura_Motorolo AS fm ON fd.cod_factura = fm.cod_factura and fm.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Motorolos AS mo ON fm.Cod_Motorolo = mo.Cod_Motorolo and mo.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tleft JOIN pos_ecu_domi.Users AS us ON fd.cod_usuario = us.cod_usuario\n\t\t\t\t\tINNER JOIN pos_ecu_domi.Restaurante AS res ON per.Cod_Restaurante  = res.Cod_Restaurante\n\t\t\t\t\tWHERE fd.Estado = 4 AND fm.Cod_estado IN (1, 3) AND per.Fecha >= @FechaDesde and per.Fecha <= @FechaHasta \n\t\t\t\t) dom\n\t\t\tPIVOT (MAX(Tiempos) FOR cod_estado in ([1] ,[3]) ) AS pv\n\t\t\tWHERE IDMedio IN ('6ECU','7ECU','8ECU','20ECU','26ECU','27ECU')\n\t\t) Final\n\t\tINNER JOIN pos_ecu_domi.Factura_Domicilio fac ON Final.Cod_factura = fac.Cod_Factura AND fac.CodigoCentroCosto = final.CodigoCentroCosto\n\t\tWHERE ASignada IS NOT NULL\nUNION ALL\nSELECT \n\t'20210316',\n\tCAST(SUBSTRING(Final.cod_factura,6,14)AS INT)AS Factura,\n\t0 as cod_telefono,\n\tSUBSTRING(Cliente,1,150),\n\tSUBSTRING(Cod_ZipCode,1,15),\n\tSUBSTRING(Motorizado,1,150),\n\tSUBSTRING(Despachador,1,20),\n\ttotal,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS Hora,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignada,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS Llegada,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),1,2))END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Fecha_Factura,108),4,2)) AS HoraC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),ASignada,108),4,2)) AS ASignadaC,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2))='00' THEN '24' ELSE (SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Llegada,108),4,2)) AS LlegadaC,\n\tfinal.fecha,\n\tfinal.Cod_Restaurante,\n\t(CASE WHEN(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END*60)+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS CreacionC,\n\tCASE WHEN (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2))= '00'THEN '24'ELSE (SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),1,2)) END+(SUBSTRING(CONVERT(VARCHAR(11),Final.Fecha_Creacion,108),4,2)) AS Creacion,\n\tYEAR(Fecha_Factura) AS Anio,\n\t'' AS Region,\n\t'' AS Tipo_Pedido, --CASE WHEN fac.Cod_AppMovil is null THEN isnull(fac.Medio,'Llamada') ELSE isnull(fac.Medio,'App') END  AS Tipo_Pedido,\n\t'' AS Dispositivo, --CASE WHEN Dispositivo is null THEN '-' ELSE Dispositivo END Dispositivo\n\tISNULL(IDMedio,'7ECU') IDMedio,\n\t'3ECU' IDCanalVenta\nFROM\n\t(\n\t\tSELECT\n\t\t\tCodigoCentroCosto,\n\t\t\tCod_Restaurante,\n\t\t\tfecha,\n\t\t\tcod_factura,\n\t\t\tcod_telefono,\n\t\t\tCliente,\n\t\t\tCod_ZipCode,\n\t\t\tMotorizado,\n\t\t\tDespachador,\n\t\t\ttotal,\n\t\t\tFecha_Factura,\n\t\t\tCASE WHEN ban=1 THEN Fecha_Factura ELSE [PENDIENTE] END AS Fecha_Creacion,\n\t\t\t[EN CAMINO] AS ASignada,\n\t\t\t[ENTREGADO] AS Llegada,\n\t\t\tIDMedio\n\t\tFROM\n\t\t\t( \n\t\t\tSELECT \n\t\t\t\tper.CodigoCentroCosto,\n\t\t\t\tper.prd_fechaapertura AS Fecha,\n\t\t\t\tfd.cfac_id AS cod_factura,\n\t\t\t\tcl.cli_telefono AS cod_telefono,\n\t\t\t\t(cl.cli_nombres+SPACE(1)+cl.cli_apellidos) AS Cliente,\n\t\t\t\tISNULL(ca.cod_ZipCode,'') AS Cod_ZipCode,\n\t\t\t\t'' AS Motorizado,--(mo.Nombres+SPACE(1)+mo.Apellidos) AS Motorizado,\n\t\t\t\tUPPER(us.usr_descripcion) AS Despachador,\n\t\t\t\tfd.cfac_total AS total,\n\t\t\t\tfd.cfac_fechacreacion AS Fecha_Factura,\n\t\t\t\tCASE WHEN fd.Cabecera_FacturaVarchar2='Llamada' THEN 1 ELSE 0 END AS ban,\n\t\t\t\tea.fecha AS tiempos,\n\t\t\t\tea.estado,\n\t\t\t\tfd.rst_id AS Cod_Restaurante,\n\t\t\t\tCASE\n\t\t\t\t\tWHEN ISNULL(fd.Cabecera_FacturaVarchar2,'') ='App'\t\t\t\t\t\tTHEN '6ECU'\n\t\t\t\t\tWHEN ISNULL(fd.Cabecera_FacturaVarchar2,'') ='Web'\t\t\t\t\t\tTHEN '8ECU'\n\t\t\t\t\tWHEN ISNULL(fd.Cabecera_FacturaVarchar2,'') ='Llamada'\t\t\t\t\tTHEN '7ECU'\n\t\t\t\t\tWHEN ISNULL(fd.Cabecera_FacturaVarchar2,'') ='TICTUK'\t\t\t\t\tTHEN '20ECU'\n\t\t\t\t\tWHEN ISNULL(fd.Cabecera_FacturaVarchar2,'') ='Call Center Regional'\t\tTHEN '26ECU'\n\t\t\t\t\tWHEN ISNULL(fd.Cabecera_FacturaVarchar2,'') ='Web-e'\t\t\t\t\tTHEN '27ECU'\n\t\t\t\tELSE null\n\t\t\t\tEND IDMedio\t\t\t\n\t\t\t\tFROM pos_ecu_mp.Cabecera_Factura AS fd\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Periodo AS per ON fd.IDPeriodo = per.IDPeriodo and fd.CodigoCentroCosto = per.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Cliente AS cl ON fd.IDCliente = cl.IDCliente and cl.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Cabecera_App ca ON fd.cfac_id = ca.cfac_id and ca.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Estado_Pedido_App AS ea ON ea.codigo_app = ca.codigo_app and ea.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\t--INNER JOIN pos_ecu_mp.Motorolo AS mo ON ca.IDMotorolo = mo.IDMotorolo and mo.CodigoCentroCosto = fd.CodigoCentroCosto\n\t\t\t\t\tleft JOIN pos_ecu_mp.Users_Pos AS us ON fd.IDUsersPos = us.IDUsersPos\n\t\t\t\t\tINNER JOIN pos_ecu_mp.Status st ON fd.IDStatus = st.IDStatus AND fd.IDStatus = '5E039503-85CF-E511-80C6-000D3A3261F3'\n\t\t\t\t\tWHERE ea.estado IN ('ENTREGADO','EN CAMINO','PENDIENTE') AND cast(per.prd_fechaapertura as date) >= @FechaDesde AND cast(per.prd_fechaapertura as date) < @FechaHasta\n\t\t\t) dom\n\t\t\tPIVOT (MAX(Tiempos) FOR estado in ([ENTREGADO] ,[EN CAMINO],[PENDIENTE]) ) AS pv\n\t\t\tWHERE IDMedio in ('6ECU','7ECU','8ECU','20ECU','26ECU','27ECU')\n\t\t) Final\n\t\tINNER JOIN pos_ecu_mp.Cabecera_Factura fac ON Final.Cod_factura = fac.cfac_id AND fac.CodigoCentroCosto = final.CodigoCentroCosto\n\t\tWHERE ASignada IS NOT NULL\n\n--ACTUALIZAR REGIONES\nUPDATE [dsa_ecu_sg].[Consolidado_DomicilioTiempos]\nSET [dsa_ecu_sg].[Consolidado_DomicilioTiempos].Region = dwh_dim.centrocosto.RegionOperacion\nFROM dwh_dim.centrocosto \nWHERE [dsa_ecu_sg].[Consolidado_DomicilioTiempos].cod_restaurante = dwh_dim.centrocosto.idcentrocostosg and dwh_dim.centrocosto.idcentrocostosg > 0 and dwh_dim.centrocosto.pais = 'ecu'\n\nexec dwh_dim.usp_CargaCabeceraDomicilio 'ECU', 'MANUAL'\nEXEC dwh_ecu_domi.usp_CargaFacSgProductividadDomicilio @FechaDesde ,@FechaHasta, 0, 'ECU', 'MANUAL'\n\nSELECT 'ok' AS Resultado",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_dwh_general",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "Carga Venta Acumulada Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Info Sus Dim",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_Operaciones_Venta_Acum_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga Continua",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Verificar Proceso Cubos Venta",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_Carga_Multipais_Ext",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Carga Movimiento Auditoria Col",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Finalizar Carga Venta",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_OperacionesMovAuditoria_Col",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "COL",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
 						"name": "Carga DSA SAP_1",
 						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Inicializar Etapas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
+						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
@@ -1344,72 +530,6 @@
 							},
 							"waitOnCompletion": true,
 							"parameters": {}
-						}
-					},
-					{
-						"name": "Carga Plantas Sap Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Plantas Sap Kardex Ecu",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_PlantaSap_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Carga Plantas Sap Kardex Ecu",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Carga Venta Acumulada Ecu",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_dwh_PlantaSapKardex_Ecu",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"IDCadenaSistemaGerente": "0",
-								"Pais": "ECU",
-								"TipoCarga": "AUTOMATICA"
-							}
-						}
-					},
-					{
-						"name": "Escalar DWH",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_admin_Escalar_DWH",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"DWU": "DW1000c"
-							}
 						}
 					}
 				],
@@ -1733,6 +853,900 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_Carga_Multipais')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Carga Dimension",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga DSA Multipais",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Dimensiones",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": 0,
+								"Pais": "ALL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga Operacion Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga Plantas Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Planta_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga Operacion Chl",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Chl",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "CHL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga CAR Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_CAR_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": 0,
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga CAR Chl",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Chl",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Auditoria_Chl",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": 0,
+								"Pais": "CHL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Inicializar Etapas",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Info Suscripcion",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "EXEC [dsa_int_lst].[usp_CargaTabla]\nEXEC [dsa_int_lst].[usp_CargaDependenciaTabla]\nEXEC [admin_btc].[usp_CargaTabla]\nEXEC [admin_btc].[usp_CargaDependenciaTabla]\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ECU'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ECU'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ECU'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'COL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'COL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'COL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'CHL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'CHL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'CHL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ARG'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ARG'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ARG'\n\n--Control de Cargas\nTRUNCATE TABLE admin_btc.CargaDataFactory\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA VENTA-CAR-PLANTA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA ARGENTINA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Recarga Permisologia",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Info Suscripcion",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_App_Seguridad",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+								"BaseDatos": "dw_admin_Bi"
+							}
+						}
+					},
+					{
+						"name": "Carga Info Sus Dim",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Dimension",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Proceso": "DIMENSION",
+								"SP": "admin_btc.usp_CargaInfoSuscripcion_Dimension"
+							}
+						}
+					},
+					{
+						"name": "Finalizar Carga Venta",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Carga Cinnabon Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Operaciones POS Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga CAR Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Plantas Venta Embutser",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga CAR Arg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Plantas Sap Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga CHL DOMI",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga CAR Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA VENTA-CAR-PLANTA'\n\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA ARGENTINA'\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Carga Plantas Venta Embutser",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Plantas Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Operacion Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Planta_Ecu_Venta_Embutser",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga DSA SG INV Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dsa_SistemaGerente_Ecu_Transaccional_Inventario",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Carga Cinnabon Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga CAR Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Cinnabon",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Inicializar Info Suscripcion",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Escalar DWH",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_CargaInfoSuscripcion_Inicializa]"
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_sharepoint",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+								"BaseDatos": "dw_dwh_suscripcion"
+							}
+						}
+					},
+					{
+						"name": "Carga Operaciones POS Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga CAR Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_POS_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga Operacion Arg",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Arg",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ARG",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga CAR Arg",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Arg",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Auditoria_Arg",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": 0,
+								"Pais": "ARG",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Inicializar Carga Uyc",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Reescalar DWH",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA USO CONSUMO ECU',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Carga Operacion UyC Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Carga Uyc",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_UyC_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Verificar Proceso Cubos Venta",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "Finalizar Carga Venta",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Verificar Carga Venta').output.firstRow.Resultado, 'OK')",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Verificar Carga Venta",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "Espera",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlDWSource",
+											"sqlReaderQuery": "IF EXISTS(SELECT * FROM admin_btc.CargaDataFactory WHERE Proceso = 'PROCESO SSAS VENTA-CAR-PLANTA' AND Estado = 1)\n\tSELECT 'OK' AS Resultado\nELSE\n\tSELECT 'REINTENTAR' AS Resultado",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "ds_dwh_general",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									}
+								},
+								{
+									"name": "Espera",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 180
+									}
+								}
+							],
+							"timeout": "00.12:00:00"
+						}
+					},
+					{
+						"name": "Carga Movimiento Auditoria Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_OperacionesMovAuditoria_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "COL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga DSA Multipais",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Inicializar Etapas",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_Carga_dsa_Multipais",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Carga Plantas Sap Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Plantas Sap Kardex Ecu",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_PlantaSap_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Carga Plantas Sap Kardex Ecu",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Info Sus Dim",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_PlantaSapKardex_Ecu",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "ECU",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					},
+					{
+						"name": "Escalar DWH",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW1000c"
+							}
+						}
+					},
+					{
+						"name": "Reescalar DWH",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Verificar Proceso Cubos Venta",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_admin_Escalar_DWH",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"DWU": "DW500c"
+							}
+						}
+					},
+					{
+						"name": "Finalizar Carga UyC",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion UyC Ecu",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "--Control de Cargas\nUPDATE admin_btc.CargaDataFactory\nSET FechaHasta = DATEADD(HH,-5,GETDATE()), Estado = 1\nWHERE FechaPeriodo =  CAST(DATEADD(HH,-5,GETDATE()) AS DATE) AND Proceso = 'CARGA USO CONSUMO ECU'\n\nSELECT 'ok' AS Resultado",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_dwh_general",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					},
+					{
+						"name": "Carga Operacion Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Domicilio COL",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "COL",
+								"TipoCarga": "MANUAL"
+							}
+						}
+					},
+					{
+						"name": "Carga CAR Col",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Operacion Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Auditoria_Col",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": 0,
+								"Pais": "COL",
+								"TipoCarga": "MANUAL"
+							}
+						}
+					},
+					{
+						"name": "Carga Domicilio COL",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga Movimiento Auditoria Col",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_DomicilioCol",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "COL",
+								"TipoCarga": "MANUAL"
+							}
+						}
+					},
+					{
+						"name": "Carga CHL DOMI",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Carga CAR Chl",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_dwh_Operaciones_DomicilioChl",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"IDCadenaSistemaGerente": "0",
+								"Pais": "CHL",
+								"TipoCarga": "AUTOMATICA"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Carga_dwh_Triggers"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_Carga_dsa_Multipais')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Carga Multipais')]",
