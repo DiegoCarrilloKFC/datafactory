@@ -3,148 +3,11 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "EntradaDiario",
-				"type": "Copy",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 2,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"maxConcurrentConnections": 1,
-							"recursive": true,
-							"modifiedDatetimeStart": {
-								"value": "@addMinutes(pipeline().TriggerTime,-30)",
-								"type": "Expression"
-							},
-							"modifiedDatetimeEnd": {
-								"value": "@addMinutes(pipeline().TriggerTime,+30)",
-								"type": "Expression"
-							},
-							"wildcardFolderPath": "reproceso/contabilidad/ENTRADADIARIO",
-							"wildcardFileName": {
-								"value": "@Concat('ENTRADADIARIO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							}
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "SqlDWSink",
-						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sap].[entradadiario]",
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "reproceso/contabilidad/ENTRADADIARIO"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_sap_entradadiario",
-						"type": "DatasetReference"
-					}
-				]
-			},
-			{
-				"name": "Copy Blob Entrada Diario",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "EntradaDiario",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 2,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"modifiedDatetimeStart": {
-								"value": "@addMinutes(pipeline().TriggerTime,-30)",
-								"type": "Expression"
-							},
-							"modifiedDatetimeEnd": {
-								"value": "@addMinutes(pipeline().TriggerTime,+30)",
-								"type": "Expression"
-							},
-							"wildcardFolderPath": "reproceso/contabilidad/ENTRADADIARIO",
-							"wildcardFileName": {
-								"value": "@Concat('ENTRADADIARIO_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
-								"type": "Expression"
-							},
-							"enablePartitionDiscovery": false
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
-					},
-					"sink": {
-						"type": "DelimitedTextSink",
-						"storeSettings": {
-							"type": "AzureBlobStorageWriteSettings",
-							"copyBehavior": "MergeFiles"
-						},
-						"formatSettings": {
-							"type": "DelimitedTextWriteSettings",
-							"quoteAllText": true,
-							"fileExtension": ".txt"
-						}
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_BlobSap",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "reproceso/contabilidad/ENTRADADIARIO"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_BlobSap_Delete",
-						"type": "DatasetReference",
-						"parameters": {
-							"cw_carpeta": "reproceso/contabilidadLeidos"
-						}
-					}
-				]
-			},
-			{
 				"name": "DeleteLeido",
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "Copy Blob Entrada Diario",
+						"activity": "ACDOCA",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -190,7 +53,7 @@
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "Copy Blob Entrada Diario",
+						"activity": "ACDOCA",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -224,6 +87,92 @@
 						"type": "AzureBlobStorageReadSettings",
 						"recursive": true,
 						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "ACDOCA_BLOB",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "reproceso/contabilidad/ACDOCA",
+							"wildcardFileName": {
+								"value": "@Concat('ACDOCA_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table dsa_ecu_sap.ACDOCA_BLOB",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "reproceso/contabilidad/ACDOCA"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_sap_ACDOCA_BLOB",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "ACDOCA",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "ACDOCA_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.ACDOCA\nINSERT INTO [dsa_ecu_sap].[ACDOCA]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[ACDOCA_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
 					}
 				}
 			}
