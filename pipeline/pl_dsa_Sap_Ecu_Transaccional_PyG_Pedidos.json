@@ -247,7 +247,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "reproceso/contabilidad/MBEWH"
+							"cw_carpeta": "reproceso/produccionplanta/MBEWH"
 						}
 					}
 				],
@@ -333,7 +333,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/MATDOC"
+							"cw_carpeta": "reproceso/produccionplanta/MATDOC"
 						}
 					}
 				],
@@ -867,7 +867,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/VBRK"
+							"cw_carpeta": "reproceso/produccionplanta/VBRK"
 						}
 					}
 				],
@@ -999,7 +999,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/VBRP"
+							"cw_carpeta": "reproceso/produccionplanta/VBRP"
 						}
 					}
 				],
@@ -1109,7 +1109,7 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/VBAK",
+							"wildcardFolderPath": "reproceso/produccionplanta/VBAK",
 							"wildcardFileName": {
 								"value": "@Concat('VBAK_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
@@ -1131,7 +1131,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/VBAK"
+							"cw_carpeta": "reproceso/produccionplanta/VBAK"
 						}
 					}
 				],
@@ -1241,7 +1241,7 @@
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "produccionplanta/LIKP",
+							"wildcardFolderPath": "reproceso/produccionplanta/LIKP",
 							"wildcardFileName": {
 								"value": "@Concat('LIKP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
 								"type": "Expression"
@@ -1263,7 +1263,7 @@
 						"referenceName": "ds_BlobSap",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "produccionplanta/LIKP"
+							"cw_carpeta": "reproceso/produccionplanta/LIKP"
 						}
 					}
 				],
@@ -1277,7 +1277,14 @@
 			{
 				"name": "LIPS",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "LIPS_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -1307,7 +1314,7 @@
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "LIPS_BLOB",
+						"activity": "LIPS",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1351,14 +1358,7 @@
 			{
 				"name": "LIPS_BLOB",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "LIPS",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
