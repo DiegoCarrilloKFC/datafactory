@@ -72,7 +72,7 @@
 						"referenceName": "ds_BlobSap_Delete",
 						"type": "DatasetReference",
 						"parameters": {
-							"cw_carpeta": "reproceso/contabilidad/ENTRADADIARIO"
+							"cw_carpeta": "reproceso/contabilidad/ACDOCA"
 						}
 					},
 					"logStorageSettings": {
@@ -93,7 +93,14 @@
 			{
 				"name": "ACDOCA_BLOB",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "FECHACARGA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -175,6 +182,19 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "FECHACARGA",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "FechaCarga",
+					"value": {
+						"value": "@Concat(pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia)",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -189,6 +209,11 @@
 			"Dia": {
 				"type": "string",
 				"defaultValue": "08"
+			}
+		},
+		"variables": {
+			"FechaCarga": {
+				"type": "String"
 			}
 		},
 		"folder": {
