@@ -1153,6 +1153,270 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "LIKP",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "LIKP_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.LIKP\nINSERT INTO [dsa_ecu_sap].[LIKP]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[LIKP_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteLIKP",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "LIKP",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/LIKP"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/produccionplanta/LIKP"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "LIKP_BLOB",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "produccionplanta/LIKP",
+							"wildcardFileName": {
+								"value": "@Concat('LIKP_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table dsa_ecu_sap.LIKP_BLOB",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/LIKP"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_sap_LIKP_BLOB",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "LIPS",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "TRUNCATE TABLE dsa_ecu_sap.LIPS\nINSERT INTO [dsa_ecu_sap].[LIPS]\nSELECT '@{variables('FECHACARGA')}' ,* FROM [dsa_ecu_sap].[LIPS_BLOB]\nSELECT 'ok' AS Resultado",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DeleteLIPS",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "LIPS_BLOB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_BlobSap_Delete",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/LIPS"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "almacenamientosap/produccionplanta/LIPS"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeEnd": {
+							"value": "@adddays(pipeline().TriggerTime,-7)",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "LIPS_BLOB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "LIPS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "produccionplanta/LIPS",
+							"wildcardFileName": {
+								"value": "@Concat('LIPS_',pipeline().parameters.Anio,pipeline().parameters.Mes,pipeline().parameters.Dia,'_','*.txt')",
+								"type": "Expression"
+							}
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "truncate table dsa_ecu_sap.LIPS_BLOB",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_BlobSap",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_carpeta": "produccionplanta/LIPS"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_sap_LIPS_BLOB",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
 		"parameters": {
