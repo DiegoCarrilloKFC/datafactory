@@ -4,7 +4,7 @@
 	"parameters": {
 		"factoryName": {
 			"type": "string",
-			"metadata": "Nombre de instancia de Data Factory",
+			"metadata": "Data Factory name",
 			"defaultValue": "df-bi-dwh"
 		}
 	},
@@ -26878,6 +26878,138 @@
 										{
 											"name": "ControlVacaciones",
 											"type": "Int32"
+										}
+									],
+									"cw_tableName": "[[dsa_ecu_sg].[Perfil]"
+								}
+							}
+						]
+					},
+					{
+						"name": "Impuestos_Restaurante",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Impuestos_Restaurante]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dsa_ecu_sg].[Impuestos_Restaurante]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga, Cod_Impuesto_Restaurante,Cod_Restaurante,Cod_Tienda,Cod_Impuesto,Desde,Hasta FROM dbo.Impuestos_Restaurante",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"writeBatchSize": 10000,
+								"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[Impuestos_Restaurante]",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "linked_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "contenedor"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SistemaGerenteEcu",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Impuesto_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Tienda",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Impuesto",
+											"type": "String"
+										},
+										{
+											"name": "Desde",
+											"type": "DateTime"
+										},
+										{
+											"name": "Hasta",
+											"type": "IntDateTime32"
+										}
+									],
+									"cw_tableName": "[[dbo].[Perfil]",
+									"cw_servidor": {
+										"value": "@pipeline().parameters.ServidorQuito",
+										"type": "Expression"
+									},
+									"cw_baseDatos": "GerenteNacional_22"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dwh",
+								"type": "DatasetReference",
+								"parameters": {
+									"cw_structure": [
+										{
+											"name": "FechaCarga",
+											"type": "DateTime"
+										},
+										{
+											"name": "Cod_Impuesto_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Restaurante",
+											"type": "Int32"
+										},
+										{
+											"name": "Cod_Tienda",
+											"type": "String"
+										},
+										{
+											"name": "Cod_Impuesto",
+											"type": "String"
+										},
+										{
+											"name": "Desde",
+											"type": "DateTime"
+										},
+										{
+											"name": "Hasta",
+											"type": "IntDateTime32"
 										}
 									],
 									"cw_tableName": "[[dsa_ecu_sg].[Perfil]"
