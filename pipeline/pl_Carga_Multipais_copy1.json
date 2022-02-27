@@ -1,0 +1,156 @@
+{
+	"name": "pl_Carga_Multipais_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Carga Dimension",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga DSA Multipais",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Dimensiones",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": 0,
+						"Pais": "ALL",
+						"TipoCarga": "AUTOMATICA"
+					}
+				}
+			},
+			{
+				"name": "Carga Operacion Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Info Sus Dim",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Operaciones_Ecu",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": "0",
+						"Pais": "ECU",
+						"TipoCarga": "AUTOMATICA"
+					}
+				}
+			},
+			{
+				"name": "Carga CAR Ecu",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Operacion Ecu",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_CAR_Ecu",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"IDCadenaSistemaGerente": 0,
+						"Pais": "ECU",
+						"TipoCarga": "AUTOMATICA"
+					}
+				}
+			},
+			{
+				"name": "Inicializar Etapas",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "EXEC [dsa_int_lst].[usp_CargaTabla]\nEXEC [dsa_int_lst].[usp_CargaDependenciaTabla]\nEXEC [admin_btc].[usp_CargaTabla]\nEXEC [admin_btc].[usp_CargaDependenciaTabla]\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ECU'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ECU'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ECU'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'COL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'COL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'COL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'CHL'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'CHL'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'CHL'\n\nEXEC admin_btc.usp_CargaInicialLogEjecucionEtapa 'ARG'\nEXEC admin_btc.usp_CargaInicialLogEjecucionTabla 'ARG'\nEXEC [admin_btc].[usp_CargaInicialLogEjecucionCubo] 'ARG'\n\n--Control de Cargas\nTRUNCATE TABLE admin_btc.CargaDataFactory\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA VENTA-CAR-PLANTA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nINSERT INTO admin_btc.CargaDataFactory\nSELECT CAST(DATEADD(HH,-5,GETDATE()) AS DATE),'CARGA ARGENTINA',DATEADD(HH,-5,GETDATE()),NULL,0\n\nSELECT 'ok' AS Resultado",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_dwh_general",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "Carga Info Sus Dim",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Carga Dimension",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_dwh_Info_Suscripcion_Proceso",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Proceso": "DIMENSION",
+						"SP": "admin_btc.usp_CargaInfoSuscripcion_Dimension"
+					}
+				}
+			},
+			{
+				"name": "Carga DSA Multipais",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Inicializar Etapas",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_Carga_dsa_Multipais",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Carga_dwh_Triggers"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
