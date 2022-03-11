@@ -2480,6 +2480,380 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "ArticuloActivoFijo",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dsa_ecu_sg].[ST_Transaccional]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_sg].[ST_Transaccional]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT GETDATE() AS FechaCarga\n\t   ,[Cod_ActivoFijo]\n      ,[Cod_Restaurante]\n      ,[Marca]\n      ,[Modelo]\n      ,[Fecha_Adquisicion]\n      ,[Serie]\n      ,[Nombre]\n      ,[Precio_Adquisicion]\n      ,[Localizacion]\n      ,[StatusAX]\n      ,[Clave_TipAX]\n      ,[RecIdAX]\n      ,[info1]\n      ,[info2]\n      ,[info3]\n      ,[Modificado]\n      ,[Estado]\n      ,[Placa]\n      ,[Fecha_Creacion]\n      ,[Cod_ERP]\n      ,[Centro_Costo]\n  FROM [dbo].[ArtActFijos]",
+							"type": "Expression"
+						},
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[ArtActFijos]",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_SistemaGerenteEcu",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_ActivoFijo",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Marca",
+									"type": "String"
+								},
+								{
+									"name": "Modelo",
+									"type": "String"
+								},
+								{
+									"name": "Fecha_Adquisicion",
+									"type": "DateTime"
+								},
+								{
+									"name": "Serie",
+									"type": "String"
+								},
+								{
+									"name": "Nombre",
+									"type": "String"
+								},
+								{
+									"name": "Precio_Adquisicion",
+									"type": "String"
+								},
+								{
+									"name": "Localizacion",
+									"type": "String"
+								},
+								{
+									"name": "StatusAX",
+									"type": "Int32"
+								},
+								{
+									"name": "Clave_TipAX",
+									"type": "String"
+								},
+								{
+									"name": "RecIdAX",
+									"type": "Int64"
+								},
+								{
+									"name": "info1",
+									"type": "String"
+								},
+								{
+									"name": "info2",
+									"type": "String"
+								},
+								{
+									"name": "info3",
+									"type": "String"
+								},
+								{
+									"name": "Modificado",
+									"type": "Int32"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "Placa",
+									"type": "String"
+								},
+								{
+									"name": "Fecha_Creacion",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_ERP",
+									"type": "String"
+								},
+								{
+									"name": "Centro_Costo",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dbo].ArtActFijos",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.ServidorQuito",
+								"type": "Expression"
+							},
+							"cw_baseDatos": "GerenteNacional_22"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_ActivoFijo",
+									"type": "Int32"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Marca",
+									"type": "String"
+								},
+								{
+									"name": "Modelo",
+									"type": "String"
+								},
+								{
+									"name": "Fecha_Adquisicion",
+									"type": "DateTime"
+								},
+								{
+									"name": "Serie",
+									"type": "String"
+								},
+								{
+									"name": "Nombre",
+									"type": "String"
+								},
+								{
+									"name": "Precio_Adquisicion",
+									"type": "String"
+								},
+								{
+									"name": "Localizacion",
+									"type": "String"
+								},
+								{
+									"name": "StatusAX",
+									"type": "Int32"
+								},
+								{
+									"name": "Clave_TipAX",
+									"type": "String"
+								},
+								{
+									"name": "RecIdAX",
+									"type": "Int64"
+								},
+								{
+									"name": "info1",
+									"type": "String"
+								},
+								{
+									"name": "info2",
+									"type": "String"
+								},
+								{
+									"name": "info3",
+									"type": "String"
+								},
+								{
+									"name": "Modificado",
+									"type": "Int32"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								},
+								{
+									"name": "Placa",
+									"type": "String"
+								},
+								{
+									"name": "Fecha_Creacion",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_ERP",
+									"type": "String"
+								},
+								{
+									"name": "Centro_Costo",
+									"type": "String"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sg].[ArtActFijos]"
+						}
+					}
+				]
+			},
+			{
+				"name": "ActivosInv",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dsa_ecu_sg].[ST_Transaccional]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_sg].[ST_Transaccional]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT getdate() as [FechaCarga]\n      ,[Num_TransActivo]\n      ,[Cod_ActivoFijo]\n      ,[Cod_ActivoFijoNuevo]\n      ,[Cantidad]\n  FROM [dbo].[ActivosInv]",
+							"type": "Expression"
+						},
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].ActivosInv",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_SistemaGerenteEcu",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Num_TransActivo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_ActivoFijo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_ActivoFijoNuevo",
+									"type": "Int32"
+								},
+								{
+									"name": "Cantidad",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dbo].ActivosInv",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.ServidorQuito",
+								"type": "Expression"
+							},
+							"cw_baseDatos": "GerenteNacional_22"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Num_TransActivo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_ActivoFijo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_ActivoFijoNuevo",
+									"type": "Int32"
+								},
+								{
+									"name": "Cantidad",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sg].[ActivosInv]"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
