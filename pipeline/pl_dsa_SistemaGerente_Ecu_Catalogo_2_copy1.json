@@ -256,6 +256,125 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "ActivosInv",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dsa_ecu_sg].[ST_Transaccional]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_ecu_sg].[ST_Transaccional]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT getdate() as [FechaCarga]\n      ,[Num_TransActivo]\n      ,[Cod_ActivoFijo]\n      ,[Cod_ActivoFijoNuevo]\n      ,[Cantidad]\n  FROM [dsa_ecu_sg].[ActivosInv]",
+							"type": "Expression"
+						},
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_ecu_sg].[ArtActFijos]",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_SistemaGerenteEcu",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Num_TransActivo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_ActivoFijo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_ActivoFijoNuevo",
+									"type": "Int32"
+								},
+								{
+									"name": "Cantidad",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dbo].ActivosInv",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.ServidorQuito",
+								"type": "Expression"
+							},
+							"cw_baseDatos": "GerenteNacional_22"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Num_TransActivo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_ActivoFijo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_ActivoFijoNuevo",
+									"type": "Int32"
+								},
+								{
+									"name": "Cantidad",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dsa_ecu_sg].[ActivosInv]"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
