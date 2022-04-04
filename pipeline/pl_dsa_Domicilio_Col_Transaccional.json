@@ -2657,6 +2657,255 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "Periodo",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[Periodo]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_col_domi].[Periodo]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT GETDATE() AS FechaCarga,Cod_Periodo,Cod_Restaurante,Fecha,Estado FROM dbo.Periodo WHERE Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}'",
+							"type": "Expression"
+						},
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBatchSize": 10000,
+						"preCopyScript": "TRUNCATE TABLE [dsa_col_domi].[Periodo]",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_DomicilioCol",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_Periodo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Fecha",
+									"type": "DateTime"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dbo].[Periodo]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatosDomicilioGerente",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_Periodo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Fecha",
+									"type": "DateTime"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dsa_col_domi].[Periodo]"
+						}
+					}
+				]
+			},
+			{
+				"name": "Periodo_server_2",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Periodo",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[Periodo]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dsa_col_domi].[Periodo]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "SELECT GETDATE() AS FechaCarga,Cod_Periodo,Cod_Restaurante,Fecha,Estado FROM dbo.Periodo WHERE Fecha BETWEEN '@{pipeline().parameters.FechaDesde}' AND '@{pipeline().parameters.FechaHasta}' AND Fecha >= '20220401'",
+							"type": "Expression"
+						},
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBatchSize": 10000,
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": 0,
+							"rejectType": "value",
+							"useTypeDefault": true
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "linked_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "contenedor"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_DomicilioCol_2",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_Periodo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Fecha",
+									"type": "DateTime"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dbo].[Periodo]",
+							"cw_servidor": {
+								"value": "@pipeline().parameters.Servidor2",
+								"type": "Expression"
+							},
+							"cw_baseDatos": {
+								"value": "@pipeline().parameters.BaseDatosDomicilioGerente2",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"cw_structure": [
+								{
+									"name": "FechaCarga",
+									"type": "DateTime"
+								},
+								{
+									"name": "Cod_Periodo",
+									"type": "String"
+								},
+								{
+									"name": "Cod_Restaurante",
+									"type": "Int32"
+								},
+								{
+									"name": "Fecha",
+									"type": "DateTime"
+								},
+								{
+									"name": "Estado",
+									"type": "Int32"
+								}
+							],
+							"cw_tableName": "[dsa_col_domi].[Periodo]"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
