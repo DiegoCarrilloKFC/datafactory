@@ -4,7 +4,7 @@
 	"parameters": {
 		"factoryName": {
 			"type": "string",
-			"metadata": "Nombre de instancia de Data Factory",
+			"metadata": "Data Factory name",
 			"defaultValue": "df-bi-dwh"
 		}
 	},
@@ -12,6 +12,557 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dwh_Planta_Ecu')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Carga Información Planta Ecuador",
+				"activities": [
+					{
+						"name": "plt_FacDevolucion",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacDevolucion",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacPedidoTransferencia",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPedidoTransferencia",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacDevolucion",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacProyeccionVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacProyeccionVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacTransferencia",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacPedidoTransferencia",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacTransferencia",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "rpt_FacVentaMensualEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_rpt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVentaMensualEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "rpt_FacVentaSemanalEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_rpt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacVentaSemanalEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "plt_FacPedidoVenta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_ecu_plt",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaFacPedidoVenta",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "adm_ProyeccionEmbutser",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_EjecutaSP]",
+							"storedProcedureParameters": {
+								"Esquema": {
+									"value": "dwh_adm",
+									"type": "String"
+								},
+								"IDCadenaSistemaGerente": {
+									"value": {
+										"value": "@pipeline().parameters.IDCadenaSistemaGerente",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"Pais": {
+									"value": {
+										"value": "@pipeline().parameters.Pais",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Procedimiento": {
+									"value": "usp_CargaProyeccionEmbutser",
+									"type": "String"
+								},
+								"TipoCarga": {
+									"value": {
+										"value": "@pipeline().parameters.TipoCarga",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Carga Info Suscripcion Venta",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "plt_FacVenta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 300,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[admin_btc].[usp_CargaInfoSuscripcion_Planta_Ecu]"
+						},
+						"linkedServiceName": {
+							"referenceName": "linked_sharepoint",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"Servidor": "SAZSHAREPBDD\\BD_NEGOCIO",
+								"BaseDatos": "dw_dwh_suscripcion"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"IDCadenaSistemaGerente": {
+						"type": "String",
+						"defaultValue": "0"
+					},
+					"Pais": {
+						"type": "String",
+						"defaultValue": "ECU"
+					},
+					"TipoCarga": {
+						"type": "String",
+						"defaultValue": "MANUAL"
+					}
+				},
+				"folder": {
+					"name": "dwh_PlantaEcu"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_dwh_Planta_Ecu_Compras')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -2776,6 +3327,47 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_DomicilioCol_2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linked_domicilio_col_2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"Serivdor": "192.168.179.112\\DomicilioCol",
+						"BaseDatos": "SqlGerenteDom"
+					}
+				},
+				"parameters": {
+					"cw_structure": {
+						"type": "Array"
+					},
+					"cw_tableName": {
+						"type": "String"
+					},
+					"cw_servidor": {
+						"type": "string"
+					},
+					"cw_baseDatos": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "dsa_Domicilio"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"typeProperties": {
+					"tableName": {
+						"value": "@dataset().cw_tableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_DynamicsAxEcu')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3222,1540 +3814,6 @@
 				"annotations": []
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_App_ContabilidadRegional_Catalogo')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "AgrupacionCContable",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[app].[AgrupacionCContable]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_int_app].[AgrupacionCContable]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDAgrupacionCContable,IDSubGrupoCContable,Nombre,Nivel,Estatus,OrdenReporte,FechaInsert FROM app.AgrupacionCContable",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_int_app].[AgrupacionCContable]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDAgrupacionCContable",
-											"type": "String"
-										},
-										{
-											"name": "IDSubGrupoCContable",
-											"type": "String"
-										},
-										{
-											"name": "Nombre",
-											"type": "String"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "OrdenReporte",
-											"type": "Int32"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										}
-									],
-									"cw_tableName": "[[app].[AgrupacionCContable]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDAgrupacionCContable",
-											"type": "String"
-										},
-										{
-											"name": "IDSubGrupoCContable",
-											"type": "String"
-										},
-										{
-											"name": "Nombre",
-											"type": "String"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "OrdenReporte",
-											"type": "Int32"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										}
-									],
-									"cw_tableName": "[[dsa_int_app].[AgrupacionCContable]"
-								}
-							}
-						]
-					},
-					{
-						"name": "CuentaContable",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[app].[CuentaContable]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_int_app].[CuentaContable]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDCuentaContable,IDAgrupacionCContable,IDPais,IDEmpresa,IDEstadoFinanciero,CodigoCuentaContable,NombreCuentaContable,Ebitda,Nivel,Estatus,FechaInicio,FechaFin,Version,AnioInsert,MesInsert,FechaInsert,UsuarioInsert,UsuarioMod,FechaDelete,UsuarioDelete FROM app.CuentaContable",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_int_app].[CuentaContable]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "IDAgrupacionCContable",
-											"type": "String"
-										},
-										{
-											"name": "IDPais",
-											"type": "String"
-										},
-										{
-											"name": "IDEmpresa",
-											"type": "String"
-										},
-										{
-											"name": "IDEstadoFinanciero",
-											"type": "Int32"
-										},
-										{
-											"name": "CodigoCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "NombreCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "Ebitda",
-											"type": "Boolean"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaInicio",
-											"type": "DateTime"
-										},
-										{
-											"name": "FechaFin",
-											"type": "DateTime"
-										},
-										{
-											"name": "Version",
-											"type": "String"
-										},
-										{
-											"name": "AnioInsert",
-											"type": "Int32"
-										},
-										{
-											"name": "MesInsert",
-											"type": "Int32"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioInsert",
-											"type": "String"
-										},
-										{
-											"name": "UsuarioMod",
-											"type": "String"
-										},
-										{
-											"name": "FechaDelete",
-											"type": "String"
-										},
-										{
-											"name": "UsuarioDelete",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[app].[CuentaContable]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "IDAgrupacionCContable",
-											"type": "String"
-										},
-										{
-											"name": "IDPais",
-											"type": "String"
-										},
-										{
-											"name": "IDEmpresa",
-											"type": "String"
-										},
-										{
-											"name": "IDEstadoFinanciero",
-											"type": "Int32"
-										},
-										{
-											"name": "CodigoCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "NombreCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "Ebitda",
-											"type": "Boolean"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaInicio",
-											"type": "DateTime"
-										},
-										{
-											"name": "FechaFin",
-											"type": "DateTime"
-										},
-										{
-											"name": "Version",
-											"type": "String"
-										},
-										{
-											"name": "AnioInsert",
-											"type": "Int32"
-										},
-										{
-											"name": "MesInsert",
-											"type": "Int32"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioInsert",
-											"type": "String"
-										},
-										{
-											"name": "UsuarioMod",
-											"type": "String"
-										},
-										{
-											"name": "FechaDelete",
-											"type": "String"
-										},
-										{
-											"name": "UsuarioDelete",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_int_app].[CuentaContable]"
-								}
-							}
-						]
-					},
-					{
-						"name": "EliminacionCContables",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[app].[EliminacionCContables]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_int_app].[EliminacionCContables]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDEliminacionCContables,IDPais,RucEmpresa,Empresa,Anio,Mes,CuentaContable,NombreCuentaContable,ValorReal,Debe,Haber,Saldo,EstatusAbierto,FechaInsert,UsuarioInsert,FechaDelete,UsuarioDelete FROM app.EliminacionCContable",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_int_app].[EliminacionCContables]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDEliminacionCContables",
-											"type": "Int32"
-										},
-										{
-											"name": "IDPais",
-											"type": "String"
-										},
-										{
-											"name": "RucEmpresa",
-											"type": "String"
-										},
-										{
-											"name": "Empresa",
-											"type": "String"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Mes",
-											"type": "String"
-										},
-										{
-											"name": "CuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "NombreCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "ValorReal",
-											"type": "Double"
-										},
-										{
-											"name": "Debe",
-											"type": "Double"
-										},
-										{
-											"name": "Haber",
-											"type": "Double"
-										},
-										{
-											"name": "Saldo",
-											"type": "Double"
-										},
-										{
-											"name": "EstatusAbierto",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioInsert",
-											"type": "String"
-										},
-										{
-											"name": "FechaDelete",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioDelete",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[app].[EliminacionCContables]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDEliminacionCContables",
-											"type": "Int32"
-										},
-										{
-											"name": "IDPais",
-											"type": "String"
-										},
-										{
-											"name": "RucEmpresa",
-											"type": "String"
-										},
-										{
-											"name": "Empresa",
-											"type": "String"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Mes",
-											"type": "String"
-										},
-										{
-											"name": "CuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "NombreCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "ValorReal",
-											"type": "Double"
-										},
-										{
-											"name": "Debe",
-											"type": "Double"
-										},
-										{
-											"name": "Haber",
-											"type": "Double"
-										},
-										{
-											"name": "Saldo",
-											"type": "Double"
-										},
-										{
-											"name": "EstatusAbierto",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioInsert",
-											"type": "String"
-										},
-										{
-											"name": "FechaDelete",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioDelete",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_int_app].[EliminacionCContables]"
-								}
-							}
-						]
-					},
-					{
-						"name": "EstadoFinanciero",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[app].[EstadoFinanciero]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_int_app].[EstadoFinanciero]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDEstadoFinanciero,NombreEstadoFinanciero,Estatus,Abreviatura FROM app.EstadoFinanciero",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_int_app].[EstadoFinanciero]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDEstadoFinanciero",
-											"type": "Int32"
-										},
-										{
-											"name": "NombreEstadoFinanciero",
-											"type": "String"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "Abreviatura",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[app].[EstadoFinanciero]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDEstadoFinanciero",
-											"type": "Int32"
-										},
-										{
-											"name": "NombreEstadoFinanciero",
-											"type": "String"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "Abreviatura",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_int_app].[EstadoFinanciero]"
-								}
-							}
-						]
-					},
-					{
-						"name": "GrupoCContable",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[app].[GrupoCContable]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_int_app].[GrupoCContable]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDGrupoCContable,Nombre,Nivel,Estatus FROM app.GrupoCContable",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_int_app].[GrupoCContable]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDGrupoCContable",
-											"type": "String"
-										},
-										{
-											"name": "Nombre",
-											"type": "String"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										}
-									],
-									"cw_tableName": "[[app].[GrupoCContable]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDGrupoCContable",
-											"type": "String"
-										},
-										{
-											"name": "Nombre",
-											"type": "String"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										}
-									],
-									"cw_tableName": "[[dsa_int_app].[GrupoCContable]"
-								}
-							}
-						]
-					},
-					{
-						"name": "Pais",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[app].[Pais]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_int_app].[Pais]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDPais,Pais,Moneda,Estatus FROM app.Pais",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_int_app].[Pais]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDPais",
-											"type": "String"
-										},
-										{
-											"name": "Pais",
-											"type": "String"
-										},
-										{
-											"name": "Moneda",
-											"type": "String"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										}
-									],
-									"cw_tableName": "[[app].[Pais]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDPais",
-											"type": "String"
-										},
-										{
-											"name": "Pais",
-											"type": "String"
-										},
-										{
-											"name": "Moneda",
-											"type": "String"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										}
-									],
-									"cw_tableName": "[[dsa_int_app].[Pais]"
-								}
-							}
-						]
-					},
-					{
-						"name": "SubGrupoCContable",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[app].[SubGrupoCContable]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_int_app].[SubGrupoCContable]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDSubGrupoCContable,IDGrupoCContable,Nombre,Nivel,Estatus,FechaRegistro FROM app.SubGrupoCContable",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_int_app].[SubGrupoCContable]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDSubGrupoCContable",
-											"type": "String"
-										},
-										{
-											"name": "IDGrupoCContable",
-											"type": "String"
-										},
-										{
-											"name": "Nombre",
-											"type": "String"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaRegistro",
-											"type": "DateTime"
-										}
-									],
-									"cw_tableName": "[[app].[SubGrupoCContable]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDSubGrupoCContable",
-											"type": "String"
-										},
-										{
-											"name": "IDGrupoCContable",
-											"type": "String"
-										},
-										{
-											"name": "Nombre",
-											"type": "String"
-										},
-										{
-											"name": "Nivel",
-											"type": "Int32"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaRegistro",
-											"type": "DateTime"
-										}
-									],
-									"cw_tableName": "[[dsa_int_app].[SubGrupoCContable]"
-								}
-							}
-						]
-					},
-					{
-						"name": "TasaCambioMoneda",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[app].[TasaCambioMoneda]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_int_app].[TasaCambioMoneda]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT GETDATE() AS FechaCarga,IDTasaCambio,IDEstadoFinanciero,FechaInicio,FechaFin,IDPaisOrigenMoneda,IDPaisDestinoMoneda,MonedaOrigen,MonedaDestino,Estatus,FechaInsert,UsuarioInsert,FechaDelete,UsuarioDelete FROM app.TasaCambioMoneda",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": "TRUNCATE TABLE [dsa_int_app].[TasaCambioMoneda]",
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDTasaCambio",
-											"type": "Guid"
-										},
-										{
-											"name": "IDEstadoFinanciero",
-											"type": "Int32"
-										},
-										{
-											"name": "FechaInicio",
-											"type": "DateTime"
-										},
-										{
-											"name": "FechaFin",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDPaisOrigenMoneda",
-											"type": "String"
-										},
-										{
-											"name": "IDPaisDestinoMoneda",
-											"type": "String"
-										},
-										{
-											"name": "MonedaOrigen",
-											"type": "Double"
-										},
-										{
-											"name": "MonedaDestino",
-											"type": "Double"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioInsert",
-											"type": "String"
-										},
-										{
-											"name": "FechaDelete",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioDelete",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[app].[TasaCambioMoneda]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDTasaCambio",
-											"type": "Guid"
-										},
-										{
-											"name": "IDEstadoFinanciero",
-											"type": "Int32"
-										},
-										{
-											"name": "FechaInicio",
-											"type": "DateTime"
-										},
-										{
-											"name": "FechaFin",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDPaisOrigenMoneda",
-											"type": "String"
-										},
-										{
-											"name": "IDPaisDestinoMoneda",
-											"type": "String"
-										},
-										{
-											"name": "MonedaOrigen",
-											"type": "Double"
-										},
-										{
-											"name": "MonedaDestino",
-											"type": "Double"
-										},
-										{
-											"name": "Estatus",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioInsert",
-											"type": "String"
-										},
-										{
-											"name": "FechaDelete",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioDelete",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_int_app].[TasaCambioMoneda]"
-								}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "SAZSHAREPBDD\\BD_NEGOCIO"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "SharePoint_ListaExterna"
-					}
-				},
-				"folder": {
-					"name": "dsa_Intranet"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_Sharepoint')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dsa_App_ContabilidadRegional_Transaccional')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "ContabilidadRegional",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 2,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "[[app].[ContabilidadRegional]"
-							},
-							{
-								"name": "Destination",
-								"value": "[[dsa_int_app].[ContabilidadRegional]"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": {
-									"value": "SELECT GETDATE() AS FechaCarga,IDContabilidadRegional,IDEstadoFinanciero,IDPais,CodigoCuentaContable,Anio,Mes,RucEmpresa,Valor,EstatusAbierto,FechaInsert,UsuarioInsert FROM app.ContabilidadRegional WHERE DATEFROMPARTS(Anio,Mes,1) BETWEEN  '@{pipeline().parameters.FechaDesde}' AND  '@{pipeline().parameters.FechaHasta}'",
-									"type": "Expression"
-								},
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBatchSize": 10000,
-								"preCopyScript": {
-									"value": "DELETE FROM [dsa_int_app].[ContabilidadRegional] WHERE DATEFROMPARTS(Anio,Mes,1) BETWEEN  '@{pipeline().parameters.FechaDesde}' AND  '@{pipeline().parameters.FechaHasta}'",
-									"type": "Expression"
-								},
-								"allowPolyBase": true,
-								"polyBaseSettings": {
-									"rejectValue": 0,
-									"rejectType": "value",
-									"useTypeDefault": true
-								}
-							},
-							"enableStaging": true,
-							"stagingSettings": {
-								"linkedServiceName": {
-									"referenceName": "linked_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "contenedor"
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_Sharepoint",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDContabilidadRegional",
-											"type": "Int32"
-										},
-										{
-											"name": "IDEstadoFinanciero",
-											"type": "Int32"
-										},
-										{
-											"name": "IDPais",
-											"type": "String"
-										},
-										{
-											"name": "CodigoCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Mes",
-											"type": "Int32"
-										},
-										{
-											"name": "RucEmpresa",
-											"type": "String"
-										},
-										{
-											"name": "Valor",
-											"type": "Decimal"
-										},
-										{
-											"name": "EstatusAbierto",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioInsert",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[app].[ContabilidadRegional]",
-									"cw_servidor": {
-										"value": "@pipeline().parameters.Servidor",
-										"type": "Expression"
-									},
-									"cw_baseDatos": {
-										"value": "@pipeline().parameters.BaseDatos",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_dwh",
-								"type": "DatasetReference",
-								"parameters": {
-									"cw_structure": [
-										{
-											"name": "FechaCarga",
-											"type": "DateTime"
-										},
-										{
-											"name": "IDContabilidadRegional",
-											"type": "Int32"
-										},
-										{
-											"name": "IDEstadoFinanciero",
-											"type": "Int32"
-										},
-										{
-											"name": "IDPais",
-											"type": "String"
-										},
-										{
-											"name": "CodigoCuentaContable",
-											"type": "String"
-										},
-										{
-											"name": "Anio",
-											"type": "Int32"
-										},
-										{
-											"name": "Mes",
-											"type": "Int32"
-										},
-										{
-											"name": "RucEmpresa",
-											"type": "String"
-										},
-										{
-											"name": "Valor",
-											"type": "Decimal"
-										},
-										{
-											"name": "EstatusAbierto",
-											"type": "Boolean"
-										},
-										{
-											"name": "FechaInsert",
-											"type": "DateTime"
-										},
-										{
-											"name": "UsuarioInsert",
-											"type": "String"
-										}
-									],
-									"cw_tableName": "[[dsa_int_app].[ContabilidadRegional]"
-								}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"parameters": {
-					"Servidor": {
-						"type": "string",
-						"defaultValue": "SAZSHAREPBDD\\BD_NEGOCIO"
-					},
-					"BaseDatos": {
-						"type": "string",
-						"defaultValue": "SharePoint_ListaExterna"
-					},
-					"FechaDesde": {
-						"type": "string"
-					},
-					"FechaHasta": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "dsa_Intranet"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_Sharepoint')]"
-			]
 		}
 	]
 }
